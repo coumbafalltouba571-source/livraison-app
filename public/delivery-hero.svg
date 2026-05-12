@@ -1,0 +1,56 @@
+<svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fond dégradé -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Corps du livreur -->
+  <ellipse cx="200" cy="250" rx="80" ry="120" fill="#2563eb" opacity="0.2"/>
+  
+  <!-- Tête -->
+  <circle cx="200" cy="120" r="45" fill="#f59e0b"/>
+  
+  <!-- Cheveux -->
+  <path d="M 155 120 Q 155 75 200 75 Q 245 75 245 120" fill="#000" opacity="0.3"/>
+  
+  <!-- Sourire -->
+  <circle cx="190" cy="130" r="4" fill="#000" opacity="0.6"/>
+  <circle cx="210" cy="130" r="4" fill="#000" opacity="0.6"/>
+  <path d="M 190 140 Q 200 148 210 140" stroke="#000" stroke-width="2" fill="none" opacity="0.6"/>
+  
+  <!-- Corps -->
+  <rect x="160" y="165" width="80" height="90" rx="20" fill="#2563eb"/>
+  
+  <!-- Badge/Logo -->
+  <circle cx="200" cy="210" r="25" fill="#7c3aed"/>
+  <text x="200" y="220" font-size="32" text-anchor="middle" fill="#fff">🚚</text>
+  
+  <!-- Bras gauche avec paquet -->
+  <g transform="translate(200, 200) rotate(-45)">
+    <rect x="-15" y="-80" width="30" height="80" rx="15" fill="#f59e0b"/>
+  </g>
+  
+  <!-- Paquet -->
+  <rect x="100" y="140" width="50" height="50" rx="5" fill="#ef4444" opacity="0.8"/>
+  <line x1="100" y1="165" x2="150" y2="165" stroke="#fff" stroke-width="2" opacity="0.6"/>
+  <line x1="125" y1="140" x2="125" y2="190" stroke="#fff" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Bras droit -->
+  <g transform="translate(200, 200) rotate(25)">
+    <rect x="-15" y="-80" width="30" height="80" rx="15" fill="#f59e0b"/>
+  </g>
+  
+  <!-- Jambes -->
+  <rect x="175" y="270" width="20" height="80" rx="10" fill="#1f2937"/>
+  <rect x="205" y="270" width="20" height="80" rx="10" fill="#1f2937"/>
+  
+  <!-- Chaussures -->
+  <ellipse cx="185" cy="350" rx="15" ry="12" fill="#000"/>
+  <ellipse cx="215" cy="350" rx="15" ry="12" fill="#000"/>
+  
+  <!-- Aura/Effet brillant -->
+  <circle cx="200" cy="240" r="140" fill="none" stroke="#7c3aed" stroke-width="2" opacity="0.2" stroke-dasharray="5,5"/>
+</svg>
