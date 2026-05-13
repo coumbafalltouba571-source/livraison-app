@@ -213,9 +213,8 @@ export default function MapSection({
             }}
           >
             <TileLayer
-              attribution="OpenStreetMap"
-              url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
-            />
+  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+/>
 
             {Object.entries(quartiers).map(
               ([nom, position], idx) => (
