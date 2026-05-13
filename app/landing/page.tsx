@@ -8,7 +8,9 @@ import Footer from "../components/Footer";
 
 export default function LandingPage() {
   const handleStartClick = () => {
-    window.location.href = "/commander";
+    if (typeof window !== "undefined") {
+      window.location.href = "/commander";
+    }
   };
 
   return (

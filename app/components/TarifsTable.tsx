@@ -3,6 +3,8 @@
  * Affiche les tarifs entre tous les quartiers de Dakar
  */
 
+"use client";
+
 import { QUARTIERS_DAKAR, calculerTarif, formatPrix } from "../utils/tarifs";
 
 export default function TarifsTable() {

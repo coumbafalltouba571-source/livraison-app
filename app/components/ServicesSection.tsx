@@ -3,6 +3,8 @@
  * Affiche les services principaux avec design moderne
  */
 
+"use client";
+
 export default function ServicesSection() {
   const services = [
     {

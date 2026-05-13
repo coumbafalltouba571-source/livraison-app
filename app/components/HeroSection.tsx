@@ -3,6 +3,8 @@
  * Section principale style Uber/Glovo avec image et CTA
  */
 
+"use client";
+
 export default function HeroSection() {
   return (
     <section

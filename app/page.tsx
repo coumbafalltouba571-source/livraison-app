@@ -1,6 +1,6 @@
 "use client";
-import MapSection from "./components/MapSection";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import HeroSection from "./components/HeroSection";
 import ServicesSection from "./components/ServicesSection";
 import HowItWorks from "./components/HowItWorks";
@@ -12,11 +12,20 @@ import {
   formatPrix,
   getDescriptionRoute,
 } from "./utils/tarifs";
+import { createCommand } from "./utils/firestoreCommands";
+import Link from "next/link";
+
+// Charger MapSection de manière dynamique (nécessite le navigateur)
+const MapSection = dynamic(() => import("./components/MapSection"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [telephone, setTelephone] = useState("");
   const [depart, setDepart] = useState("");
   const [destination, setDestination] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Calcul automatique du prix selon les quartiers
   const prix = depart && destination ? calculerTarif(depart, destination) : 0;
@@ -25,23 +34,99 @@ export default function Home() {
   // Quartiers disponibles
   const quartiers = QUARTIERS_DAKAR;
 
-  // Fonction existante conservée - envoi via WhatsApp
-  const envoyerCommande = () => {
-    const message =
-      `Nouvelle commande 🚚%0A%0A` +
-      `Téléphone: ${telephone}%0A` +
-      `Départ: ${depart}%0A` +
-      `Destination: ${destination}%0A` +
-      `Prix: ${prix} FCFA`;
+  // Nouvelle fonction intégrée - Firestore + WhatsApp
+  const envoyerCommande = async () => {
+    setIsLoading(true);
+    try {
+      // 1. Sauvegarder dans Firestore
+      const dateLivraison = new Date();
+      dateLivraison.setDate(dateLivraison.getDate() + 1); // Livraison par défaut demain
 
-    window.open(
-      `https://wa.me/221773629075?text=${message}`,
-      "_blank"
-    );
+      const commandeId = await createCommand({
+        telephone,
+        depart,
+        destination,
+        prix,
+        statut: "en attente",
+        dateLivraison,
+        client: telephone, // On peut améliorer cela plus tard
+      });
+
+      console.log("✅ Commande sauvegardée dans Firestore:", commandeId);
+
+      // 2. Afficher le message de succès
+      setSuccessMessage("✅ Commande enregistrée avec succès!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+      // 3. Envoyer le message WhatsApp
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const message =
+        `Nouvelle commande 🚚%0A%0A` +
+        `ID: ${commandeId}%0A` +
+        `Téléphone: ${telephone}%0A` +
+        `Départ: ${depart}%0A` +
+        `Destination: ${destination}%0A` +
+        `Prix: ${prix} FCFA%0A%0A` +
+        `Voir l'historique: ${origin}/commands`;
+
+      if (typeof window !== "undefined") {
+        window.open(
+          `https://wa.me/221773629075?text=${message}`,
+          "_blank"
+        );
+      }
+
+      // 4. Réinitialiser le formulaire
+      setTimeout(() => {
+        setTelephone("");
+        setDepart("");
+        setDestination("");
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Erreur lors de la sauvegarde:", error);
+      alert("❌ Erreur lors de la sauvegarde de la commande. Veuillez réessayer.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <main>
+      {/* Lien vers l'historique en haut à droite */}
+      <div style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        zIndex: 1000,
+      }}>
+        <Link
+          href="/commands"
+          style={{
+            display: "inline-block",
+            backgroundColor: "#0f172a",
+            color: "#7c3aed",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            border: "2px solid #7c3aed",
+            textDecoration: "none",
+            fontWeight: "bold",
+            fontSize: "14px",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 15px rgba(124, 58, 237, 0.2)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#7c3aed";
+            e.currentTarget.style.color = "#ffffff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#0f172a";
+            e.currentTarget.style.color = "#7c3aed";
+          }}
+        >
+          📦 Historique
+        </Link>
+      </div>
+
       {/* SECTION 1: Hero Section */}
       <HeroSection />
 
@@ -308,6 +393,25 @@ export default function Home() {
             </div>
           )}
 
+          {/* Message de succès */}
+          {successMessage && (
+            <div
+              style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "2px solid #22c55e",
+                color: "#22c55e",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                marginBottom: "24px",
+                textAlign: "center",
+                fontWeight: "600",
+                animation: "slideIn 0.3s ease",
+              }}
+            >
+              {successMessage}
+            </div>
+          )}
+
           {/* Section paiement */}
           <div style={{ marginBottom: "24px" }}>
             <label
@@ -366,7 +470,7 @@ export default function Home() {
           {/* Bouton d'envoi */}
           <button
             onClick={envoyerCommande}
-            disabled={!telephone || !depart || !destination}
+            disabled={!telephone || !depart || !destination || isLoading}
             style={{
               width: "100%",
               padding: "16px 20px",
@@ -374,38 +478,39 @@ export default function Home() {
               fontWeight: "900",
               color: "#ffffff",
               background:
-                telephone && depart && destination
+                telephone && depart && destination && !isLoading
                   ? "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)"
                   : "#475569",
               border: "none",
               borderRadius: "12px",
               cursor:
-                telephone && depart && destination ? "pointer" : "not-allowed",
+                telephone && depart && destination && !isLoading ? "pointer" : "not-allowed",
               transition: "all 0.3s ease",
               boxShadow:
-                telephone && depart && destination
+                telephone && depart && destination && !isLoading
                   ? "0 10px 30px rgba(124, 58, 237, 0.3)"
                   : "none",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
               marginBottom: "12px",
+              opacity: isLoading ? 0.7 : 1,
             }}
             onMouseEnter={(e) => {
-              if (telephone && depart && destination) {
+              if (telephone && depart && destination && !isLoading) {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow =
                   "0 15px 40px rgba(124, 58, 237, 0.4)";
               }
             }}
             onMouseLeave={(e) => {
-              if (telephone && depart && destination) {
+              if (telephone && depart && destination && !isLoading) {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow =
                   "0 10px 30px rgba(124, 58, 237, 0.3)";
               }
             }}
           >
-            💬 Commander sur WhatsApp
+            {isLoading ? "⏳ Traitement..." : "💬 Commander sur WhatsApp"}
           </button>
 
           {/* Info supplémentaire */}

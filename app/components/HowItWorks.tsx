@@ -3,7 +3,24 @@
  * Explique le processus en 4 étapes avec design moderne
  */
 
+"use client";
+
+import { useState, useEffect } from "react";
+
 export default function HowItWorks() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    setIsDesktop(window.innerWidth > 1024);
+
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth > 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const steps = [
     {
       number: "1",
@@ -93,7 +110,7 @@ export default function HowItWorks() {
               left: "0",
               right: "0",
               height: "2px",
-              display: window.innerWidth > 1024 ? "block" : "none",
+              display: isDesktop ? "block" : "none",
               zIndex: 0,
             }}
           >

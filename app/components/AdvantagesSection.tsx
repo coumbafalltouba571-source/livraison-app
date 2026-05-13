@@ -3,6 +3,8 @@
  * Affiche les avantages compétitifs avec design moderne
  */
 
+"use client";
+
 export default function AdvantagesSection() {
   const avantages = [
     {
