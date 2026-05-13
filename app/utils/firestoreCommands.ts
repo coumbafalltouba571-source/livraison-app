@@ -6,6 +6,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  getDoc,
   query,
   orderBy,
   where,
@@ -217,6 +218,39 @@ export async function getTodayCommands(): Promise<Command[]> {
     return commands;
   } catch (error) {
     console.error("Erreur lors de la récupération des commandes du jour:", error);
+    throw error;
+  }
+}
+
+// Récupérer une commande par ID
+export async function getCommandById(commandId: string): Promise<Command | null> {
+  try {
+    const commandRef = doc(db, COMMANDS_COLLECTION, commandId);
+    const docSnap = await getDoc(commandRef);
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...data,
+      dateLivraison:
+        data.dateLivraison instanceof Timestamp
+          ? data.dateLivraison.toDate()
+          : data.dateLivraison,
+      createdAt:
+        data.createdAt instanceof Timestamp
+          ? data.createdAt.toDate()
+          : data.createdAt,
+      updatedAt:
+        data.updatedAt instanceof Timestamp
+          ? data.updatedAt.toDate()
+          : data.updatedAt,
+    } as Command;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la commande:", error);
     throw error;
   }
 }
