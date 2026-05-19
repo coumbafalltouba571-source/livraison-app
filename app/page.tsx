@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import HeroSection from "./components/HeroSection";
@@ -89,9 +90,81 @@ export default function Home() {
       setIsLoading(false);
     }
   };
-
   return (
     <main>
+      <div className="absolute top-4 right-4">
+  <Image
+    src="/images/logo.png"
+    alt="Logo"
+    width={100}
+    height={100}
+  />
+</div>
+      <div className="flex justify-center">
+  <Image
+    src="/images/livreur_bg.png"
+    alt="Livreur"
+    width={500}
+    height={500}
+    className="rounded-3xl"
+  />
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+
+  <div className="bg-black p-4 rounded-3xl">
+    <Image
+      src="/images/taxi.png"
+      alt="Taxi"
+      width={600}
+      height={400}
+      className="rounded-2xl"
+    />
+    <h2 className="text-white text-2xl mt-4">
+      Taxi bientôt disponible
+    </h2>
+  </div>
+
+  <div className="bg-black p-4 rounded-3xl">
+    <Image
+      src="/images/food.png"
+      alt="Food"
+      width={600}
+      height={400}
+      className="rounded-2xl"
+    />
+    <h2 className="text-white text-2xl mt-4">
+      Livraison repas bientôt disponible
+    </h2>
+  </div>
+
+  <div className="bg-black p-4 rounded-3xl">
+    <Image
+      src="/images/cargo.png"
+      alt="Cargo"
+      width={600}
+      height={400}
+      className="rounded-2xl"
+    />
+    <h2 className="text-white text-2xl mt-4">
+      Cargo bientôt disponible
+    </h2>
+  </div>
+
+  <div className="bg-black p-4 rounded-3xl">
+    <Image
+      src="/images/shop.png"
+      alt="Shop"
+      width={600}
+      height={400}
+      className="rounded-2xl"
+    />
+    <h2 className="text-white text-2xl mt-4">
+      Boutique bientôt disponible
+    </h2>
+  </div>
+
+</div>
       {/* Lien vers l'historique en haut à droite */}
       <div style={{
         position: "fixed",
