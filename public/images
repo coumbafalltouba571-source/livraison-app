@@ -1,0 +1,43 @@
+<div>
+  <Image
+    src="/images/taxi.jpg"
+    alt="Taxi"
+    width={600}
+    height={400}
+    className="rounded-2xl"
+  />
+  <h2>Taxi bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+    src="/images/food.jpg"
+    alt="Food"
+    width={600}
+    height={400}
+    className="rounded-2xl"
+  />
+  <h2>Food bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+    src="/images/shop.jpg"
+    alt="Shop"
+    width={600}
+    height={400}
+    className="rounded-2xl"
+  />
+  <h2>Shopping bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+    src="/images/cargo.jpg"
+    alt="Cargo"
+    width={600}
+    height={400}
+    className="rounded-2xl"
+  />
+  <h2>Cargo bientôt disponible</h2>
+</div>

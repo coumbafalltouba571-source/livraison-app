@@ -1,17 +1,19 @@
-/**
- * Composant Hero Section - Amélioré
- * Section principale style Uber/Glovo avec image et CTA
- */
-
 "use client";
 
-export default function HeroSection() {
+import { useState } from "react";
+
+interface HeroSectionProps {
+  onCommandClick?: () => void;
+}
+
+export default function HeroSection({ onCommandClick }: HeroSectionProps) {
   return (
     <section
       style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
@@ -19,6 +21,31 @@ export default function HeroSection() {
         padding: "20px",
       }}
     >
+      {/* Logo en haut à droite */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "#ffffff",
+            fontWeight: "900",
+            fontSize: "24px",
+            letterSpacing: "-1px",
+          }}
+        >
+          <span style={{ fontSize: "32px" }}>📦</span>
+          <span>Livraison</span>
+        </div>
+      </div>
+
       {/* Décoration de fond animée */}
       <div
         style={{
@@ -59,7 +86,7 @@ export default function HeroSection() {
         }}
       >
         {/* Contenu texte */}
-        <div>
+        <div style={{ animation: "slideInLeft 0.8s ease" }}>
           <div style={{ marginBottom: "20px" }}>
             <span
               style={{
@@ -113,6 +140,7 @@ export default function HeroSection() {
             }}
           >
             <button
+              onClick={onCommandClick}
               style={{
                 padding: "16px 36px",
                 fontSize: "16px",
@@ -239,12 +267,13 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Image */}
+        {/* Illustration - Livreur SVG */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            animation: "slideInRight 0.8s ease",
           }}
         >
           <svg
@@ -256,118 +285,132 @@ export default function HeroSection() {
               filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
             }}
           >
-            {/* Livreur SVG moderne */}
-            {/* Moto/scooter */}
-            <ellipse cx="200" cy="350" rx="100" ry="30" fill="rgba(0,0,0,0.1)" />
+            {/* Ombre au sol */}
+            <ellipse cx="200" cy="420" rx="120" ry="25" fill="rgba(0,0,0,0.1)" />
 
             {/* Scooter */}
-            <rect x="120" y="280" width="160" height="80" rx="20" fill="#1f2937" />
-            <circle cx="160" cy="330" r="25" fill="#374151" />
-            <circle cx="240" cy="330" r="25" fill="#374151" />
-            <circle cx="160" cy="330" r="15" fill="#ffffff" />
-            <circle cx="240" cy="330" r="15" fill="#ffffff" />
+            <g>
+              {/* Base */}
+              <rect x="100" y="300" width="200" height="80" rx="20" fill="#1f2937" />
+              {/* Roues */}
+              <circle cx="160" cy="360" r="25" fill="#374151" />
+              <circle cx="240" cy="360" r="25" fill="#374151" />
+              {/* Jantes */}
+              <circle cx="160" cy="360" r="15" fill="#fbbf24" />
+              <circle cx="240" cy="360" r="15" fill="#fbbf24" />
+            </g>
 
             {/* Plateau livraison */}
-            <rect x="140" y="240" width="120" height="50" rx="10" fill="#3b82f6" />
-            <text
-              x="200"
-              y="272"
-              textAnchor="middle"
-              fontSize="12"
-              fill="white"
-              fontWeight="bold"
-            >
-              📦
-            </text>
+            <g>
+              <rect x="130" y="260" width="140" height="50" rx="10" fill="#3b82f6" />
+              <rect x="140" y="270" width="30" height="30" rx="5" fill="#ffffff" opacity="0.3" />
+              <rect x="180" y="270" width="30" height="30" rx="5" fill="#ffffff" opacity="0.3" />
+              <rect x="220" y="270" width="30" height="30" rx="5" fill="#ffffff" opacity="0.3" />
+            </g>
 
-            {/* Corps du livreur */}
-            <ellipse cx="200" cy="180" rx="35" ry="50" fill="#fdbcb4" />
+            {/* Livreur */}
+            <g>
+              {/* Corps */}
+              <ellipse cx="200" cy="200" rx="35" ry="55" fill="#ef4444" />
 
-            {/* Tête */}
-            <circle cx="200" cy="110" r="30" fill="#fdbcb4" />
+              {/* Tête */}
+              <circle cx="200" cy="120" r="32" fill="#fdbcb4" />
 
-            {/* Cheveux */}
-            <path d="M 170 95 Q 170 60 200 60 Q 230 60 230 95" fill="#1f2937" />
+              {/* Cheveux */}
+              <path d="M 168 105 Q 168 65 200 65 Q 232 65 232 105" fill="#1f2937" />
 
-            {/* Visage souriant */}
-            <circle cx="190" cy="105" r="3" fill="#000000" />
-            <circle cx="210" cy="105" r="3" fill="#000000" />
-            <path d="M 190 120 Q 200 130 210 120" stroke="#000000" strokeWidth="2" fill="none" />
+              {/* Visage */}
+              <circle cx="190" cy="115" r="4" fill="#000000" />
+              <circle cx="210" cy="115" r="4" fill="#000000" />
+              <path d="M 190 135 Q 200 145 210 135" stroke="#000000" strokeWidth="2" fill="none" strokeLinecap="round" />
 
-            {/* Casque de sécurité */}
-            <path
-              d="M 170 70 Q 170 50 200 50 Q 230 50 230 70"
-              stroke="#fbbf24"
-              strokeWidth="8"
-              fill="none"
-            />
+              {/* Casque */}
+              <path
+                d="M 168 80 Q 168 55 200 55 Q 232 55 232 80"
+                stroke="#fbbf24"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+              />
 
-            {/* Bras */}
-            <line
-              x1="170"
-              y1="200"
-              x2="130"
-              y2="250"
-              stroke="#fdbcb4"
-              strokeWidth="12"
-              strokeLinecap="round"
-            />
-            <line
-              x1="230"
-              y1="200"
-              x2="270"
-              y2="240"
-              stroke="#fdbcb4"
-              strokeWidth="12"
-              strokeLinecap="round"
-            />
+              {/* Bras gauche */}
+              <line x1="170" y1="215" x2="120" y2="270" stroke="#fdbcb4" strokeWidth="14" strokeLinecap="round" />
 
-            {/* Jambes */}
-            <line
-              x1="185"
-              y1="230"
-              x2="170"
-              y2="300"
-              stroke="#1f2937"
-              strokeWidth="12"
-              strokeLinecap="round"
-            />
-            <line
-              x1="215"
-              y1="230"
-              x2="230"
-              y2="300"
-              stroke="#1f2937"
-              strokeWidth="12"
-              strokeLinecap="round"
-            />
+              {/* Bras droit */}
+              <line x1="230" y1="215" x2="280" y2="260" stroke="#fdbcb4" strokeWidth="14" strokeLinecap="round" />
 
-            {/* Souliers */}
-            <ellipse cx="170" cy="305" rx="12" ry="8" fill="#000000" />
-            <ellipse cx="230" cy="305" rx="12" ry="8" fill="#000000" />
+              {/* Jambes */}
+              <line x1="185" y1="255" x2="160" y2="320" stroke="#1f2937" strokeWidth="14" strokeLinecap="round" />
+              <line x1="215" y1="255" x2="240" y2="320" stroke="#1f2937" strokeWidth="14" strokeLinecap="round" />
 
-            {/* Sac à dos */}
-            <rect
-              x="205"
-              y="185"
-              width="50"
-              height="70"
-              rx="8"
-              fill="#ef4444"
-              opacity="0.9"
-            />
-            <text
-              x="230"
-              y="230"
-              textAnchor="middle"
-              fontSize="32"
-              fill="white"
-            >
-              🎯
-            </text>
+              {/* Souliers */}
+              <ellipse cx="160" cy="325" rx="15" ry="10" fill="#000000" />
+              <ellipse cx="240" cy="325" rx="15" ry="10" fill="#000000" />
+
+              {/* Sac à dos */}
+              <rect x="210" y="185" width="50" height="60" rx="8" fill="#7c3aed" opacity="0.8" />
+              <text x="235" y="225" textAnchor="middle" fontSize="24" fill="#ffffff">
+                📦
+              </text>
+            </g>
+
+            {/* Vitesse animations */}
+            <g opacity="0.6">
+              <line x1="50" y1="100" x2="80" y2="90" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
+              <line x1="30" y1="130" x2="60" y2="130" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
+              <line x1="50" y1="160" x2="80" y2="170" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
+            </g>
           </svg>
         </div>
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(20px);
+          }
+        }
+
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @media (max-width: 768px) {
+          section {
+            padding: 40px 20px;
+          }
+
+          div {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+          }
+
+          svg {
+            max-width: 300px !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
