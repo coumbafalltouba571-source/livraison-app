@@ -47,7 +47,7 @@ export default function ShopPage() {
 
   const categories = Array.from(
     new Set(products.map((p) => p.category).filter(Boolean))
-  );
+  ) as string[];
 
   return (
     <main style={{ minHeight: "100vh", background: "#ffffff" }}>

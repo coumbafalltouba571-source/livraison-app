@@ -54,6 +54,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
         depart: formData.depart,
         destination: formData.destination,
         prix: formData.prix,
+        description: formData.notes || "",
         statut: "en attente",
         dateLivraison,
         notes: formData.notes,

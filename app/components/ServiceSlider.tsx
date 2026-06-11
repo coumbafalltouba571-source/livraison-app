@@ -279,15 +279,16 @@ export default function ServiceSlider() {
                     ? "2px solid #7c3aed"
                     : "1px solid #e5e7eb",
                 background:
-                  currentIndex % services.length ===
-                  services.findIndex((s) => s.id === service.id)
+                  service.status === "coming-soon"
+                    ? "#f3f4f6"
+                    : currentIndex % services.length ===
+                      services.findIndex((s) => s.id === service.id)
                     ? "#f3e8ff"
                     : "#ffffff",
                 color: "#1f2937",
                 borderRadius: "10px",
                 cursor: "pointer",
                 transition: "all 0.3s ease",
-                backgroundColor: service.status === "coming-soon" ? "#f3f4f6" : undefined,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "#7c3aed";

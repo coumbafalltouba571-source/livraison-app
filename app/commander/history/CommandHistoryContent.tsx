@@ -1,16 +1,213 @@
 "use client";
 
-import { Suspense } from "react";
-import CommandHistoryContent from "./CommandHistoryContent";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/firestoreCommands";
+import Link from "next/link";
 
-export default function CommandHistoryPage() {
+export default function CommandHistoryContent() {
+  const searchParams = useSearchParams();
+  const telephone = searchParams.get("tel") || "";
+  
+  const [commands, setCommands] = useState<Command[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [inputTelephone, setInputTelephone] = useState(telephone);
+  const [hasSearched, setHasSearched] = useState(!!telephone);
+  const [unsubscribers, setUnsubscribers] = useState<(() => void)[]>([]);
+
+  // Charger les commandes du client
+  const loadClientCommands = async (tel: string) => {
+    if (!tel.trim()) {
+      setError("Veuillez entrer votre numéro de téléphone");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setHasSearched(true);
+    
+    try {
+      const clientCommands = await getCommandsByPhone(tel);
+      setCommands(clientCommands);
+
+      // Abonner à chaque commande pour les mises à jour en temps réel
+      const newUnsubscribers: (() => void)[] = [];
+      clientCommands.forEach((cmd) => {
+        if (cmd.id) {
+          const unsubscribe = subscribeToCommand(cmd.id, (updatedCommand) => {
+            if (updatedCommand) {
+              setCommands((prev) =>
+                prev.map((c) => (c.id === updatedCommand.id ? updatedCommand : c))
+              );
+            }
+          });
+          newUnsubscribers.push(unsubscribe);
+        }
+      });
+
+      setUnsubscribers(newUnsubscribers);
+
+      if (clientCommands.length === 0) {
+        setError("Aucune commande trouvée pour ce numéro");
+      }
+    } catch (err) {
+      console.error("Erreur:", err);
+      setError("Erreur lors de la récupération des commandes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (telephone) {
+      loadClientCommands(telephone);
+    }
+
+    // Cleanup des abonnements
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, []);
+
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
+      "en attente": "#f59e0b",
+      "confirmée": "#3b82f6",
+      "en cours de traitement": "#8b5cf6",
+      "en livraison": "#ec4899",
+      "livrée": "#10b981",
+      "annulée": "#ef4444",
+    };
+    return colors[status] || "#6b7280";
+  };
+
+  const getStatusEmoji = (status: string) => {
+    const emojis: { [key: string]: string } = {
+      "en attente": "⏳",
+      "confirmée": "✅",
+      "en cours de traitement": "🔄",
+      "en livraison": "🚚",
+      "livrée": "📦",
+      "annulée": "❌",
+    };
+    return emojis[status] || "📋";
+  };
+
   return (
-    <Suspense fallback={<div style={{ padding: "40px 20px", textAlign: "center" }}>Chargement...</div>}>
-      <CommandHistoryContent />
-    </Suspense>
-  );
-}
+    <main style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+      padding: "40px 20px",
+    }}>
+      {/* En-tête */}
+      <div style={{
+        maxWidth: "1000px",
+        margin: "0 auto",
+        marginBottom: "40px",
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "30px",
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: "32px",
+              fontWeight: "900",
+              color: "#1f2937",
+              margin: "0 0 8px 0",
+            }}>
+              📦 Mon Historique
+            </h1>
+            <p style={{
+              color: "#6b7280",
+              fontSize: "16px",
+              margin: 0,
+            }}>
+              Suivi de vos commandes
+            </p>
+          </div>
+          <Link
+            href="/"
+            style={{
+              display: "inline-block",
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              color: "#ffffff",
+              borderRadius: "12px",
+              textDecoration: "none",
+              fontWeight: "600",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 10px 25px rgba(124, 58, 237, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            ➕ Nouvelle commande
+          </Link>
+        </div>
 
+        {/* Formulaire de recherche */}
+        <div style={{
+          background: "#ffffff",
+          borderRadius: "16px",
+          padding: "24px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+          marginBottom: "24px",
+        }}>
+          <label style={{
+            display: "block",
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#1f2937",
+            marginBottom: "12px",
+          }}>
+            📱 Numéro de téléphone
+          </label>
+          <div style={{
+            display: "flex",
+            gap: "12px",
+            marginBottom: "12px",
+          }}>
+            <input
+              type="tel"
+              value={inputTelephone}
+              onChange={(e) => setInputTelephone(e.target.value)}
+              placeholder="+221 77 XXX XX XX"
+              style={{
+                flex: 1,
+                padding: "14px 16px",
+                border: "2px solid #e5e7eb",
+                borderRadius: "10px",
+                fontSize: "16px",
+                transition: "all 0.2s",
+                boxSizing: "border-box",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#7c3aed";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#e5e7eb";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  loadClientCommands(inputTelephone);
+                }
+              }}
+            />
+            <button
+              onClick={() => loadClientCommands(inputTelephone)}
+              disabled={loading}
+              style={{
                 padding: "14px 28px",
                 background: loading ? "#d1d5db" : "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
                 color: "#ffffff",

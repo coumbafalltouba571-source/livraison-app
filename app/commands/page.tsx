@@ -132,7 +132,8 @@ export default function CommandsPage() {
                   (selectedStatus !== "tous" && 
                     ((selectedStatus === "en attente" && stat.label === "En attente") ||
                      (selectedStatus === "confirmée" && stat.label === "Confirmées") ||
-                     (selectedStatus === "en cours" && stat.label === "En cours") ||
+                     (selectedStatus === "en cours de traitement" && stat.label === "En cours") ||
+                     (selectedStatus === "en livraison" && stat.label === "En livraison") ||
                      (selectedStatus === "livrée" && stat.label === "Livrées") ||
                      (selectedStatus === "annulée" && stat.label === "Annulées")))
                     ? "ring-2 ring-offset-2 ring-blue-500"
