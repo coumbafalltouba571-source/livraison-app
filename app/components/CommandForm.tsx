@@ -16,6 +16,7 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
     client: "",
     depart: "",
     destination: "",
+    description: "",
     type: "standard",
   });
   const [loading, setLoading] = useState(false);
@@ -36,8 +37,8 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.telephone || !formData.client || !formData.depart || !formData.destination) {
-      alert("Veuillez remplir tous les champs");
+    if (!formData.telephone || !formData.client || !formData.depart || !formData.destination || !formData.description) {
+      alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
@@ -51,6 +52,7 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
         client: formData.client,
         depart: formData.depart,
         destination: formData.destination,
+        description: formData.description,
         prix,
         statut: "en attente",
         dateLivraison,
@@ -66,6 +68,7 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
         `Téléphone: ${formData.telephone}%0A` +
         `Départ: ${formData.depart}%0A` +
         `Destination: ${formData.destination}%0A` +
+        `Description: ${formData.description}%0A` +
         `Type: ${formData.type}%0A` +
         `Prix: ${prix} FCFA`;
 
@@ -77,7 +80,7 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
       }
 
       setTimeout(() => {
-        setFormData({ telephone: "", client: "", depart: "", destination: "", type: "standard" });
+        setFormData({ telephone: "", client: "", depart: "", destination: "", description: "", type: "standard" });
         setSuccessMessage("");
         onClose();
         onSuccess?.();
@@ -306,6 +309,44 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Description */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", color: "#1f2937" }}>
+              📦 Description de la commande
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }));
+              }}
+              placeholder="Ex: Nature du colis, quantité, instructions spéciales..."
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                fontSize: "14px",
+                transition: "all 0.2s",
+                boxSizing: "border-box",
+                fontFamily: "inherit",
+                minHeight: "100px",
+                resize: "vertical",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#7c3aed";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#e5e7eb";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
           </div>
 
           {/* Type */}

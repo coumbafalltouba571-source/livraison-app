@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { Command, getAllCommands, getCommandsByStatus } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
+import AdminProtection from "@/app/components/AdminProtection";
 import Link from "next/link";
 
-type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours" | "livrée" | "annulée";
+type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
 
 export default function CommandsPage() {
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [commands, setCommands] = useState<Command[]>([]);
   const [filteredCommands, setFilteredCommands] = useState<Command[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,7 @@ export default function CommandsPage() {
     pending: 0,
     confirmed: 0,
     inProgress: 0,
+    inDelivery: 0,
     delivered: 0,
     cancelled: 0,
   });
@@ -32,7 +35,8 @@ export default function CommandsPage() {
         total: allCommands.length,
         pending: allCommands.filter((c) => c.statut === "en attente").length,
         confirmed: allCommands.filter((c) => c.statut === "confirmée").length,
-        inProgress: allCommands.filter((c) => c.statut === "en cours").length,
+        inProgress: allCommands.filter((c) => c.statut === "en cours de traitement").length,
+        inDelivery: allCommands.filter((c) => c.statut === "en livraison").length,
         delivered: allCommands.filter((c) => c.statut === "livrée").length,
         cancelled: allCommands.filter((c) => c.statut === "annulée").length,
       };
@@ -54,6 +58,10 @@ export default function CommandsPage() {
   };
 
   useEffect(() => {
+    // Vérifier si déjà déverrouillé dans cette session
+    if (typeof window !== "undefined" && sessionStorage.getItem("adminAccess") === "true") {
+      setIsAdminUnlocked(true);
+    }
     loadCommands();
   }, []);
 
@@ -70,12 +78,19 @@ export default function CommandsPage() {
     { label: "En attente", value: stats.pending, color: "bg-yellow-100", icon: "⏳" },
     { label: "Confirmées", value: stats.confirmed, color: "bg-blue-100", icon: "✅" },
     { label: "En cours", value: stats.inProgress, color: "bg-purple-100", icon: "🚗" },
+    { label: "En livraison", value: stats.inDelivery, color: "bg-orange-100", icon: "🚚" },
     { label: "Livrées", value: stats.delivered, color: "bg-green-100", icon: "📦" },
     { label: "Annulées", value: stats.cancelled, color: "bg-red-100", icon: "❌" },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+    <>
+      <AdminProtection onUnlock={() => setIsAdminUnlocked(true)} />
+      {!isAdminUnlocked && (
+        <div style={{ display: "none" }} />
+      )}
+      {isAdminUnlocked && (
+      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -139,11 +154,11 @@ export default function CommandsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Filtre visible */}
         <div className="flex gap-2 mb-6 flex-wrap">
-          {(["tous", "en attente", "confirmée", "en cours", "livrée", "annulée"] as StatusFilter[]).map((status) => (
+          {(["tous", "en attente", "confirmée", "en cours de traitement", "en livraison", "livrée", "annulée"] as StatusFilter[]).map((status) => (
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`px-4 py-2 rounded-full font-medium transition-all ${
+              className={`px-4 py-2 rounded-full font-medium transition-all text-sm ${
                 selectedStatus === status
                   ? "bg-blue-600 text-white shadow-lg"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
@@ -196,5 +211,7 @@ export default function CommandsPage() {
         )}
       </div>
     </main>
+      )}
+    </>
   );
 }

@@ -147,21 +147,6 @@ export default function ServiceSlider() {
               >
                 <div
                   style={{
-                    background: `linear-gradient(135deg, var(--color-start) 0%, var(--color-end) 100%)`,
-                    borderRadius: "20px",
-                    padding: "40px 30px",
-                    color: "#ffffff",
-                    position: "relative",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    transform: "translateY(0)",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  } as React.CSSProperties & { "--color-start": string; "--color-end": string }}
-                  style={{
                     background: `linear-gradient(135deg, ${service.color.split(" ")[1]} 0%, ${service.color.split(" ")[3]} 100%)`,
                     borderRadius: "20px",
                     padding: "40px 30px",

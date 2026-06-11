@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Command, getAllCommands } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
+import AdminCommandsTable from "@/app/components/AdminCommandsTable";
 import AddCommandForm from "@/app/components/AddCommandForm";
 import Link from "next/link";
 import {
@@ -21,7 +22,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours" | "livrée" | "annulée";
+type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
 
 export default function AdminPremiumDashboard() {
   const [commands, setCommands] = useState<Command[]>([]);
@@ -30,6 +31,7 @@ export default function AdminPremiumDashboard() {
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("tous");
   const [showForm, setShowForm] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table"); // Vue tableau par défaut
 
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -225,31 +227,58 @@ export default function AdminPremiumDashboard() {
           )}
 
           {/* FILTERS */}
-          <div className="flex gap-2 mb-6 flex-wrap">
-            {(
-              [
-                "tous",
-                "en attente",
-                "confirmée",
-                "en cours",
-                "livrée",
-                "annulée",
-              ] as StatusFilter[]
-            ).map((status) => (
+          <div className="flex gap-2 mb-6 flex-wrap justify-between items-center">
+            <div className="flex gap-2 flex-wrap">
+              {(
+                [
+                  "tous",
+                  "en attente",
+                  "confirmée",
+                  "en cours de traitement",
+                  "en livraison",
+                  "livrée",
+                  "annulée",
+                ] as StatusFilter[]
+              ).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className={`px-4 py-2 rounded-full font-medium transition-all text-sm ${
+                    selectedStatus === status
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
+                  }`}
+                >
+                  {status === "tous"
+                    ? "Tous"
+                    : status.charAt(0).toUpperCase() + status.slice(1)}
+                </button>
+              ))}
+            </div>
+            
+            {/* VIEW MODE TOGGLE */}
+            <div className="flex gap-2">
               <button
-                key={status}
-                onClick={() => setSelectedStatus(status)}
+                onClick={() => setViewMode("table")}
                 className={`px-4 py-2 rounded-full font-medium transition-all ${
-                  selectedStatus === status
+                  viewMode === "table"
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
                 }`}
               >
-                {status === "tous"
-                  ? "Tous"
-                  : status.charAt(0).toUpperCase() + status.slice(1)}
+                📊 Tableau
               </button>
-            ))}
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                  viewMode === "cards"
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
+                }`}
+              >
+                🃏 Cartes
+              </button>
+            </div>
           </div>
 
           {/* LOADING */}
@@ -275,6 +304,12 @@ export default function AdminPremiumDashboard() {
                   : `Aucune commande avec le statut "${selectedStatus}"`}
               </p>
             </div>
+          ) : viewMode === "table" ? (
+            <AdminCommandsTable
+              commands={filteredCommands}
+              onUpdate={loadData}
+              loading={loading}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCommands.map((command) => (

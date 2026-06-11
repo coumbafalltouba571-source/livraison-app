@@ -22,11 +22,14 @@ const MapSection = dynamic(() => import("./components/MapSection"), {
 });
 
 export default function Home() {
+  const [nomClient, setNomClient] = useState("");
   const [telephone, setTelephone] = useState("");
   const [depart, setDepart] = useState("");
   const [destination, setDestination] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [modePayement, setModePayement] = useState("");
 
   // Calcul automatique du prix selon les quartiers
   const prix = depart && destination ? calculerTarif(depart, destination) : 0;
@@ -45,12 +48,15 @@ export default function Home() {
 
       const commandeId = await createCommand({
         telephone,
+        nomClient,
         depart,
         destination,
+        description,
         prix,
+        modePayement,
         statut: "en attente",
         dateLivraison,
-        client: telephone, // On peut améliorer cela plus tard
+        client: nomClient, // Sauvegarde le nom du client
       });
 
       console.log("✅ Commande sauvegardée dans Firestore:", commandeId);
@@ -64,10 +70,13 @@ export default function Home() {
       const message =
         `Nouvelle commande 🚚%0A%0A` +
         `ID: ${commandeId}%0A` +
+        `Client: ${nomClient}%0A` +
         `Téléphone: ${telephone}%0A` +
         `Départ: ${depart}%0A` +
         `Destination: ${destination}%0A` +
-        `Prix: ${prix} FCFA%0A%0A` +
+        `Description: ${description}%0A` +
+        `Prix: ${prix} FCFA%0A` +
+        `Paiement: ${modePayement}%0A%0A` +
         `Voir l'historique: ${origin}/commands`;
 
       if (typeof window !== "undefined") {
@@ -79,92 +88,625 @@ export default function Home() {
 
       // 4. Réinitialiser le formulaire
       setTimeout(() => {
+        setNomClient("");
         setTelephone("");
         setDepart("");
         setDestination("");
+        setDescription("");
+        setModePayement("");
       }, 1000);
     } catch (error) {
       console.error("❌ Erreur lors de la sauvegarde:", error);
-      alert("❌ Erreur lors de la sauvegarde de la commande. Veuillez réessayer.");
+      
+      // Afficher plus de détails sur l'erreur
+      if (error instanceof Error) {
+        console.error("Message d'erreur:", error.message);
+        console.error("Code d'erreur:", (error as any).code);
+        
+        if ((error as any).code === "permission-denied") {
+          console.error("🔒 SOLUTION: Les règles Firestore ne permettent pas l'accès.");
+          console.error("1. Allez à Firebase Console → Firestore → Règles");
+          console.error("2. Remplacez par les règles temporaires (voir FIRESTORE_SETUP.md)");
+          console.error("3. Déployez avec: firebase deploy --only firestore:rules");
+          alert("❌ Erreur de permission Firestore. Consultez la console pour les solutions.");
+        } else {
+          alert(`❌ Erreur: ${error.message}`);
+        }
+      } else {
+        alert("❌ Erreur lors de la sauvegarde de la commande. Veuillez réessayer.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
   return (
     <main>
-      <div className="absolute top-4 right-4">
-  <Image
-    src="/images/logo.png"
-    alt="Logo"
-    width={100}
-    height={100}
-  />
-</div>
-      <div className="flex justify-center">
-  <Image
-    src="/images/livreur_bg.png"
-    alt="Livreur"
-    width={500}
-    height={500}
-    className="rounded-3xl"
-  />
-</div>
+      {/* Navigation Header */}
+      <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        background: "rgba(15, 23, 42, 0.9)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        padding: "16px 20px",
+        zIndex: 100,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div style={{ fontSize: "18px", fontWeight: "900", color: "#ffffff" }}>
+          🚚 Livraison Pro
+        </div>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Link
+            href="/boutique"
+            style={{
+              padding: "8px 16px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              color: "#ffffff",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "600",
+              fontSize: "14px",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 16px rgba(124, 58, 237, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            🛒 Boutique
+          </Link>
+          <Link
+            href="/commander/history"
+            style={{
+              padding: "8px 16px",
+              background: "rgba(255, 255, 255, 0.1)",
+              color: "#ffffff",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "600",
+              fontSize: "14px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            📍 Mon Historique
+          </Link>
+        </div>
+      </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+      {/* Logo en haut à droite (anciennement en haut à droite) */}
+      <div style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        zIndex: 50,
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(10px)",
+        padding: "12px 16px",
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+      }}>
+        <Image
+          src="/logo2_app.png"
+          alt="Logo Livraison App"
+          width={60}
+          height={60}
+          priority
+          style={{ objectFit: "contain" }}
+        />
+      </div>
 
-  <div className="bg-black p-4 rounded-3xl">
-    <Image
-      src="/images/taxi.png"
-      alt="Taxi"
-      width={600}
-      height={400}
-      className="rounded-2xl"
-    />
-    <h2 className="text-white text-2xl mt-4">
-      Taxi bientôt disponible
-    </h2>
-  </div>
+      {/* SECTION: Image héro avec livreur */}
+      <section style={{
+        background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+        padding: "120px 20px 80px 20px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "500px",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Décoration de fond */}
+        <div style={{
+          position: "absolute",
+          top: "-50%",
+          right: "-10%",
+          width: "600px",
+          height: "600px",
+          background: "rgba(255, 255, 255, 0.08)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute",
+          bottom: "-30%",
+          left: "-5%",
+          width: "400px",
+          height: "400px",
+          background: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }} />
 
-  <div className="bg-black p-4 rounded-3xl">
-    <Image
-      src="/images/food.png"
-      alt="Food"
-      width={600}
-      height={400}
-      className="rounded-2xl"
-    />
-    <h2 className="text-white text-2xl mt-4">
-      Livraison repas bientôt disponible
-    </h2>
-  </div>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <Image
+            src="/livreur_bg.png"
+            alt="Livreur"
+            width={500}
+            height={500}
+            priority
+            style={{
+              objectFit: "contain",
+              filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
+            }}
+          />
+        </div>
+      </section>
 
-  <div className="bg-black p-4 rounded-3xl">
-    <Image
-      src="/images/cargo.png"
-      alt="Cargo"
-      width={600}
-      height={400}
-      className="rounded-2xl"
-    />
-    <h2 className="text-white text-2xl mt-4">
-      Cargo bientôt disponible
-    </h2>
-  </div>
+      {/* SECTION: Cartes de services élégantes */}
+      <section style={{
+        padding: "100px 20px",
+        background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
+      }}>
+        <div style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}>
+          {/* Titre */}
+          <div style={{
+            textAlign: "center",
+            marginBottom: "80px",
+          }}>
+            <h2 style={{
+              fontSize: "clamp(32px, 5vw, 56px)",
+              fontWeight: "900",
+              color: "#0f172a",
+              margin: "0 0 15px 0",
+              letterSpacing: "-1px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}>
+              Nos services disponibles
+            </h2>
+            <div style={{
+              width: "60px",
+              height: "4px",
+              background: "linear-gradient(90deg, #7c3aed 0%, #2563eb 100%)",
+              margin: "20px auto",
+              borderRadius: "2px",
+            }} />
+            <p style={{
+              fontSize: "18px",
+              color: "#64748b",
+              margin: "0",
+              maxWidth: "600px",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}>
+              Explorez nos services de livraison modernes et efficaces
+            </p>
+          </div>
 
-  <div className="bg-black p-4 rounded-3xl">
-    <Image
-      src="/images/shop.png"
-      alt="Shop"
-      width={600}
-      height={400}
-      className="rounded-2xl"
-    />
-    <h2 className="text-white text-2xl mt-4">
-      Boutique bientôt disponible
-    </h2>
-  </div>
+          {/* Grille de cartes */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "30px",
+            marginBottom: "60px",
+          }}>
+            {/* Carte Taxi */}
+            <div style={{
+              borderRadius: "24px",
+              overflow: "hidden",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "2px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-12px)";
+              e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
+              e.currentTarget.style.borderColor = "#7c3aed";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
+              e.currentTarget.style.borderColor = "transparent";
+            }}>
+              <div style={{
+                position: "relative",
+                width: "100%",
+                height: "200px",
+                overflow: "hidden",
+                background: "#f0f4f8",
+              }}>
+                <Image
+                  src="/taxi_course_bientot.png"
+                  alt="Service Taxi"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <div style={{
+                  position: "absolute",
+                  top: "12px",
+                  right: "12px",
+                  background: "rgba(124, 58, 237, 0.9)",
+                  color: "#ffffff",
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  backdropFilter: "blur(10px)",
+                }}>
+                  Bientôt disponible
+                </div>
+              </div>
+              <div style={{
+                padding: "24px",
+              }}>
+                <div style={{
+                  fontSize: "40px",
+                  marginBottom: "12px",
+                }}>🚕</div>
+                <h3 style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  color: "#0f172a",
+                  margin: "0 0 8px 0",
+                }}>
+                  Service Taxi
+                </h3>
+                <p style={{
+                  fontSize: "14px",
+                  color: "#64748b",
+                  margin: "0 0 16px 0",
+                  lineHeight: "1.6",
+                }}>
+                  Déplacements rapides et confortables dans toute Dakar
+                </p>
+                <div style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#ede9fe",
+                    color: "#7c3aed",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>⚡ Rapide</span>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#dbeafe",
+                    color: "#2563eb",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>💰 Abordable</span>
+                </div>
+              </div>
+            </div>
 
-</div>
+            {/* Carte Restaurant */}
+            <div style={{
+              borderRadius: "24px",
+              overflow: "hidden",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "2px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-12px)";
+              e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
+              e.currentTarget.style.borderColor = "#7c3aed";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
+              e.currentTarget.style.borderColor = "transparent";
+            }}>
+              <div style={{
+                position: "relative",
+                width: "100%",
+                height: "200px",
+                overflow: "hidden",
+                background: "#f0f4f8",
+              }}>
+                <Image
+                  src="/restaurant_bg.png"
+                  alt="Service Restaurant"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <div style={{
+                  position: "absolute",
+                  top: "12px",
+                  right: "12px",
+                  background: "rgba(124, 58, 237, 0.9)",
+                  color: "#ffffff",
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  backdropFilter: "blur(10px)",
+                }}>
+                  Bientôt disponible
+                </div>
+              </div>
+              <div style={{
+                padding: "24px",
+              }}>
+                <div style={{
+                  fontSize: "40px",
+                  marginBottom: "12px",
+                }}>🍕</div>
+                <h3 style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  color: "#0f172a",
+                  margin: "0 0 8px 0",
+                }}>
+                  Livraison Repas
+                </h3>
+                <p style={{
+                  fontSize: "14px",
+                  color: "#64748b",
+                  margin: "0 0 16px 0",
+                  lineHeight: "1.6",
+                }}>
+                  Vos repas préférés livrés chauds et délicieux à votre porte
+                </p>
+                <div style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#ede9fe",
+                    color: "#7c3aed",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>🔥 Chaud</span>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#dbeafe",
+                    color: "#2563eb",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>😋 Délicieux</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Carte Cargo */}
+            <div style={{
+              borderRadius: "24px",
+              overflow: "hidden",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "2px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-12px)";
+              e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
+              e.currentTarget.style.borderColor = "#7c3aed";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
+              e.currentTarget.style.borderColor = "transparent";
+            }}>
+              <div style={{
+                position: "relative",
+                width: "100%",
+                height: "200px",
+                overflow: "hidden",
+                background: "#f0f4f8",
+              }}>
+                <Image
+                  src="/cargo_bg.png"
+                  alt="Service Cargo"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <div style={{
+                  position: "absolute",
+                  top: "12px",
+                  right: "12px",
+                  background: "rgba(124, 58, 237, 0.9)",
+                  color: "#ffffff",
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  backdropFilter: "blur(10px)",
+                }}>
+                  Bientôt disponible
+                </div>
+              </div>
+              <div style={{
+                padding: "24px",
+              }}>
+                <div style={{
+                  fontSize: "40px",
+                  marginBottom: "12px",
+                }}>📦</div>
+                <h3 style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  color: "#0f172a",
+                  margin: "0 0 8px 0",
+                }}>
+                  Service Cargo
+                </h3>
+                <p style={{
+                  fontSize: "14px",
+                  color: "#64748b",
+                  margin: "0 0 16px 0",
+                  lineHeight: "1.6",
+                }}>
+                  Envoyez vos colis en toute sécurité dans toute la région
+                </p>
+                <div style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#ede9fe",
+                    color: "#7c3aed",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>🔒 Sécurisé</span>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#dbeafe",
+                    color: "#2563eb",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>🚚 Rapide</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Carte Boutique */}
+            <div style={{
+              borderRadius: "24px",
+              overflow: "hidden",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "2px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-12px)";
+              e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
+              e.currentTarget.style.borderColor = "#7c3aed";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
+              e.currentTarget.style.borderColor = "transparent";
+            }}>
+              <div style={{
+                position: "relative",
+                width: "100%",
+                height: "200px",
+                overflow: "hidden",
+                background: "#f0f4f8",
+              }}>
+                <Image
+                  src="/boutique_bg.png"
+                  alt="Service Boutique"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <div style={{
+                  position: "absolute",
+                  top: "12px",
+                  right: "12px",
+                  background: "rgba(124, 58, 237, 0.9)",
+                  color: "#ffffff",
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  backdropFilter: "blur(10px)",
+                }}>
+                  Bientôt disponible
+                </div>
+              </div>
+              <div style={{
+                padding: "24px",
+              }}>
+                <div style={{
+                  fontSize: "40px",
+                  marginBottom: "12px",
+                }}>🛍️</div>
+                <h3 style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  color: "#0f172a",
+                  margin: "0 0 8px 0",
+                }}>
+                  Service Boutique
+                </h3>
+                <p style={{
+                  fontSize: "14px",
+                  color: "#64748b",
+                  margin: "0 0 16px 0",
+                  lineHeight: "1.6",
+                }}>
+                  Tous vos achats en boutique livrés rapidement chez vous
+                </p>
+                <div style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#ede9fe",
+                    color: "#7c3aed",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>🎁 Flexible</span>
+                  <span style={{
+                    display: "inline-block",
+                    background: "#dbeafe",
+                    color: "#2563eb",
+                    padding: "6px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}>💳 Simple</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Lien vers l'historique en haut à droite */}
       <div style={{
         position: "fixed",
@@ -313,6 +855,49 @@ export default function Home() {
             />
           </div>
 
+          {/* Section nom du client */}
+          <div style={{ marginBottom: "24px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#e2e8f0",
+                fontSize: "13px",
+                fontWeight: "700",
+                marginBottom: "10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              👤 Nom complet
+            </label>
+            <input
+              placeholder="Votre nom complet"
+              value={nomClient}
+              onChange={(e) => setNomClient(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                marginBottom: "0",
+                borderRadius: "12px",
+                border: "2px solid #475569",
+                background: "#0f172a",
+                color: "#ffffff",
+                fontSize: "14px",
+                boxSizing: "border-box",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) => {
+                (e.target as HTMLInputElement).style.borderColor = "#7c3aed";
+                (e.target as HTMLInputElement).style.boxShadow =
+                  "0 0 16px rgba(124, 58, 237, 0.3)";
+              }}
+              onBlur={(e) => {
+                (e.target as HTMLInputElement).style.borderColor = "#475569";
+                (e.target as HTMLInputElement).style.boxShadow = "none";
+              }}
+            />
+          </div>
+
           {/* Section départ et destination */}
           <div
             style={{
@@ -399,6 +984,49 @@ export default function Home() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label
+              style={{
+                display: "block",
+                color: "#e2e8f0",
+                fontSize: "13px",
+                fontWeight: "700",
+                marginBottom: "10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              📦 Description de la commande
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ex: Nature du colis, quantité, instructions spéciales..."
+              style={{
+                width: "100%",
+                padding: "14px 14px",
+                borderRadius: "12px",
+                border: "2px solid #475569",
+                background: "#0f172a",
+                color: "#ffffff",
+                fontSize: "14px",
+                boxSizing: "border-box",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                fontFamily: "inherit",
+                minHeight: "100px",
+                resize: "vertical",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#7c3aed";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#475569";
+              }}
+            />
           </div>
 
           {/* Affichage de la route et du prix calculé */}
@@ -510,12 +1138,14 @@ export default function Home() {
               {["Wave", "Orange Money", "Cash", "Carte"].map((method) => (
                 <button
                   key={method}
+                  onClick={() => setModePayement(method)}
+                  type="button"
                   style={{
                     padding: "12px 14px",
                     borderRadius: "12px",
-                    border: "2px solid #475569",
-                    background: "#0f172a",
-                    color: "#e2e8f0",
+                    border: modePayement === method ? "2px solid #7c3aed" : "2px solid #475569",
+                    background: modePayement === method ? "rgba(124, 58, 237, 0.2)" : "#0f172a",
+                    color: modePayement === method ? "#7c3aed" : "#e2e8f0",
                     fontWeight: "600",
                     fontSize: "13px",
                     cursor: "pointer",
@@ -529,9 +1159,9 @@ export default function Home() {
                       "rgba(124, 58, 237, 0.1)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.border = "2px solid #475569";
-                    e.currentTarget.style.color = "#e2e8f0";
-                    e.currentTarget.style.background = "#0f172a";
+                    e.currentTarget.style.border = modePayement === method ? "2px solid #7c3aed" : "2px solid #475569";
+                    e.currentTarget.style.color = modePayement === method ? "#7c3aed" : "#e2e8f0";
+                    e.currentTarget.style.background = modePayement === method ? "rgba(124, 58, 237, 0.2)" : "#0f172a";
                   }}
                 >
                   {method}
@@ -543,7 +1173,7 @@ export default function Home() {
           {/* Bouton d'envoi */}
           <button
             onClick={envoyerCommande}
-            disabled={!telephone || !depart || !destination || isLoading}
+            disabled={!telephone || !nomClient || !depart || !destination || !description || !modePayement || isLoading}
             style={{
               width: "100%",
               padding: "16px 20px",
@@ -551,16 +1181,16 @@ export default function Home() {
               fontWeight: "900",
               color: "#ffffff",
               background:
-                telephone && depart && destination && !isLoading
+                telephone && nomClient && depart && destination && description && modePayement && !isLoading
                   ? "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)"
                   : "#475569",
               border: "none",
               borderRadius: "12px",
               cursor:
-                telephone && depart && destination && !isLoading ? "pointer" : "not-allowed",
+                telephone && nomClient && depart && destination && description && modePayement && !isLoading ? "pointer" : "not-allowed",
               transition: "all 0.3s ease",
               boxShadow:
-                telephone && depart && destination && !isLoading
+                telephone && nomClient && depart && destination && description && modePayement && !isLoading
                   ? "0 10px 30px rgba(124, 58, 237, 0.3)"
                   : "none",
               textTransform: "uppercase",
@@ -569,14 +1199,14 @@ export default function Home() {
               opacity: isLoading ? 0.7 : 1,
             }}
             onMouseEnter={(e) => {
-              if (telephone && depart && destination && !isLoading) {
+              if (telephone && nomClient && depart && destination && description && modePayement && !isLoading) {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow =
                   "0 15px 40px rgba(124, 58, 237, 0.4)";
               }
             }}
             onMouseLeave={(e) => {
-              if (telephone && depart && destination && !isLoading) {
+              if (telephone && nomClient && depart && destination && description && modePayement && !isLoading) {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow =
                   "0 10px 30px rgba(124, 58, 237, 0.3)";
@@ -610,7 +1240,128 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 6: Footer */}
+      {/* SECTION 6: Boutique */}
+      <section style={{
+        padding: "100px 20px",
+        background: "linear-gradient(to bottom, #ffffff, #f3f4f6)",
+        textAlign: "center",
+      }}>
+        <div style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+        }}>
+          <div style={{
+            fontSize: "48px",
+            marginBottom: "16px",
+          }}>🛒</div>
+          <h2 style={{
+            fontSize: "32px",
+            fontWeight: "900",
+            color: "#1f2937",
+            margin: "0 0 16px 0",
+          }}>
+            Découvrez notre Boutique
+          </h2>
+          <p style={{
+            fontSize: "16px",
+            color: "#6b7280",
+            margin: "0 0 32px 0",
+            lineHeight: "1.6",
+          }}>
+            Parcourez nos produits sélectionnés. Commandez en ligne et faites-vous livrer directement chez vous
+          </p>
+          <Link
+            href="/boutique"
+            style={{
+              display: "inline-block",
+              padding: "16px 32px",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#ffffff",
+              borderRadius: "12px",
+              textDecoration: "none",
+              fontWeight: "700",
+              fontSize: "16px",
+              transition: "all 0.3s",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              boxShadow: "0 10px 30px rgba(16, 185, 129, 0.3)",
+              marginRight: "16px",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 15px 40px rgba(16, 185, 129, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(16, 185, 129, 0.3)";
+            }}
+          >
+            🛍️ Visiter la Boutique
+          </Link>
+        </div>
+      </section>
+
+      {/* SECTION 7: Historique Client */}
+      <section style={{
+        padding: "100px 20px",
+        background: "linear-gradient(135deg, #1f2937 0%, #111827 100%)",
+        textAlign: "center",
+      }}>
+        <div style={{
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}>
+          <div style={{
+            fontSize: "48px",
+            marginBottom: "16px",
+          }}>📦</div>
+          <h2 style={{
+            fontSize: "32px",
+            fontWeight: "900",
+            color: "#ffffff",
+            margin: "0 0 16px 0",
+          }}>
+            Suivi de vos commandes
+          </h2>
+          <p style={{
+            fontSize: "16px",
+            color: "#d1d5db",
+            margin: "0 0 32px 0",
+            lineHeight: "1.6",
+          }}>
+            Consultez l'historique de toutes vos commandes, suivi en temps réel et statuts de livraison
+          </p>
+          <Link
+            href="/commander/history"
+            style={{
+              display: "inline-block",
+              padding: "16px 32px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              color: "#ffffff",
+              borderRadius: "12px",
+              textDecoration: "none",
+              fontWeight: "700",
+              fontSize: "16px",
+              transition: "all 0.3s",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              boxShadow: "0 10px 30px rgba(124, 58, 237, 0.3)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 15px 40px rgba(124, 58, 237, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 30px rgba(124, 58, 237, 0.3)";
+            }}
+          >
+            📍 Mon Historique
+          </Link>
+        </div>
+      </section>
+
+      {/* SECTION 8: Footer */}
 
 <MapSection
   depart={depart}

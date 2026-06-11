@@ -13,7 +13,8 @@ interface CommandCardProps {
 const STATUS_COLORS: Record<string, string> = {
   "en attente": "bg-yellow-100 text-yellow-800 border-yellow-300",
   confirmée: "bg-blue-100 text-blue-800 border-blue-300",
-  "en cours": "bg-purple-100 text-purple-800 border-purple-300",
+  "en cours de traitement": "bg-purple-100 text-purple-800 border-purple-300",
+  "en livraison": "bg-pink-100 text-pink-800 border-pink-300",
   livrée: "bg-green-100 text-green-800 border-green-300",
   annulée: "bg-red-100 text-red-800 border-red-300",
 };
@@ -21,7 +22,8 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_ICONS: Record<string, string> = {
   "en attente": "⏳",
   confirmée: "✅",
-  "en cours": "🚗",
+  "en cours de traitement": "🔄",
+  "en livraison": "🚚",
   livrée: "📦",
   annulée: "❌",
 };
@@ -34,7 +36,8 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
   const statusOptions = [
     "en attente",
     "confirmée",
-    "en cours",
+    "en cours de traitement",
+    "en livraison",
     "livrée",
     "annulée",
   ];

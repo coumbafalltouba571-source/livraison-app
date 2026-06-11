@@ -10,8 +10,22 @@ import {
   CircleMarker,
   Tooltip,
 } from "react-leaflet";
+import { useEffect, useState } from "react";
 
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Configure Leaflet default markers
+const DefaultIcon = L.icon({
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.setIcon(DefaultIcon);
 
 const quartiers = {
   Plateau: [14.6708, -17.4381],
@@ -71,6 +85,9 @@ export default function MapSection({
   destination?: string;
   prix?: number;
 }) {
+  const [livreurPosition, setLivreurPosition] = useState<[number, number] | null>(null);
+  const [deliveryStatus, setDeliveryStatus] = useState<"Commande reçue" | "Livreur en route" | "Livraison en cours" | "Livré">("Commande reçue");
+  
   const pointDepart =
     depart && quartiers[depart as keyof typeof quartiers];
 
@@ -78,19 +95,22 @@ export default function MapSection({
     destination &&
     quartiers[destination as keyof typeof quartiers];
 
-  const departCoords = pointDepart as [number, number];
+  // Assurer que les coordonnées sont correctement typées
+  const departCoords: [number, number] | null = pointDepart
+    ? (pointDepart as [number, number])
+    : null;
 
-  const destinationCoords =
-    pointDestination as [number, number];
+  const destinationCoords: [number, number] | null = pointDestination
+    ? (pointDestination as [number, number])
+    : null;
 
+  // Créer le tableau de points uniquement si les deux coordonnées sont valides
   const points: [number, number][] =
-    pointDepart && pointDestination
-      ? [departCoords, destinationCoords]
-      : [];
+    departCoords && destinationCoords ? [departCoords, destinationCoords] : [];
 
   const distance =
-    pointDepart && pointDestination
-      ? calculDistance(pointDepart, pointDestination)
+    departCoords && destinationCoords
+      ? calculDistance(departCoords, destinationCoords)
       : null;
 
   const prixDynamique = distance
@@ -100,6 +120,64 @@ export default function MapSection({
   const tempsEstime = distance
     ? Math.round(Number(distance) * 4)
     : null;
+
+  // Animation du livreur qui se déplace de départ vers destination
+  useEffect(() => {
+    // Logs pour déboguer
+    console.log("🗺️ MapSection Debug:");
+    console.log("Départ:", depart, "→", departCoords);
+    console.log("Destination:", destination, "→", destinationCoords);
+    console.log("Points array:", points);
+    console.log("Points length:", points.length);
+
+    if (!departCoords || !destinationCoords) {
+      console.warn("⚠️ Coordonnées manquantes - polyline ne s'affichera pas");
+      setLivreurPosition(null);
+      return;
+    }
+
+    console.log("✅ Coordonnées valides - démarrage de l'animation");
+    console.log("Interpolation de:", departCoords, "vers:", destinationCoords);
+
+    // Initialiser la position du livreur au départ
+    setLivreurPosition(departCoords);
+    setDeliveryStatus("Commande reçue");
+
+    // Simuler le mouvement du livreur
+    const steps = 50;
+    let currentStep = 0;
+
+    const interval = setInterval(() => {
+      if (currentStep <= steps) {
+        const progress = currentStep / steps;
+        
+        // Interpolation linéaire
+        const lat = departCoords[0] + (destinationCoords[0] - departCoords[0]) * progress;
+        const lng = departCoords[1] + (destinationCoords[1] - departCoords[1]) * progress;
+        
+        setLivreurPosition([lat, lng]);
+
+        // Mettre à jour le statut
+        if (progress === 0) {
+          setDeliveryStatus("Commande reçue");
+        } else if (progress < 0.3) {
+          setDeliveryStatus("Livreur en route");
+        } else if (progress < 1) {
+          setDeliveryStatus("Livraison en cours");
+        } else {
+          setDeliveryStatus("Livré");
+        }
+
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        setLivreurPosition(destinationCoords);
+        setDeliveryStatus("Livré");
+      }
+    }, 500); // Mise à jour toutes les 500ms
+
+    return () => clearInterval(interval);
+  }, [depart, destination]);
 
   return (
     <section
@@ -186,6 +264,27 @@ export default function MapSection({
               }}
             >
               ⏱ Temps : {tempsEstime} min
+            </div>
+
+            {/* Statut de livraison */}
+            <div
+              style={{
+                background:
+                  deliveryStatus === "Livré"
+                    ? "linear-gradient(135deg,#22c55e,#16a34a)"
+                    : "linear-gradient(135deg,#f59e0b,#d97706)",
+                color: "#ffffff",
+                padding: "15px 25px",
+                borderRadius: "18px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                fontWeight: "700",
+                animation: deliveryStatus !== "Commande reçue" ? "pulse 2s infinite" : "none",
+              }}
+            >
+              {deliveryStatus === "Commande reçue" && "📦 Commande reçue"}
+              {deliveryStatus === "Livreur en route" && "🚗 Livreur en route"}
+              {deliveryStatus === "Livraison en cours" && "📍 Livraison en cours"}
+              {deliveryStatus === "Livré" && "✅ Livré"}
             </div>
           </div>
         )}
@@ -281,16 +380,22 @@ export default function MapSection({
 
             {points.length === 2 && (
               <>
+                {/* Polyline animée */}
                 <Polyline
                   positions={points}
                   pathOptions={{
                     color: "#7c3aed",
                     weight: 6,
+                    opacity: 1,
+                    dashArray: "10, 5",
+                    lineCap: "round",
+                    lineJoin: "round",
                   }}
                 />
 
+                {/* Marqueur de départ */}
                 <CircleMarker
-                  center={departCoords}
+                  center={departCoords!}
                   radius={12}
                   pathOptions={{
                     color: "#22c55e",
@@ -307,8 +412,9 @@ export default function MapSection({
                   </Popup>
                 </CircleMarker>
 
+                {/* Marqueur de destination */}
                 <CircleMarker
-                  center={destinationCoords}
+                  center={destinationCoords!}
                   radius={12}
                   pathOptions={{
                     color: "#ef4444",
@@ -325,19 +431,29 @@ export default function MapSection({
                   </Popup>
                 </CircleMarker>
 
-                <CircleMarker
-                  center={departCoords}
-                  radius={8}
-                  pathOptions={{
-                    color: "#facc15",
-                    fillColor: "#facc15",
-                    fillOpacity: 1,
-                  }}
-                >
-                  <Tooltip permanent>
-                    🛵 Livreur
-                  </Tooltip>
-                </CircleMarker>
+                {/* Marqueur livreur animé */}
+                {livreurPosition && (
+                  <CircleMarker
+                    center={livreurPosition}
+                    radius={10}
+                    pathOptions={{
+                      color: "#facc15",
+                      fillColor: "#facc15",
+                      fillOpacity: 1,
+                      weight: 3,
+                    }}
+                  >
+                    <Tooltip permanent direction="top">
+                      🛵 Livreur - {deliveryStatus}
+                    </Tooltip>
+                    <Popup>
+                      <div style={{ fontFamily: "sans-serif", minWidth: "180px" }}>
+                        <strong>🛵 Livreur</strong>
+                        <p style={{ margin: "5px 0" }}>Statut: {deliveryStatus}</p>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                )}
 
                 <ZoomRoute points={points} />
               </>
@@ -345,6 +461,18 @@ export default function MapSection({
           </MapContainer>
         </div>
       </div>
+
+      {/* Styles d'animation */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+      `}</style>
     </section>
   );
 }
