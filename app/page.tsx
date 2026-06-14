@@ -130,7 +130,12 @@ export default function Home() {
     }
   };
   return (
-    <main>
+    <main style={{
+      width: "100%",
+      overflowX: "hidden",
+      margin: 0,
+      padding: 0,
+    }}>
       {/* Navigation Header - Responsive */}
       <div style={{
         position: "fixed",
@@ -260,10 +265,11 @@ export default function Home() {
         alignItems: "center",
         minHeight: "720px",
         position: "relative",
-        overflow: "visible",
+        overflow: "hidden",
         width: "100%",
         boxSizing: "border-box",
         margin: "0",
+        maxWidth: "100vw",
       }}>
         {/* Décoration de fond */}
         <div style={{
@@ -287,7 +293,7 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px" }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px", boxSizing: "border-box", margin: "0 auto" }}>
           <Image
             src="/livreur_bg.png"
             alt="Livreur"
