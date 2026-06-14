@@ -9,6 +9,7 @@ import AdvantagesSection from "./components/AdvantagesSection";
 import Footer from "./components/Footer";
 import {
   QUARTIERS_DAKAR,
+  obtenirQuartiersFiltres,
   calculerTarif,
   formatPrix,
   getDescriptionRoute,
@@ -30,6 +31,15 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [modePayement, setModePayement] = useState("");
+  
+  // Recherche intelligente des quartiers
+  const [searchDepart, setSearchDepart] = useState("");
+  const [searchDestination, setSearchDestination] = useState("");
+  const [showSuggestionsDepart, setShowSuggestionsDepart] = useState(false);
+  const [showSuggestionsDestination, setShowSuggestionsDestination] = useState(false);
+  
+  const suggestionDepart = obtenirQuartiersFiltres(searchDepart);
+  const suggestionDestination = obtenirQuartiersFiltres(searchDestination);
 
   // Calcul automatique du prix selon les quartiers
   const prix = depart && destination ? calculerTarif(depart, destination) : 0;
@@ -121,7 +131,7 @@ export default function Home() {
   };
   return (
     <main>
-      {/* Navigation Header */}
+      {/* Navigation Header - Responsive */}
       <div style={{
         position: "fixed",
         top: 0,
@@ -130,27 +140,37 @@ export default function Home() {
         background: "rgba(15, 23, 42, 0.9)",
         backdropFilter: "blur(10px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        padding: "16px 20px",
+        padding: "16px 12px",
         zIndex: 100,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
+        gap: "12px",
       }}>
-        <div style={{ fontSize: "18px", fontWeight: "900", color: "#ffffff" }}>
+        <div style={{ fontSize: "16px", fontWeight: "900", color: "#ffffff", minWidth: "auto" }}>
           🚚 Livraison Pro
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ 
+          display: "flex", 
+          gap: "8px",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+          flex: 1,
+        }}>
           <Link
             href="/boutique"
             style={{
-              padding: "8px 16px",
+              padding: "8px 12px",
               background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
               color: "#ffffff",
               borderRadius: "8px",
               textDecoration: "none",
               fontWeight: "600",
-              fontSize: "14px",
+              fontSize: "12px",
               transition: "all 0.3s",
+              whiteSpace: "nowrap",
+              minWidth: "auto",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
@@ -166,15 +186,17 @@ export default function Home() {
           <Link
             href="/commander/history"
             style={{
-              padding: "8px 16px",
+              padding: "8px 12px",
               background: "rgba(255, 255, 255, 0.1)",
               color: "#ffffff",
               borderRadius: "8px",
               textDecoration: "none",
               fontWeight: "600",
-              fontSize: "14px",
+              fontSize: "12px",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               transition: "all 0.3s",
+              whiteSpace: "nowrap",
+              minWidth: "auto",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
@@ -185,7 +207,7 @@ export default function Home() {
               e.currentTarget.style.transform = "translateY(0)";
             }}
           >
-            📍 Mon Historique
+            📍 Historique
           </Link>
         </div>
       </div>
@@ -898,16 +920,17 @@ export default function Home() {
             />
           </div>
 
-          {/* Section départ et destination */}
+          {/* Section départ et destination avec recherche intelligente */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "minmax(200px, 1fr) minmax(200px, 1fr)",
               gap: "14px",
               marginBottom: "24px",
             }}
           >
-            <div>
+            {/* Départ avec autocomplétion */}
+            <div style={{ position: "relative" }}>
               <label
                 style={{
                   display: "block",
@@ -921,9 +944,16 @@ export default function Home() {
               >
                 🏠 Départ
               </label>
-              <select
-                value={depart}
-                onChange={(e) => setDepart(e.target.value)}
+              <input
+                type="text"
+                placeholder="Rechercher un quartier..."
+                value={depart || searchDepart}
+                onChange={(e) => {
+                  setSearchDepart(e.target.value);
+                  setShowSuggestionsDepart(true);
+                  if (!e.target.value) setDepart("");
+                }}
+                onFocus={() => setShowSuggestionsDepart(true)}
                 style={{
                   width: "100%",
                   padding: "14px 14px",
@@ -936,17 +966,56 @@ export default function Home() {
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                 }}
-              >
-                <option value="">Sélectionner...</option>
-                {quartiers.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
-              </select>
+              />
+              {showSuggestionsDepart && searchDepart && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: "#1e293b",
+                    border: "2px solid #7c3aed",
+                    borderTop: "none",
+                    borderRadius: "0 0 12px 12px",
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    zIndex: 10,
+                  }}
+                >
+                  {suggestionDepart.slice(0, 10).map((q) => (
+                    <div
+                      key={q}
+                      onClick={() => {
+                        setDepart(q);
+                        setSearchDepart(q);
+                        setShowSuggestionsDepart(false);
+                      }}
+                      style={{
+                        padding: "10px 14px",
+                        cursor: "pointer",
+                        background: depart === q ? "#7c3aed" : "transparent",
+                        color: "#ffffff",
+                        fontSize: "14px",
+                        borderBottom: "1px solid #334155",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (depart !== q) e.currentTarget.style.background = "#334155";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (depart !== q) e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      {q}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div>
+            {/* Destination avec autocomplétion */}
+            <div style={{ position: "relative" }}>
               <label
                 style={{
                   display: "block",
@@ -960,9 +1029,16 @@ export default function Home() {
               >
                 📍 Destination
               </label>
-              <select
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
+              <input
+                type="text"
+                placeholder="Rechercher un quartier..."
+                value={destination || searchDestination}
+                onChange={(e) => {
+                  setSearchDestination(e.target.value);
+                  setShowSuggestionsDestination(true);
+                  if (!e.target.value) setDestination("");
+                }}
+                onFocus={() => setShowSuggestionsDestination(true)}
                 style={{
                   width: "100%",
                   padding: "14px 14px",
@@ -975,14 +1051,52 @@ export default function Home() {
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                 }}
-              >
-                <option value="">Sélectionner...</option>
-                {quartiers.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
-              </select>
+              />
+              {showSuggestionsDestination && searchDestination && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: "#1e293b",
+                    border: "2px solid #7c3aed",
+                    borderTop: "none",
+                    borderRadius: "0 0 12px 12px",
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    zIndex: 10,
+                  }}
+                >
+                  {suggestionDestination.slice(0, 10).map((q) => (
+                    <div
+                      key={q}
+                      onClick={() => {
+                        setDestination(q);
+                        setSearchDestination(q);
+                        setShowSuggestionsDestination(false);
+                      }}
+                      style={{
+                        padding: "10px 14px",
+                        cursor: "pointer",
+                        background: destination === q ? "#7c3aed" : "transparent",
+                        color: "#ffffff",
+                        fontSize: "14px",
+                        borderBottom: "1px solid #334155",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (destination !== q) e.currentTarget.style.background = "#334155";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (destination !== q) e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      {q}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

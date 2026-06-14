@@ -32,6 +32,7 @@ export default function AdminPremiumDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState<"table" | "cards">("table"); // Vue tableau par défaut
+  const [searchQuery, setSearchQuery] = useState(""); // Nouvelle recherche
 
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -87,12 +88,26 @@ export default function AdminPremiumDashboard() {
   }, []);
 
   useEffect(() => {
-    if (selectedStatus === "tous") {
-      setFilteredCommands(commands);
-    } else {
-      setFilteredCommands(commands.filter((c) => c.statut === selectedStatus));
+    let filtered = commands;
+
+    // Filtrer par statut
+    if (selectedStatus !== "tous") {
+      filtered = filtered.filter((c) => c.statut === selectedStatus);
     }
-  }, [selectedStatus, commands]);
+
+    // Filtrer par recherche (nom, téléphone, ID)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((c) => 
+        c.nomClient?.toLowerCase().includes(query) ||
+        c.client?.toLowerCase().includes(query) ||
+        c.telephone?.toLowerCase().includes(query) ||
+        c.id?.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredCommands(filtered);
+  }, [selectedStatus, commands, searchQuery]);
 
   const StatCard = ({
     icon: Icon,
@@ -227,39 +242,52 @@ export default function AdminPremiumDashboard() {
           )}
 
           {/* FILTERS */}
-          <div className="flex gap-2 mb-6 flex-wrap justify-between items-center">
-            <div className="flex gap-2 flex-wrap">
-              {(
-                [
-                  "tous",
-                  "en attente",
-                  "confirmée",
-                  "en cours de traitement",
-                  "en livraison",
-                  "livrée",
-                  "annulée",
-                ] as StatusFilter[]
-              ).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-full font-medium transition-all text-sm ${
-                    selectedStatus === status
-                      ? "bg-blue-600 text-white shadow-lg"
-                      : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
-                  }`}
-                >
-                  {status === "tous"
-                    ? "Tous"
-                    : status.charAt(0).toUpperCase() + status.slice(1)}
-                </button>
-              ))}
+          <div className="mb-6">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="🔍 Rechercher par nom, téléphone ou ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
+              />
             </div>
-            
-            {/* VIEW MODE TOGGLE */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode("table")}
+
+            {/* Status Filters */}
+            <div className="flex gap-2 flex-wrap justify-between items-center w-full">
+              <div className="flex gap-2 flex-wrap">
+                {(
+                  [
+                    "tous",
+                    "en attente",
+                    "confirmée",
+                    "en cours de traitement",
+                    "en livraison",
+                    "livrée",
+                    "annulée",
+                  ] as StatusFilter[]
+                ).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                    className={`px-4 py-2 rounded-full font-medium transition-all text-sm ${
+                      selectedStatus === status
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-white text-gray-700 border border-gray-300 hover:border-blue-600"
+                    }`}
+                  >
+                    {status === "tous"
+                      ? "Tous"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
+                  </button>
+                ))}
+              </div>
+              
+              {/* VIEW MODE TOGGLE */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode("table")}
                 className={`px-4 py-2 rounded-full font-medium transition-all ${
                   viewMode === "table"
                     ? "bg-blue-600 text-white shadow-lg"
@@ -278,6 +306,7 @@ export default function AdminPremiumDashboard() {
               >
                 🃏 Cartes
               </button>
+            </div>
             </div>
           </div>
 

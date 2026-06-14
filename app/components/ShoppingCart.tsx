@@ -40,6 +40,13 @@ export default function ShoppingCart({
 
     setIsProcessing(true);
     setErrorMessage("");
+    setSuccessMessage("");
+
+    // Timeout de sécurité (30 secondes)
+    const timeoutId = setTimeout(() => {
+      setIsProcessing(false);
+      setErrorMessage("⏱️ La demande a pris trop de temps. Veuillez réessayer.");
+    }, 30000);
 
     try {
       // Créer description à partir des produits
@@ -48,7 +55,7 @@ export default function ShoppingCart({
         .join(", ");
 
       // Créer la commande
-      await createCommand({
+      const commandResult = await createCommand({
         telephone: clientPhone,
         client: clientName,
         nomClient: clientName,
@@ -61,22 +68,32 @@ export default function ShoppingCart({
         dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000), // Demain
       });
 
+      if (!commandResult) {
+        throw new Error("Échec de la création de la commande");
+      }
+
+      clearTimeout(timeoutId);
       setSuccessMessage("✅ Commande créée avec succès!");
 
       // Envoyer WhatsApp
-      const message =
-        `Nouvelle commande boutique 🛒%0A%0A` +
-        `Nom: ${clientName}%0A` +
-        `Téléphone: ${clientPhone}%0A` +
-        `Produits: ${description}%0A` +
-        `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
-        `Paiement: ${paymentMethod}`;
+      try {
+        const message =
+          `Nouvelle commande boutique 🛒%0A%0A` +
+          `Nom: ${clientName}%0A` +
+          `Téléphone: ${clientPhone}%0A` +
+          `Produits: ${description}%0A` +
+          `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
+          `Paiement: ${paymentMethod}`;
 
-      if (typeof window !== "undefined") {
-        window.open(
-          `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
-          "_blank"
-        );
+        if (typeof window !== "undefined") {
+          window.open(
+            `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
+            "_blank"
+          );
+        }
+      } catch (whatsappError) {
+        console.warn("Erreur WhatsApp:", whatsappError);
+        // Ne pas bloquer si WhatsApp échoue
       }
 
       // Fermer après succès
@@ -89,9 +106,10 @@ export default function ShoppingCart({
         onClose();
       }, 2000);
     } catch (error) {
-      console.error("Erreur:", error);
-      setErrorMessage("Erreur lors de la création de la commande");
-    } finally {
+      clearTimeout(timeoutId);
+      console.error("Erreur lors du checkout:", error);
+      const errorMsg = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
+      setErrorMessage(`❌ ${errorMsg}`);
       setIsProcessing(false);
     }
   };
