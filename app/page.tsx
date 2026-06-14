@@ -140,25 +140,29 @@ export default function Home() {
         background: "rgba(15, 23, 42, 0.9)",
         backdropFilter: "blur(10px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        padding: "12px 12px",
+        padding: "12px 16px",
         zIndex: 100,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         flexWrap: "wrap",
-        gap: "8px",
+        gap: "12px",
         minHeight: "50px",
+        width: "100%",
+        boxSizing: "border-box",
+        margin: "0",
       }}>
-        <div style={{ fontSize: "14px", fontWeight: "900", color: "#ffffff", minWidth: "auto", whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: "14px", fontWeight: "900", color: "#ffffff", minWidth: "auto", whiteSpace: "nowrap", flex: "0 0 auto" }}>
           🚚 Livraison Pro
         </div>
         <div style={{ 
           display: "flex", 
-          gap: "10px",
+          gap: "12px",
           flexWrap: "wrap",
           justifyContent: "flex-end",
           flex: 1,
           alignItems: "center",
+          minWidth: "0",
         }}>
           <Link
             href="/admin"
@@ -243,38 +247,23 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Logo en haut à droite - responsive et visible */}
-      <div style={{
-        position: "fixed",
-        top: "14px",
-        right: "14px",
-        zIndex: 200,
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(10px)",
-        padding: "10px 14px",
-        borderRadius: "14px",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-      }}>
-        <Image
-          src="/logo2_app.png"
-          alt="Logo Livraison App"
-          width={55}
-          height={55}
-          priority
-          style={{ objectFit: "contain", maxWidth: "100%", height: "auto", display: "block" }}
-        />
-      </div>
+      {/* Logo déplacé en bas du hero - plus de chevauchement avec les boutons */}
 
       {/* SECTION: Image héro avec livreur - entièrement visible */}
       <section style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        padding: "70px 20px 40px 20px",
+        padding: "70px 0 40px 0",
+        paddingLeft: "20px",
+        paddingRight: "20px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         minHeight: "720px",
         position: "relative",
         overflow: "visible",
+        width: "100%",
+        boxSizing: "border-box",
+        margin: "0",
       }}>
         {/* Décoration de fond */}
         <div style={{
@@ -314,6 +303,28 @@ export default function Home() {
               filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
               display: "block",
             }}
+          />
+        </div>
+
+        {/* Logo en bas à droite du hero - aucun chevauchement */}
+        <div style={{
+          position: "absolute",
+          bottom: "20px",
+          right: "20px",
+          zIndex: 10,
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          backdropFilter: "blur(10px)",
+          padding: "10px 14px",
+          borderRadius: "14px",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+        }}>
+          <Image
+            src="/logo2_app.png"
+            alt="Logo Livraison App"
+            width={55}
+            height={55}
+            priority
+            style={{ objectFit: "contain", maxWidth: "100%", height: "auto", display: "block" }}
           />
         </div>
       </section>
