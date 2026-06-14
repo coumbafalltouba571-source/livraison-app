@@ -140,37 +140,40 @@ export default function Home() {
         background: "rgba(15, 23, 42, 0.9)",
         backdropFilter: "blur(10px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        padding: "16px 12px",
+        padding: "12px 12px",
         zIndex: 100,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         flexWrap: "wrap",
-        gap: "12px",
+        gap: "8px",
+        minHeight: "50px",
       }}>
-        <div style={{ fontSize: "16px", fontWeight: "900", color: "#ffffff", minWidth: "auto" }}>
+        <div style={{ fontSize: "14px", fontWeight: "900", color: "#ffffff", minWidth: "auto", whiteSpace: "nowrap" }}>
           🚚 Livraison Pro
         </div>
         <div style={{ 
           display: "flex", 
-          gap: "8px",
+          gap: "10px",
           flexWrap: "wrap",
           justifyContent: "flex-end",
           flex: 1,
+          alignItems: "center",
         }}>
           <Link
             href="/boutique"
             style={{
-              padding: "8px 12px",
+              padding: "10px 16px",
               background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
               color: "#ffffff",
               borderRadius: "8px",
               textDecoration: "none",
               fontWeight: "600",
-              fontSize: "12px",
+              fontSize: "13px",
               transition: "all 0.3s",
               whiteSpace: "nowrap",
               minWidth: "auto",
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
@@ -186,17 +189,18 @@ export default function Home() {
           <Link
             href="/commander/history"
             style={{
-              padding: "8px 12px",
+              padding: "10px 16px",
               background: "rgba(255, 255, 255, 0.1)",
               color: "#ffffff",
               borderRadius: "8px",
               textDecoration: "none",
               fontWeight: "600",
-              fontSize: "12px",
+              fontSize: "13px",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               transition: "all 0.3s",
               whiteSpace: "nowrap",
               minWidth: "auto",
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
@@ -212,36 +216,36 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Logo en haut à droite (anciennement en haut à droite) */}
+      {/* Logo en haut à droite - responsive */}
       <div style={{
         position: "fixed",
-        top: "20px",
-        right: "20px",
+        top: "16px",
+        right: "16px",
         zIndex: 50,
         backgroundColor: "rgba(255, 255, 255, 0.1)",
         backdropFilter: "blur(10px)",
-        padding: "12px 16px",
-        borderRadius: "16px",
+        padding: "8px 12px",
+        borderRadius: "12px",
         border: "1px solid rgba(255, 255, 255, 0.2)",
       }}>
         <Image
           src="/logo2_app.png"
           alt="Logo Livraison App"
-          width={60}
-          height={60}
+          width={45}
+          height={45}
           priority
-          style={{ objectFit: "contain" }}
+          style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
         />
       </div>
 
       {/* SECTION: Image héro avec livreur */}
       <section style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        padding: "120px 20px 80px 20px",
+        padding: "80px 20px 60px 20px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "500px",
+        minHeight: "auto",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -267,15 +271,19 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "600px", padding: "0 20px" }}>
           <Image
             src="/livreur_bg.png"
             alt="Livreur"
-            width={500}
-            height={500}
+            width={600}
+            height={600}
             priority
             style={{
               objectFit: "contain",
+              objectPosition: "center bottom",
+              width: "100%",
+              height: "auto",
+              maxHeight: "400px",
               filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
             }}
           />
@@ -729,40 +737,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Lien vers l'historique en haut à droite */}
-      <div style={{
-        position: "fixed",
-        top: "20px",
-        right: "20px",
-        zIndex: 1000,
-      }}>
-        <Link
-          href="/commands"
-          style={{
-            display: "inline-block",
-            backgroundColor: "#0f172a",
-            color: "#7c3aed",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            border: "2px solid #7c3aed",
-            textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "14px",
-            transition: "all 0.3s ease",
-            boxShadow: "0 4px 15px rgba(124, 58, 237, 0.2)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#7c3aed";
-            e.currentTarget.style.color = "#ffffff";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#0f172a";
-            e.currentTarget.style.color = "#7c3aed";
-          }}
-        >
-          📦 Historique
-        </Link>
-      </div>
+      {/* Historique - conservé dans header uniquement */}
 
       {/* SECTION 1: Hero Section */}
       <HeroSection />
@@ -780,8 +755,8 @@ export default function Home() {
       <section
         style={{
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-          padding: "120px 20px",
-          minHeight: "100vh",
+          padding: "80px 16px",
+          minHeight: "auto",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -790,8 +765,8 @@ export default function Home() {
         <div
           style={{
             background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-            padding: "50px 40px",
-            borderRadius: "24px",
+            padding: "40px 24px",
+            borderRadius: "20px",
             width: "100%",
             maxWidth: "480px",
             boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
@@ -924,8 +899,8 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(200px, 1fr) minmax(200px, 1fr)",
-              gap: "14px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: "12px",
               marginBottom: "24px",
             }}
           >
