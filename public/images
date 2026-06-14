@@ -1,0 +1,44 @@
+<div>
+  <Image
+  src="/images/taxi_course_bientot.png"
+  alt="Taxi"
+  width={600}
+  height={400}
+  className="rounded-2xl"
+/>
+  />
+  <h2>Taxi bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+ src="/images/restaurant_bg.png"
+  alt="Restaurant"
+  width={600}
+  height={400}
+  className="rounded-2xl"
+/>
+  <h2>restaurant bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+  src="/images/boutique_bg.png"
+  alt="Boutique"
+  width={600}
+  height={400}
+  className="rounded-2xl"
+/>
+  <h2>Boutique bientôt disponible</h2>
+</div>
+
+<div>
+  <Image
+  src="/images/cargo.png"
+  alt="Cargo"
+  width={600}
+  height={400}
+  className="rounded-2xl"
+/>
+  <h2>Cargo bientôt disponible</h2>
+</div>
