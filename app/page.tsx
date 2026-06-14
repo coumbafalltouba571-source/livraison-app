@@ -161,6 +161,33 @@ export default function Home() {
           alignItems: "center",
         }}>
           <Link
+            href="/admin"
+            style={{
+              padding: "10px 16px",
+              background: "rgba(239, 68, 68, 0.1)",
+              color: "#ff6b6b",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "600",
+              fontSize: "13px",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              transition: "all 0.3s",
+              whiteSpace: "nowrap",
+              minWidth: "auto",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            🛡️ Admin
+          </Link>
+          <Link
             href="/boutique"
             style={{
               padding: "10px 16px",
@@ -241,13 +268,13 @@ export default function Home() {
       {/* SECTION: Image héro avec livreur */}
       <section style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        padding: "80px 20px 60px 20px",
+        padding: "50px 15px 30px 15px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "auto",
+        minHeight: "600px",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
       }}>
         {/* Décoration de fond */}
         <div style={{
@@ -271,19 +298,19 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "600px", padding: "0 20px" }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "650px", padding: "0 10px" }}>
           <Image
             src="/livreur_bg.png"
             alt="Livreur"
-            width={600}
-            height={600}
+            width={650}
+            height={650}
             priority
             style={{
               objectFit: "contain",
-              objectPosition: "center bottom",
+              objectPosition: "center",
               width: "100%",
               height: "auto",
-              maxHeight: "400px",
+              maxHeight: "550px",
               filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
             }}
           />
