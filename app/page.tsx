@@ -243,36 +243,36 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Logo en haut à droite - responsive */}
+      {/* Logo en haut à droite - responsive et visible */}
       <div style={{
         position: "fixed",
-        top: "16px",
-        right: "16px",
-        zIndex: 50,
+        top: "14px",
+        right: "14px",
+        zIndex: 200,
         backgroundColor: "rgba(255, 255, 255, 0.1)",
         backdropFilter: "blur(10px)",
-        padding: "8px 12px",
-        borderRadius: "12px",
+        padding: "10px 14px",
+        borderRadius: "14px",
         border: "1px solid rgba(255, 255, 255, 0.2)",
       }}>
         <Image
           src="/logo2_app.png"
           alt="Logo Livraison App"
-          width={45}
-          height={45}
+          width={55}
+          height={55}
           priority
-          style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
+          style={{ objectFit: "contain", maxWidth: "100%", height: "auto", display: "block" }}
         />
       </div>
 
-      {/* SECTION: Image héro avec livreur */}
+      {/* SECTION: Image héro avec livreur - entièrement visible */}
       <section style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        padding: "50px 15px 30px 15px",
+        padding: "70px 20px 40px 20px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "600px",
+        minHeight: "720px",
         position: "relative",
         overflow: "visible",
       }}>
@@ -298,20 +298,21 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "650px", padding: "0 10px" }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px" }}>
           <Image
             src="/livreur_bg.png"
             alt="Livreur"
-            width={650}
-            height={650}
+            width={700}
+            height={700}
             priority
             style={{
               objectFit: "contain",
-              objectPosition: "center",
+              objectPosition: "center center",
               width: "100%",
               height: "auto",
-              maxHeight: "550px",
+              maxHeight: "650px",
               filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
+              display: "block",
             }}
           />
         </div>
