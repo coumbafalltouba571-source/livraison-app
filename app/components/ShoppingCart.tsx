@@ -42,19 +42,21 @@ export default function ShoppingCart({
     setErrorMessage("");
     setSuccessMessage("");
 
-    // Timeout de sécurité (30 secondes)
+    // Timeout de sécurité réduit à 8 secondes (Firestore doit être très rapide)
     const timeoutId = setTimeout(() => {
       setIsProcessing(false);
-      setErrorMessage("⏱️ La demande a pris trop de temps. Veuillez réessayer.");
-    }, 30000);
+      setErrorMessage("⏱️ Connexion lente. Vérifiez votre internet et réessayez.");
+    }, 8000);
 
     try {
-      // Créer description à partir des produits
+      // Créer description détaillée à partir des produits
       const description = cart.items
         .map((item) => `${item.quantity}x ${item.product.name}`)
         .join(", ");
 
-      // Créer la commande
+      console.log("📦 Début création commande...", { clientName, clientPhone, paymentMethod });
+
+      // Créer la commande dans Firestore
       const commandResult = await createCommand({
         telephone: clientPhone,
         client: clientName,
@@ -65,19 +67,22 @@ export default function ShoppingCart({
         prix: cart.total,
         modePayement: paymentMethod,
         statut: "en attente",
-        dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000), // Demain
+        dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
 
       if (!commandResult) {
-        throw new Error("Échec de la création de la commande");
+        throw new Error("Firestore n'a pas retourné d'ID de commande");
       }
 
+      console.log("✅ Commande créée:", commandResult);
       clearTimeout(timeoutId);
-      setSuccessMessage("✅ Commande enregistrée avec succès dans le système!");
+
+      // Marquer succès IMMÉDIATEMENT (avant WhatsApp)
+      setSuccessMessage("✅ Commande enregistrée avec succès!");
       setIsProcessing(false);
 
-      // Envoyer WhatsApp
-      try {
+      // Envoyer WhatsApp en ARRIÈRE-PLAN sans bloquer (fire and forget)
+      if (typeof window !== "undefined") {
         const message =
           `Nouvelle commande boutique 🛒%0A%0A` +
           `Nom: ${clientName}%0A` +
@@ -86,35 +91,34 @@ export default function ShoppingCart({
           `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
           `Paiement: ${paymentMethod}`;
 
-        if (typeof window !== "undefined") {
+        // Ouvrir WhatsApp SANS attendre la réponse
+        try {
           window.open(
             `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
             "_blank"
           );
+        } catch (whatsappError) {
+          console.warn("WhatsApp non disponible:", whatsappError);
         }
-      } catch (whatsappError) {
-        console.warn("Erreur WhatsApp:", whatsappError);
-        // Ne pas bloquer si WhatsApp échoue
       }
 
-      // Garder le message de succès visible plus longtemps et offrir des options
-      // Au lieu de fermer automatiquement
+      // Fermer le modal après 1.2 secondes
+      setTimeout(() => {
+        onUpdateCart({ items: [], total: 0 });
+        setClientName("");
+        setClientPhone("");
+        setPaymentMethod("");
+        setSuccessMessage("");
+        onClose();
+      }, 1200);
+
     } catch (error) {
       clearTimeout(timeoutId);
-      console.error("Erreur lors du checkout:", error);
+      console.error("❌ Erreur checkout:", error);
       const errorMsg = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
       setErrorMessage(`❌ ${errorMsg}`);
       setIsProcessing(false);
     }
-  };
-
-  const handleContinueShopping = () => {
-    onUpdateCart({ items: [], total: 0 });
-    setClientName("");
-    setClientPhone("");
-    setPaymentMethod("");
-    setSuccessMessage("");
-    onClose();
   };
 
   return (
@@ -460,81 +464,23 @@ export default function ShoppingCart({
             {successMessage && (
               <div
                 style={{
-                  background: "rgba(34, 197, 94, 0.1)",
+                  background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%)",
                   color: "#15803d",
-                  padding: "12px 16px",
+                  padding: "16px",
                   borderRadius: "8px",
                   marginBottom: "16px",
-                  fontSize: "14px",
-                  fontWeight: "600",
+                  fontSize: "15px",
+                  fontWeight: "700",
+                  border: "1px solid rgba(34, 197, 94, 0.2)",
+                  textAlign: "center",
                 }}
               >
-                {successMessage}
+                ✅ {successMessage}
               </div>
             )}
 
-            {/* Affichage conditionnel des boutons */}
-            {successMessage ? (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
-                <button
-                  onClick={handleContinueShopping}
-                  style={{
-                    padding: "14px",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "10px",
-                    fontWeight: "700",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    transition: "all 0.3s",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(124, 58, 237, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  🛍️ Continuer achats
-                </button>
-                <button
-                  onClick={onClose}
-                  style={{
-                    padding: "14px",
-                    background: "#e5e7eb",
-                    color: "#1f2937",
-                    border: "none",
-                    borderRadius: "10px",
-                    fontWeight: "700",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    transition: "all 0.3s",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  ✕ Fermer
-                </button>
-              </div>
-            ) : (
-              /* Bouton Valider */
+            {/* Bouton Valider - Uniquement si pas de succès */}
+            {!successMessage && (
               <button
                 onClick={handleCheckout}
                 disabled={isProcessing}

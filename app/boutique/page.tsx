@@ -111,26 +111,25 @@ export default function ShopPage() {
 
       {/* Contenu */}
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
-        {/* Panier Badge */}
+        {/* Panier Badge - Icône moderne SVG */}
         <button
           onClick={() => setShowCart(true)}
           style={{
             position: "fixed",
             bottom: "30px",
             right: "30px",
-            width: "60px",
-            height: "60px",
+            width: "64px",
+            height: "64px",
             borderRadius: "50%",
             background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
             color: "#ffffff",
             border: "none",
-            fontSize: "24px",
             cursor: "pointer",
             boxShadow: "0 4px 16px rgba(124, 58, 237, 0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            transition: "all 0.3s",
+            transition: "all 0.3s ease",
             zIndex: 30,
           }}
           onMouseEnter={(e) => {
@@ -141,23 +140,43 @@ export default function ShopPage() {
             e.currentTarget.style.transform = "scale(1)";
             e.currentTarget.style.boxShadow = "0 4px 16px rgba(124, 58, 237, 0.3)";
           }}
+          title={`${cart.items.length} article(s) dans le panier`}
         >
+          {/* SVG Icône Panier */}
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+
+          {/* Badge rouge avec nombre d'articles */}
           {cart.items.length > 0 && (
             <div
               style={{
                 position: "absolute",
-                top: "-8px",
-                right: "-8px",
-                background: "#ef4444",
-                width: "28px",
-                height: "28px",
+                top: "-4px",
+                right: "-4px",
+                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                width: "32px",
+                height: "32px",
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "12px",
-                fontWeight: "700",
+                fontSize: "13px",
+                fontWeight: "800",
                 color: "#ffffff",
+                border: "3px solid #ffffff",
+                boxShadow: "0 2px 8px rgba(239, 68, 68, 0.4)",
               }}
             >
               {cart.items.length}
