@@ -1,33 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#f9fafb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eff2f5;stop-opacity:1" />
     </linearGradient>
+    <linearGradient id="casque-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#312e81;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow3" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
   </defs>
   <rect width="300" height="200" fill="url(#bg)"/>
   
-  <!-- Casque Bluetooth -->
-  <g transform="translate(150, 90)">
+  <!-- Casque Bluetooth amélioré -->
+  <g transform="translate(150, 95)">
+    <!-- Ombre -->
+    <ellipse cx="0" cy="40" rx="48" ry="8" fill="#000000" opacity="0.12"/>
+    
     <!-- Arceau principal -->
-    <path d="M -45 -20 Q -50 -35 0 -40 Q 50 -35 45 -20" fill="none" stroke="#2c3e50" stroke-width="8" stroke-linecap="round"/>
+    <g filter="url(#shadow3)">
+      <path d="M -48 -18 Q -52 -32 -25 -38 Q 0 -40 25 -38 Q 52 -32 48 -18" 
+            fill="none" stroke="url(#casque-grad)" stroke-width="9" stroke-linecap="round"/>
+      
+      <!-- Arceau intérieur -->
+      <path d="M -48 -18 Q -52 -32 -25 -38 Q 0 -40 25 -38 Q 52 -32 48 -18" 
+            fill="none" stroke="#667eea" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+    </g>
     
-    <!-- Coussinets -->
-    <circle cx="-45" cy="5" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
-    <circle cx="45" cy="5" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <!-- Coussinets gauche -->
+    <g filter="url(#shadow3)">
+      <ellipse cx="-48" cy="8" rx="13" ry="16" fill="url(#casque-grad)"/>
+      <ellipse cx="-48" cy="8" rx="9" ry="12" fill="#667eea" opacity="0.7"/>
+      <ellipse cx="-48" cy="8" rx="6" ry="8" fill="#c4b5fd" opacity="0.4"/>
+    </g>
     
-    <!-- Intérieur coussinets -->
-    <circle cx="-45" cy="5" r="8" fill="#3498db" opacity="0.7"/>
-    <circle cx="45" cy="5" r="8" fill="#3498db" opacity="0.7"/>
+    <!-- Coussinets droite -->
+    <g filter="url(#shadow3)">
+      <ellipse cx="48" cy="8" rx="13" ry="16" fill="url(#casque-grad)"/>
+      <ellipse cx="48" cy="8" rx="9" ry="12" fill="#667eea" opacity="0.7"/>
+      <ellipse cx="48" cy="8" rx="6" ry="8" fill="#c4b5fd" opacity="0.4"/>
+    </g>
     
     <!-- Connecteur central -->
-    <circle cx="0" cy="-38" r="6" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+    <circle cx="0" cy="-36" r="7" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5" opacity="0.95"/>
+    <circle cx="0" cy="-36" r="4" fill="#fcd34d" opacity="0.6"/>
     
-    <!-- Microphone boom -->
-    <path d="M -35 15 Q -40 25 -38 35" fill="none" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="-38" cy="35" r="5" fill="#3498db"/>
+    <!-- Microphone boom gauche -->
+    <path d="M -38 22 Q -42 28 -40 36" 
+          fill="none" stroke="#312e81" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+    <circle cx="-40" cy="36" r="5" fill="#667eea" opacity="0.9"/>
     
-    <!-- Symbole Bluetooth -->
-    <path d="M 8 -35 L 5 -28 L 11 -28 M 8 -28 L 5 -21 L 11 -21" stroke="#27ae60" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Logo Bluetooth -->
+    <g transform="translate(12, -32)">
+      <path d="M 0 -3 L -2 0 L 2 0 M 0 -3 L -2 3 L 2 3 M 0 -3 L 2 0 M 0 -3 L -2 0" 
+            stroke="#34d399" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Reflet brillant -->
+    <ellipse cx="-25" cy="-30" rx="12" ry="8" fill="#ffffff" opacity="0.25"/>
   </g>
 </svg>

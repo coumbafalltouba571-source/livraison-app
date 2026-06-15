@@ -35,12 +35,13 @@ export default function ProductCard({
       <div
         style={{
           height: "200px",
-          background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+          background: "linear-gradient(135deg, #f9fafb 0%, #eff2f5 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
           position: "relative",
+          borderBottom: "1px solid #e5e7eb",
         }}
       >
         {/* Fallback gradient pendant le chargement */}
@@ -49,7 +50,7 @@ export default function ProductCard({
             position: "absolute",
             inset: 0,
             background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-            opacity: 0.05,
+            opacity: 0.03,
           }}
         />
         
@@ -62,8 +63,10 @@ export default function ProductCard({
             style={{
               objectFit: "contain",
               objectPosition: "center",
+              padding: "10px",
             }}
             sizes="(max-width: 768px) 100vw, 300px"
+            priority={false}
           />
         ) : (
           <span style={{ position: "relative", zIndex: 1, fontSize: "80px" }}>
