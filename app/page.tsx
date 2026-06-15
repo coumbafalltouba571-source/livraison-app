@@ -269,7 +269,7 @@ export default function Home() {
         boxSizing: "border-box",
         margin: "0",
         maxWidth: "100%",
-      }}>
+      }} className="hero-section-home">
         {/* Décoration de fond */}
         <div style={{
           position: "absolute",
@@ -292,7 +292,7 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px", boxSizing: "border-box", margin: "0 auto" }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px", boxSizing: "border-box", margin: "0 auto" }} className="livreur-container">
           <Image
             src="/livreur_bg.png"
             alt="Livreur"
@@ -1541,11 +1541,22 @@ export default function Home() {
             padding: 60px 15px !important;
           }
           
-          /* Correction affichage livreur sur mobile */
+          /* Réduire le padding-top de la section hero sur mobile */
+          .hero-section-home {
+            padding: 15px 20px 30px 20px !important;
+            min-height: auto !important;
+          }
+          
+          /* Correction affichage livreur sur mobile - le remonter fortement */
           .livreur-image {
             object-position: center top !important;
-            max-height: 500px !important;
-            transform: translateY(-60px);
+            max-height: 480px !important;
+            transform: translateY(-80px) !important;
+          }
+          
+          /* Réduire l'espacement du conteneur livreur sur mobile */
+          .livreur-container {
+            padding: 0 10px !important;
           }
         }
       `}</style>
