@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Product } from "@/app/utils/shop";
 
 interface ProductCardProps {
@@ -30,7 +31,7 @@ export default function ProductCard({
         e.currentTarget.style.transform = "translateY(0)";
       }}
     >
-      {/* Image */}
+      {/* Image - Version améliorée avec Image Component */}
       <div
         style={{
           height: "200px",
@@ -38,11 +39,11 @@ export default function ProductCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "80px",
           overflow: "hidden",
           position: "relative",
         }}
       >
+        {/* Fallback gradient pendant le chargement */}
         <div
           style={{
             position: "absolute",
@@ -51,7 +52,24 @@ export default function ProductCard({
             opacity: 0.05,
           }}
         />
-        <span style={{ position: "relative", zIndex: 1 }}>{product.image}</span>
+        
+        {/* Image produit */}
+        {product.image && product.image.startsWith("/") ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            style={{
+              objectFit: "contain",
+              objectPosition: "center",
+            }}
+            sizes="(max-width: 768px) 100vw, 300px"
+          />
+        ) : (
+          <span style={{ position: "relative", zIndex: 1, fontSize: "80px" }}>
+            {product.image}
+          </span>
+        )}
       </div>
 
       {/* Contenu */}

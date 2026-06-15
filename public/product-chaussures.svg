@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#bg)"/>
+  
+  <!-- Chaussures Nike -->
+  <g transform="translate(150, 100)">
+    <!-- Semelle -->
+    <ellipse cx="0" cy="30" rx="50" ry="12" fill="#2d2d2d" opacity="0.3"/>
+    
+    <!-- Chaussure gauche -->
+    <path d="M -40 10 Q -45 0 -35 -15 Q -25 -18 -15 -10 L -10 5 Q -20 15 -40 10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    <path d="M -35 -5 L -25 -8 L -20 0" fill="#ffffff" opacity="0.6"/>
+    
+    <!-- Chaussure droite -->
+    <path d="M 40 10 Q 45 0 35 -15 Q 25 -18 15 -10 L 10 5 Q 20 15 40 10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+    <path d="M 35 -5 L 25 -8 L 20 0" fill="#ffffff" opacity="0.6"/>
+    
+    <!-- Logo Nike swoosh -->
+    <path d="M -5 -8 Q 0 -12 8 -6" stroke="#ffd700" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

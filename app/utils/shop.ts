@@ -25,7 +25,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Chaussures Nike",
     price: 25000,
     description: "Chaussures de sport confortables avec technologie de confort avancée",
-    image: "🟫",
+    image: "/product-chaussures.svg",
     category: "Chaussures",
   },
   {
@@ -33,7 +33,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Montre Connectée",
     price: 15000,
     description: "Montre intelligente Bluetooth avec suivi d'activité",
-    image: "⌚",
+    image: "/montre.jpg",
     category: "Électronique",
   },
   {
@@ -41,7 +41,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "T-shirt Premium",
     price: 8000,
     description: "Coton de qualité supérieure, confortable et durable",
-    image: "👕",
+    image: "/product-tshirt.svg",
     category: "Vêtements",
   },
   {
@@ -49,7 +49,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Casque Bluetooth",
     price: 12000,
     description: "Son haute qualité avec réduction de bruit",
-    image: "🎧",
+    image: "/product-casque.svg",
     category: "Électronique",
   },
 ];
