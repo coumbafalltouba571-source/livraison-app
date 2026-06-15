@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ImageGallery from "./ImageGallery";
 import { Product } from "@/app/utils/shop";
 
 interface ProductCardProps {
@@ -31,49 +32,58 @@ export default function ProductCard({
         e.currentTarget.style.transform = "translateY(0)";
       }}
     >
-      {/* Image - Version améliorée avec Image Component */}
-      <div
-        style={{
-          height: "200px",
-          background: "linear-gradient(135deg, #f9fafb 0%, #eff2f5 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          position: "relative",
-          borderBottom: "1px solid #e5e7eb",
-        }}
-      >
-        {/* Fallback gradient pendant le chargement */}
+      {/* Galerie d'images */}
+      {product.images && product.images.length > 0 ? (
+        <ImageGallery
+          images={product.images}
+          productName={product.name}
+          autoplay={product.autoplay}
+          autoplayInterval={product.autoplayInterval}
+        />
+      ) : (
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-            opacity: 0.03,
+            height: "200px",
+            background: "linear-gradient(135deg, #f9fafb 0%, #eff2f5 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            position: "relative",
+            borderBottom: "1px solid #e5e7eb",
           }}
-        />
-        
-        {/* Image produit */}
-        {product.image && product.image.startsWith("/") ? (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
+        >
+          {/* Fallback gradient pendant le chargement */}
+          <div
             style={{
-              objectFit: "contain",
-              objectPosition: "center",
-              padding: "10px",
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              opacity: 0.03,
             }}
-            sizes="(max-width: 768px) 100vw, 300px"
-            priority={false}
           />
-        ) : (
-          <span style={{ position: "relative", zIndex: 1, fontSize: "80px" }}>
-            {product.image}
-          </span>
-        )}
-      </div>
+
+          {/* Image produit */}
+          {product.image && product.image.startsWith("/") ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              style={{
+                objectFit: "contain",
+                objectPosition: "center",
+                padding: "10px",
+              }}
+              sizes="(max-width: 768px) 100vw, 300px"
+              priority={false}
+            />
+          ) : (
+            <span style={{ position: "relative", zIndex: 1, fontSize: "80px" }}>
+              {product.image}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Contenu */}
       <div style={{ padding: "20px" }}>

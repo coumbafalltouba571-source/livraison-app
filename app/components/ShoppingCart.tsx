@@ -73,7 +73,8 @@ export default function ShoppingCart({
       }
 
       clearTimeout(timeoutId);
-      setSuccessMessage("✅ Commande créée avec succès!");
+      setSuccessMessage("✅ Commande enregistrée avec succès dans le système!");
+      setIsProcessing(false);
 
       // Envoyer WhatsApp
       try {
@@ -96,15 +97,8 @@ export default function ShoppingCart({
         // Ne pas bloquer si WhatsApp échoue
       }
 
-      // Fermer après succès
-      setTimeout(() => {
-        onUpdateCart({ items: [], total: 0 });
-        setClientName("");
-        setClientPhone("");
-        setPaymentMethod("");
-        setSuccessMessage("");
-        onClose();
-      }, 2000);
+      // Garder le message de succès visible plus longtemps et offrir des options
+      // Au lieu de fermer automatiquement
     } catch (error) {
       clearTimeout(timeoutId);
       console.error("Erreur lors du checkout:", error);
@@ -112,6 +106,15 @@ export default function ShoppingCart({
       setErrorMessage(`❌ ${errorMsg}`);
       setIsProcessing(false);
     }
+  };
+
+  const handleContinueShopping = () => {
+    onUpdateCart({ items: [], total: 0 });
+    setClientName("");
+    setClientPhone("");
+    setPaymentMethod("");
+    setSuccessMessage("");
+    onClose();
   };
 
   return (
@@ -470,29 +473,91 @@ export default function ShoppingCart({
               </div>
             )}
 
-            {/* Bouton Valider */}
-            <button
-              onClick={handleCheckout}
-              disabled={isProcessing}
-              style={{
-                width: "100%",
-                padding: "14px",
-                background: isProcessing
-                  ? "#d1d5db"
-                  : "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "10px",
-                fontWeight: "700",
-                fontSize: "16px",
-                cursor: isProcessing ? "not-allowed" : "pointer",
-                transition: "all 0.3s",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              {isProcessing ? "⏳ Traitement..." : "✅ Valider la commande"}
-            </button>
+            {/* Affichage conditionnel des boutons */}
+            {successMessage ? (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                }}
+              >
+                <button
+                  onClick={handleContinueShopping}
+                  style={{
+                    padding: "14px",
+                    background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(124, 58, 237, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  🛍️ Continuer achats
+                </button>
+                <button
+                  onClick={onClose}
+                  style={{
+                    padding: "14px",
+                    background: "#e5e7eb",
+                    color: "#1f2937",
+                    border: "none",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  ✕ Fermer
+                </button>
+              </div>
+            ) : (
+              /* Bouton Valider */
+              <button
+                onClick={handleCheckout}
+                disabled={isProcessing}
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  background: isProcessing
+                    ? "#d1d5db"
+                    : "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "16px",
+                  cursor: isProcessing ? "not-allowed" : "pointer",
+                  transition: "all 0.3s",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {isProcessing ? "⏳ Traitement..." : "✅ Valider la commande"}
+              </button>
+            )}
           </>
         )}
       </div>

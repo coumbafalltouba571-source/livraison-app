@@ -5,7 +5,10 @@ export interface Product {
   price: number;
   description: string;
   image: string;
+  images?: string[]; // Galerie d'images pour le produit
   category?: string;
+  autoplay?: boolean; // Auto-rotation de galerie
+  autoplayInterval?: number; // Intervalle en ms (défaut 5000)
 }
 
 export interface CartItem {
@@ -20,37 +23,163 @@ export interface CartState {
 
 // Produits par défaut
 export const DEFAULT_PRODUCTS: Product[] = [
+  // CHAUSSURES
   {
     id: "1",
     name: "Chaussures Nike",
     price: 25000,
     description: "Chaussures de sport confortables avec technologie de confort avancée",
     image: "/Chaussures Nike.png",
+    images: ["/Chaussures Nike.png"],
     category: "Chaussures",
   },
+  {
+    id: "5",
+    name: "Nike Air Max",
+    price: 28000,
+    description: "Nike Air Max avec coussin d'air visible - Confort maximum",
+    image: "/Chaussures Nike.png",
+    images: ["/Chaussures Nike.png"],
+    category: "Chaussures",
+  },
+  {
+    id: "6",
+    name: "Adidas Ultraboost",
+    price: 32000,
+    description: "Adidas Ultraboost pour performance et style",
+    image: "/Chaussures Nike.png",
+    images: ["/Chaussures Nike.png"],
+    category: "Chaussures",
+  },
+  {
+    id: "7",
+    name: "Puma Running",
+    price: 22000,
+    description: "Puma Running pour vos entraînements intenses",
+    image: "/Chaussures Nike.png",
+    images: ["/Chaussures Nike.png"],
+    category: "Chaussures",
+  },
+
+  // ÉLECTRONIQUE
   {
     id: "2",
     name: "Montre Connectée",
     price: 15000,
-    description: "Montre intelligente Bluetooth avec suivi d'activité",
+    description: "Montre intelligente Bluetooth avec suivi d'activité et galerie photos",
     image: "/montre.png",
+    images: ["/montre.png", "/montre.jpg"],
     category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
   },
   {
-    id: "3",
-    name: "T-shirt Premium",
-    price: 8000,
-    description: "Coton de qualité supérieure, confortable et durable",
-    image: "/blog.png",
-    category: "Vêtements",
+    id: "8",
+    name: "Apple Watch",
+    price: 35000,
+    description: "Apple Watch Série 8 - Suivi santé avancé et notifications",
+    image: "/montre.png",
+    images: ["/montre.png", "/montre.jpg"],
+    category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
+  },
+  {
+    id: "9",
+    name: "Samsung Galaxy Watch",
+    price: 28000,
+    description: "Samsung Galaxy Watch avec écran AMOLED",
+    image: "/montre.png",
+    images: ["/montre.png", "/montre.jpg"],
+    category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
   },
   {
     id: "4",
     name: "Casque Bluetooth",
     price: 12000,
-    description: "Son haute qualité avec réduction de bruit",
+    description: "Son haute qualité avec réduction de bruit - Galerie 4 photos",
     image: "/Casque Bluetooth.png",
+    images: [
+      "/Casque Bluetooth.png",
+      "/Casque Bluetooth (2).png",
+      "/Casque Bluetooth (3).png",
+      "/Casque Bluetooth (4).png",
+    ],
     category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
+  },
+  {
+    id: "10",
+    name: "AirPods Pro",
+    price: 18000,
+    description: "AirPods Pro - Réduction de bruit active et mode transparence",
+    image: "/Casque Bluetooth.png",
+    images: [
+      "/Casque Bluetooth.png",
+      "/Casque Bluetooth (2).png",
+      "/Casque Bluetooth (3).png",
+      "/Casque Bluetooth (4).png",
+    ],
+    category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
+  },
+  {
+    id: "11",
+    name: "Casque Sony",
+    price: 22000,
+    description: "Casque Sony WH-1000XM5 - Son premium et confort optimal",
+    image: "/Casque Bluetooth.png",
+    images: [
+      "/Casque Bluetooth.png",
+      "/Casque Bluetooth (2).png",
+      "/Casque Bluetooth (3).png",
+      "/Casque Bluetooth (4).png",
+    ],
+    category: "Électronique",
+    autoplay: true,
+    autoplayInterval: 5000,
+  },
+
+  // VÊTEMENTS
+  {
+    id: "3",
+    name: "T-shirt Premium",
+    price: 8000,
+    description: "Coton de qualité supérieure, confortable et durable - Galerie 2 photos",
+    image: "/blog.png",
+    images: ["/blog.png", "/blog (2).png"],
+    category: "Vêtements",
+  },
+  {
+    id: "12",
+    name: "Polo Premium",
+    price: 12000,
+    description: "Polo élégant en coton 100% - Parfait pour toutes les occasions",
+    image: "/blog.png",
+    images: ["/blog.png", "/blog (2).png"],
+    category: "Vêtements",
+  },
+  {
+    id: "13",
+    name: "Jean Homme",
+    price: 18000,
+    description: "Jean confortable et tendance - Coupe ajustée",
+    image: "/blog.png",
+    images: ["/blog.png", "/blog (2).png"],
+    category: "Vêtements",
+  },
+  {
+    id: "14",
+    name: "Ensemble Sport",
+    price: 20000,
+    description: "Ensemble sport complet - Pantalon et t-shirt assortis",
+    image: "/blog.png",
+    images: ["/blog.png", "/blog (2).png"],
+    category: "Vêtements",
   },
 ];
 
