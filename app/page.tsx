@@ -1541,22 +1541,30 @@ export default function Home() {
             padding: 60px 15px !important;
           }
           
-          /* Réduire le padding-top de la section hero sur mobile */
+          /* Augmenter la hauteur du Hero pour contenir l'image complète */
           .hero-section-home {
-            padding: 15px 20px 30px 20px !important;
-            min-height: auto !important;
+            padding: 20px 20px 30px 20px !important;
+            min-height: 550px !important;
+            overflow: hidden !important;
           }
           
-          /* Correction affichage livreur sur mobile - le remonter fortement */
+          /* Afficher le livreur complètement centré */
           .livreur-image {
-            object-position: center top !important;
-            max-height: 480px !important;
-            transform: translateY(-80px) !important;
+            object-fit: contain !important;
+            object-position: center center !important;
+            max-height: 500px !important;
+            width: 90% !important;
+            height: auto !important;
+            transform: none !important;
+            margin: 0 auto !important;
+            display: block !important;
           }
           
-          /* Réduire l'espacement du conteneur livreur sur mobile */
+          /* Conteneur du livreur */
           .livreur-container {
-            padding: 0 10px !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
           }
         }
       `}</style>
