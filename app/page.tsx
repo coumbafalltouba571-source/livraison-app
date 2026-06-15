@@ -1541,30 +1541,39 @@ export default function Home() {
             padding: 60px 15px !important;
           }
           
-          /* Augmenter la hauteur du Hero pour contenir l'image complète */
+          /* Hero mobile - livreur en bas, fond plein */
           .hero-section-home {
-            padding: 20px 20px 30px 20px !important;
-            min-height: 550px !important;
+            padding: 20px 0 0 0 !important;
+            min-height: 520px !important;
             overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin: 0 !important;
           }
           
-          /* Afficher le livreur complètement centré */
+          /* Afficher le livreur complètement en bas */
           .livreur-image {
             object-fit: contain !important;
-            object-position: center center !important;
-            max-height: 500px !important;
-            width: 90% !important;
+            object-position: center bottom !important;
+            max-height: 480px !important;
+            width: 100% !important;
             height: auto !important;
             transform: none !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
             display: block !important;
+            padding: 0 !important;
           }
           
           /* Conteneur du livreur */
           .livreur-container {
             width: 100% !important;
             padding: 0 !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
+            display: flex !important;
+            justify-content: center !important;
           }
         }
       `}</style>
