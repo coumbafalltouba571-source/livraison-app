@@ -11,14 +11,14 @@ export default function HeroSection({ onCommandClick }: HeroSectionProps) {
     <section
       style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        minHeight: "100vh",
+        minHeight: "auto",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
-        overflow: "hidden",
-        padding: "20px",
+        overflow: "visible",
+        padding: "80px 20px 60px 20px",
       }}
     >
       {/* Logo en haut à droite */}

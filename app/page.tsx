@@ -133,6 +133,7 @@ export default function Home() {
     <main style={{
       width: "100%",
       overflowX: "hidden",
+      overflowY: "auto",
       margin: 0,
       padding: 0,
     }}>
@@ -257,19 +258,17 @@ export default function Home() {
       {/* SECTION: Image héro avec livreur - entièrement visible */}
       <section style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-        padding: "70px 0 40px 0",
-        paddingLeft: "20px",
-        paddingRight: "20px",
+        padding: "70px 20px 40px 20px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "720px",
+        minHeight: "auto",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         width: "100%",
         boxSizing: "border-box",
         margin: "0",
-        maxWidth: "100vw",
+        maxWidth: "100%",
       }}>
         {/* Décoration de fond */}
         <div style={{
