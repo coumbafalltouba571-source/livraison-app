@@ -299,6 +299,7 @@ export default function Home() {
             width={700}
             height={700}
             priority
+            className="livreur-image"
             style={{
               objectFit: "contain",
               objectPosition: "center center",
@@ -1538,6 +1539,13 @@ export default function Home() {
         @media (max-width: 768px) {
           section {
             padding: 60px 15px !important;
+          }
+          
+          /* Correction affichage livreur sur mobile */
+          .livreur-image {
+            object-position: center top !important;
+            max-height: 500px !important;
+            transform: translateY(-60px);
           }
         }
       `}</style>
