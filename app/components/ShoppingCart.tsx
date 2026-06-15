@@ -42,11 +42,15 @@ export default function ShoppingCart({
     setErrorMessage("");
     setSuccessMessage("");
 
-    // Timeout de sécurité réduit à 8 secondes (Firestore doit être très rapide)
+    console.log("🛒 === DÉBUT VALIDATION COMMANDE ===");
+    console.log("📋 Données client:", { clientName, clientPhone, paymentMethod });
+
+    // Timeout de sécurité augmenté à 20 secondes (Firestore peut être lent)
     const timeoutId = setTimeout(() => {
       setIsProcessing(false);
-      setErrorMessage("⏱️ Connexion lente. Vérifiez votre internet et réessayez.");
-    }, 8000);
+      console.error("❌ TIMEOUT: Firestore n'a pas répondu après 20 secondes");
+      setErrorMessage("⏱️ Délai d'attente dépassé. Vérifiez votre connexion et réessayez.");
+    }, 20000);
 
     try {
       // Créer description détaillée à partir des produits
@@ -54,32 +58,48 @@ export default function ShoppingCart({
         .map((item) => `${item.quantity}x ${item.product.name}`)
         .join(", ");
 
-      console.log("📦 Début création commande...", { clientName, clientPhone, paymentMethod });
+      console.log("📦 Tentative d'enregistrement dans Firestore...");
+      console.log("📄 Description produits:", description);
+      console.log("💰 Total:", cart.total, "FCFA");
 
       // Créer la commande dans Firestore
-      const commandResult = await createCommand({
-        telephone: clientPhone,
-        client: clientName,
-        nomClient: clientName,
-        depart: "Boutique",
-        destination: "À livrer",
-        description: `Achat boutique: ${description}`,
-        prix: cart.total,
-        modePayement: paymentMethod,
-        statut: "en attente",
-        dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      });
+      let commandResult: string;
+      try {
+        commandResult = await createCommand({
+          telephone: clientPhone,
+          client: clientName,
+          nomClient: clientName,
+          depart: "Boutique",
+          destination: "À livrer",
+          description: `Achat boutique: ${description}`,
+          prix: cart.total,
+          modePayement: paymentMethod,
+          statut: "en attente",
+          dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        });
 
-      if (!commandResult) {
-        throw new Error("Firestore n'a pas retourné d'ID de commande");
+        console.log("✅ createCommand() retourné avec succès");
+        console.log("📌 ID Commande Firestore:", commandResult);
+      } catch (firebaseError) {
+        console.error("❌ ERREUR FIRESTORE:", firebaseError);
+        const fbMessage = firebaseError instanceof Error ? firebaseError.message : String(firebaseError);
+        throw new Error(`Firestore Error: ${fbMessage}`);
       }
 
-      console.log("✅ Commande créée:", commandResult);
+      if (!commandResult || commandResult.trim() === "") {
+        console.error("❌ createCommand() retourné vide ou null");
+        throw new Error("Firestore n'a pas retourné d'ID de commande valide");
+      }
+
+      console.log("🎯 Commande enregistrée avec ID:", commandResult);
       clearTimeout(timeoutId);
 
       // Marquer succès IMMÉDIATEMENT (avant WhatsApp)
+      console.log("✅ Affichage message succès");
       setSuccessMessage("✅ Commande enregistrée avec succès!");
       setIsProcessing(false);
+
+      console.log("📲 Tentative d'envoi WhatsApp en arrière-plan...");
 
       // Envoyer WhatsApp en ARRIÈRE-PLAN sans bloquer (fire and forget)
       if (typeof window !== "undefined") {
@@ -89,7 +109,8 @@ export default function ShoppingCart({
           `Téléphone: ${clientPhone}%0A` +
           `Produits: ${description}%0A` +
           `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
-          `Paiement: ${paymentMethod}`;
+          `Paiement: ${paymentMethod}%0A%0A` +
+          `ID Commande: ${commandResult}`;
 
         // Ouvrir WhatsApp SANS attendre la réponse
         try {
@@ -97,10 +118,13 @@ export default function ShoppingCart({
             `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
             "_blank"
           );
+          console.log("📲 WhatsApp ouvert");
         } catch (whatsappError) {
-          console.warn("WhatsApp non disponible:", whatsappError);
+          console.warn("⚠️ WhatsApp non disponible:", whatsappError);
         }
       }
+
+      console.log("🔄 Fermeture du modal et vidage du panier dans 1.2s...");
 
       // Fermer le modal après 1.2 secondes
       setTimeout(() => {
@@ -109,15 +133,25 @@ export default function ShoppingCart({
         setClientPhone("");
         setPaymentMethod("");
         setSuccessMessage("");
+        console.log("🎉 === FIN VALIDATION COMMANDE - SUCCÈS ===");
         onClose();
       }, 1200);
 
     } catch (error) {
       clearTimeout(timeoutId);
-      console.error("❌ Erreur checkout:", error);
-      const errorMsg = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
+      console.error("❌ === ERREUR VALIDATION COMMANDE ===");
+      console.error("Erreur complète:", error);
+
+      let errorMsg = "Erreur lors de la création de la commande";
+      if (error instanceof Error) {
+        errorMsg = error.message;
+        console.error("Message d'erreur:", error.message);
+        console.error("Stack trace:", error.stack);
+      }
+
       setErrorMessage(`❌ ${errorMsg}`);
       setIsProcessing(false);
+      console.log("🛒 === FIN VALIDATION COMMANDE - ERREUR ===");
     }
   };
 
