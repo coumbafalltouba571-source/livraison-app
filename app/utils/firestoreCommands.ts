@@ -57,7 +57,7 @@ export async function createCommand(
     console.error("Erreur lors de la création de la commande:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -101,7 +101,7 @@ export async function getAllCommands(): Promise<Command[]> {
     console.error("Erreur lors de la récupération des commandes:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -148,7 +148,7 @@ export async function getCommandsByStatus(
     console.error(`Erreur lors de la récupération des commandes avec le statut "${status}":`, error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -176,7 +176,7 @@ export async function updateCommand(
     console.error("Erreur lors de la mise à jour de la commande:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -200,7 +200,7 @@ export async function updateCommandStatus(
     console.error("Erreur lors de la mise à jour du statut:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -218,7 +218,7 @@ export async function deleteCommand(commandId: string): Promise<void> {
     console.error("Erreur lors de la suppression de la commande:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -270,7 +270,7 @@ export async function getTodayCommands(): Promise<Command[]> {
     console.error("Erreur lors de la récupération des commandes du jour:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -312,7 +312,7 @@ export async function getCommandById(commandId: string): Promise<Command | null>
     console.error("Erreur lors de la récupération de la commande:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }
@@ -356,7 +356,7 @@ export async function getCommandsByPhone(telephone: string): Promise<Command[]> 
     console.error("❌ Erreur lors de la récupération des commandes du client:", error);
     if (error instanceof Error) {
       console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as any).code);
+      console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
   }

@@ -64,7 +64,7 @@ function calculPrix(distance: number) {
   return Math.round(prixBase + distance * prixParKm);
 }
 
-function ZoomRoute({ points }: any) {
+function ZoomRoute({ points }: { points: [number, number][] }) {
   const map = useMap();
 
   if (points.length === 2) {
@@ -85,7 +85,14 @@ export default function MapSection({
   destination?: string;
   prix?: number;
 }) {
-  const [livreurPosition, setLivreurPosition] = useState<[number, number] | null>(null);
+  // Initialiser avec departCoords si disponible, sinon null
+  const [livreurPosition, setLivreurPosition] = useState<[number, number] | null>(() => {
+    const depart_loc = depart && quartiers[depart as keyof typeof quartiers];
+    if (depart_loc && Array.isArray(depart_loc)) {
+      return depart_loc as [number, number];
+    }
+    return null;
+  });
   const [deliveryStatus, setDeliveryStatus] = useState<"Commande reçue" | "Livreur en route" | "Livraison en cours" | "Livré">("Commande reçue");
   
   const pointDepart =
@@ -132,16 +139,11 @@ export default function MapSection({
 
     if (!departCoords || !destinationCoords) {
       console.warn("⚠️ Coordonnées manquantes - polyline ne s'affichera pas");
-      setLivreurPosition(null);
       return;
     }
 
     console.log("✅ Coordonnées valides - démarrage de l'animation");
     console.log("Interpolation de:", departCoords, "vers:", destinationCoords);
-
-    // Initialiser la position du livreur au départ
-    setLivreurPosition(departCoords);
-    setDeliveryStatus("Commande reçue");
 
     // Simuler le mouvement du livreur
     const steps = 50;
@@ -177,7 +179,7 @@ export default function MapSection({
     }, 500); // Mise à jour toutes les 500ms
 
     return () => clearInterval(interval);
-  }, [depart, destination]);
+  }, [departCoords, destinationCoords, points]);
 
   return (
     <section

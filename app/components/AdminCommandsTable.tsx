@@ -306,7 +306,7 @@ export default function AdminCommandsTable({
                 {format(
                   command.createdAt instanceof Date
                     ? command.createdAt
-                    : new Date(command.createdAt as any),
+                    : new Date(command.createdAt as unknown as string),
                   "dd/MM/yyyy HH:mm",
                   { locale: fr }
                 )}

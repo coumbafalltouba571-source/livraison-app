@@ -44,13 +44,14 @@ export default function ShoppingCart({
 
     console.log("🛒 === DÉBUT VALIDATION COMMANDE ===");
     console.log("📋 Données client:", { clientName, clientPhone, paymentMethod });
+    setErrorMessage("⏳ Création de votre commande en cours...");
 
-    // Timeout de sécurité augmenté à 20 secondes (Firestore peut être lent)
+    // Timeout de sécurité augmenté à 30 secondes (Firestore peut être lent)
     const timeoutId = setTimeout(() => {
       setIsProcessing(false);
-      console.error("❌ TIMEOUT: Firestore n'a pas répondu après 20 secondes");
+      console.error("❌ TIMEOUT: Firestore n'a pas répondu après 30 secondes");
       setErrorMessage("⏱️ Délai d'attente dépassé. Vérifiez votre connexion et réessayez.");
-    }, 20000);
+    }, 30000);
 
     try {
       // Créer description détaillée à partir des produits

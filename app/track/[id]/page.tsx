@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { getCommandById, Command } from "@/app/utils/firestoreCommands";
 
 const LiveTracking = dynamic(
@@ -50,9 +51,9 @@ export default function TrackingPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
         <div className="text-center">
           <p className="text-red-600 text-lg font-semibold">{error || "Commande non trouvée"}</p>
-          <a href="/commands" className="mt-4 inline-block text-blue-600 hover:underline">
+          <Link href="/commands" className="mt-4 inline-block text-blue-600 hover:underline">
             ← Retour aux commandes
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -72,9 +73,9 @@ export default function TrackingPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <a href="/commands" className="text-blue-600 hover:underline text-sm mb-4 inline-block">
+          <Link href="/commands" className="text-blue-600 hover:underline text-sm mb-4 inline-block">
             ← Retour aux commandes
-          </a>
+          </Link>
           <h1 className="text-3xl font-bold text-gray-800">
             🚗 Suivi de Livraison
           </h1>
@@ -129,7 +130,7 @@ export default function TrackingPage() {
                 <p className="text-sm text-gray-600">Date de Livraison Prévue</p>
                 <p className="font-semibold text-gray-800">
                   {command.dateLivraison
-                    ? new Date(command.dateLivraison as any).toLocaleDateString("fr-FR")
+                    ? new Date(command.dateLivraison as unknown as string).toLocaleDateString("fr-FR")
                     : "Non définie"}
                 </p>
               </div>
@@ -137,7 +138,7 @@ export default function TrackingPage() {
                 <p className="text-sm text-gray-600">Créée le</p>
                 <p className="font-semibold text-gray-800">
                   {command.createdAt
-                    ? new Date(command.createdAt as any).toLocaleString("fr-FR")
+                    ? new Date(command.createdAt as unknown as string).toLocaleString("fr-FR")
                     : "N/A"}
                 </p>
               </div>
@@ -155,7 +156,7 @@ export default function TrackingPage() {
                 <p className="font-semibold text-gray-800">Commande créée</p>
                 <p className="text-sm text-gray-600">
                   {command.createdAt
-                    ? new Date(command.createdAt as any).toLocaleString("fr-FR")
+                    ? new Date(command.createdAt as unknown as string).toLocaleString("fr-FR")
                     : "N/A"}
                 </p>
               </div>
@@ -173,7 +174,7 @@ export default function TrackingPage() {
                 <p className="font-semibold text-gray-800">Livraison</p>
                 <p className="text-sm text-gray-600">
                   {command.dateLivraison
-                    ? new Date(command.dateLivraison as any).toLocaleDateString("fr-FR")
+                    ? new Date(command.dateLivraison as unknown as string).toLocaleDateString("fr-FR")
                     : "En attente"}
                 </p>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/firestoreCommands";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default function CommandHistoryContent() {
   const [unsubscribers, setUnsubscribers] = useState<(() => void)[]>([]);
 
   // Charger les commandes du client
-  const loadClientCommands = async (tel: string) => {
+  const loadClientCommands = useCallback(async (tel: string) => {
     if (!tel.trim()) {
       setError("Veuillez entrer votre numéro de téléphone");
       return;
@@ -57,18 +57,20 @@ export default function CommandHistoryContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (telephone) {
-      loadClientCommands(telephone);
+      (async () => {
+        await loadClientCommands(telephone);
+      })();
     }
 
     // Cleanup des abonnements
     return () => {
       unsubscribers.forEach((unsub) => unsub());
     };
-  }, []);
+  }, [telephone, unsubscribers, loadClientCommands]);
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {

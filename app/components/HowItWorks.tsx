@@ -5,21 +5,28 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export default function HowItWorks() {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth > 1024;
+    }
+    return true; // Par défaut, considérer comme desktop côté serveur
+  });
+
+  const handleResize = useCallback(() => {
+    if (typeof window !== "undefined") {
+      setIsDesktop(window.innerWidth > 1024);
+    }
+  }, []);
 
   useEffect(() => {
-    setIsDesktop(window.innerWidth > 1024);
-
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth > 1024);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [handleResize]);
 
   const steps = [
     {

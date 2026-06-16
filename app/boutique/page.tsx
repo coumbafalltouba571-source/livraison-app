@@ -3,28 +3,27 @@
 import { useState, useEffect } from "react";
 import ProductCard from "@/app/components/ProductCard";
 import ShoppingCart from "@/app/components/ShoppingCart";
-import { DEFAULT_PRODUCTS, CartState, addToCart, saveCartToStorage, loadCartFromStorage } from "@/app/utils/shop";
+import { DEFAULT_PRODUCTS, CartState, Product, addToCart, saveCartToStorage, loadCartFromStorage } from "@/app/utils/shop";
 import Link from "next/link";
 
 export default function ShopPage() {
   const [products] = useState(DEFAULT_PRODUCTS);
-  const [cart, setCart] = useState<CartState>({ items: [], total: 0 });
+  const [cart, setCart] = useState<CartState>(() => {
+    if (typeof window !== "undefined") {
+      return loadCartFromStorage();
+    }
+    return { items: [], total: 0 };
+  });
   const [showCart, setShowCart] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // Charger le panier depuis localStorage
-  useEffect(() => {
-    const savedCart = loadCartFromStorage();
-    setCart(savedCart);
-  }, []);
 
   // Sauvegarder le panier
   useEffect(() => {
     saveCartToStorage(cart);
   }, [cart]);
 
-  const handleAddToCart = (product: any, quantity: number) => {
+  const handleAddToCart = (product: Product, quantity: number) => {
     const newCart = addToCart(cart, product, quantity);
     setCart(newCart);
     // Feedback visuel

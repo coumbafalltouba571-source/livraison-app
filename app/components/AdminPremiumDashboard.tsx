@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Command, getAllCommands } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
 import AdminCommandsTable from "@/app/components/AdminCommandsTable";
@@ -8,12 +8,9 @@ import AddCommandForm from "@/app/components/AddCommandForm";
 import Link from "next/link";
 import {
   BarChart3,
-  TrendingUp,
-  Users,
   Truck,
   DollarSign,
   Clock,
-  Activity,
   Menu,
   X,
   MapPin,
@@ -24,9 +21,26 @@ import {
 
 type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
 
+interface StatCardProps {
+  icon: React.ElementType;
+  title: string;
+  value: string | number;
+  trend?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, trend }) => (
+  <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow border border-gray-100">
+    <div className="flex justify-between items-start mb-2">
+      <Icon className="text-blue-600" size={24} />
+      {trend && <span className="text-green-600 text-sm font-semibold">{trend}</span>}
+    </div>
+    <p className="text-gray-600 text-sm font-medium">{title}</p>
+    <p className="text-3xl font-bold mt-2 text-gray-900">{value}</p>
+  </div>
+);
+
 export default function AdminPremiumDashboard() {
   const [commands, setCommands] = useState<Command[]>([]);
-  const [filteredCommands, setFilteredCommands] = useState<Command[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("tous");
   const [showForm, setShowForm] = useState(false);
@@ -43,7 +57,7 @@ export default function AdminPremiumDashboard() {
     activeDrivers: 3,
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const allCommands = await getAllCommands();
@@ -53,7 +67,7 @@ export default function AdminPremiumDashboard() {
       today.setHours(0, 0, 0, 0);
 
       const todayOrders = allCommands.filter((cmd) => {
-        const cmdDate = new Date(cmd.createdAt as any);
+        const cmdDate = new Date(cmd.createdAt as unknown as string);
         cmdDate.setHours(0, 0, 0, 0);
         return cmdDate.getTime() === today.getTime();
       });
@@ -70,24 +84,20 @@ export default function AdminPremiumDashboard() {
         pendingOrders: pending,
         activeDrivers: 3,
       });
-
-      if (selectedStatus === "tous") {
-        setFilteredCommands(allCommands);
-      } else {
-        setFilteredCommands(allCommands.filter((c) => c.statut === selectedStatus));
-      }
     } catch (error) {
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadData();
   }, []);
 
   useEffect(() => {
+    (async () => {
+      await loadData();
+    })();
+  }, [loadData]);
+
+  const filteredCommands = useMemo(() => {
     let filtered = commands;
 
     // Filtrer par statut
@@ -106,29 +116,8 @@ export default function AdminPremiumDashboard() {
       );
     }
 
-    setFilteredCommands(filtered);
+    return filtered;
   }, [selectedStatus, commands, searchQuery]);
-
-  const StatCard = ({
-    icon: Icon,
-    title,
-    value,
-    trend,
-  }: {
-    icon: any;
-    title: string;
-    value: string | number;
-    trend?: string;
-  }) => (
-    <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow border border-gray-100">
-      <div className="flex justify-between items-start mb-2">
-        <Icon className="text-blue-600" size={24} />
-        {trend && <span className="text-green-600 text-sm font-semibold">{trend}</span>}
-      </div>
-      <p className="text-gray-600 text-sm font-medium">{title}</p>
-      <p className="text-3xl font-bold mt-2 text-gray-900">{value}</p>
-    </div>
-  );
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

@@ -22,7 +22,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -30,7 +30,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
     }));
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!formData.telephone || !formData.depart || !formData.destination) {
@@ -228,7 +228,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
             href="/commands"
             className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold py-3 px-4 rounded-lg transition-colors text-center"
           >
-            📦 Voir l'historique
+            📦 Voir l&apos;historique
           </Link>
         </div>
       </form>

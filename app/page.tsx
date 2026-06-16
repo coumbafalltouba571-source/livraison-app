@@ -111,9 +111,9 @@ export default function Home() {
       // Afficher plus de détails sur l'erreur
       if (error instanceof Error) {
         console.error("Message d'erreur:", error.message);
-        console.error("Code d'erreur:", (error as any).code);
+        console.error("Code d'erreur:", (error as unknown as { code?: string }).code);
         
-        if ((error as any).code === "permission-denied") {
+        if ((error as unknown as { code?: string }).code === "permission-denied") {
           console.error("🔒 SOLUTION: Les règles Firestore ne permettent pas l'accès.");
           console.error("1. Allez à Firebase Console → Firestore → Règles");
           console.error("2. Remplacez par les règles temporaires (voir FIRESTORE_SETUP.md)");
@@ -1463,7 +1463,7 @@ export default function Home() {
             margin: "0 0 32px 0",
             lineHeight: "1.6",
           }}>
-            Consultez l'historique de toutes vos commandes, suivi en temps réel et statuts de livraison
+            Consultez l&apos;historique de toutes vos commandes, suivi en temps réel et statuts de livraison
           </p>
           <Link
             href="/commander/history"

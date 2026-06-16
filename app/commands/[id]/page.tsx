@@ -67,7 +67,7 @@ export default function CommandDetailPage() {
           <div className="text-6xl mb-4">❌</div>
           <p className="text-gray-600 mb-6">{error || "Commande non trouvée"}</p>
           <Link href="/commands" className="text-blue-600 hover:text-blue-800 font-semibold">
-            Retour à l'historique
+            Retour à l&apos;historique
           </Link>
         </div>
       </main>
@@ -81,7 +81,7 @@ export default function CommandDetailPage() {
           href="/commands"
           className="text-blue-600 hover:text-blue-800 font-semibold mb-6 inline-block"
         >
-          ← Retour à l'historique
+          ← Retour à l&apos;historique
         </Link>
 
         <CommandCard command={command} onUpdate={() => {

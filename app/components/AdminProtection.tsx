@@ -76,7 +76,7 @@ export default function AdminProtection({ onUnlock }: AdminProtectionProps) {
             fontSize: "14px",
             margin: 0,
           }}>
-            Entrez le code d'accès administrateur
+            Entrez le code d&apos;accès administrateur
           </p>
         </div>
 

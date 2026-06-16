@@ -81,7 +81,7 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
   };
 
   const createdDate =
-    command.createdAt instanceof Date ? command.createdAt : new Date(command.createdAt as any);
+    command.createdAt instanceof Date ? command.createdAt : new Date(command.createdAt as unknown as string);
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
@@ -186,7 +186,7 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
                 {format(
                   command.dateLivraison instanceof Date
                     ? command.dateLivraison
-                    : new Date(command.dateLivraison as any),
+                    : new Date(command.dateLivraison as unknown as string),
                   "dd MMM yyyy",
                   { locale: fr }
                 )}

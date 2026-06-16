@@ -168,7 +168,7 @@ export default function AdvantagesSection() {
               marginRight: "auto",
             }}
           >
-            Une livraison fiable, rapide et transparente - c'est notre promesse
+            Une livraison fiable, rapide et transparente - c&apos;est notre promesse
           </p>
           <button
             style={{

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Command, getAllCommands, getCommandsByStatus } from "@/app/utils/firestoreCommands";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { Command, getAllCommands } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
 import AdminProtection from "@/app/components/AdminProtection";
 import Link from "next/link";
@@ -9,9 +9,13 @@ import Link from "next/link";
 type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
 
 export default function CommandsPage() {
-  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem("adminAccess") === "true") {
+      return true;
+    }
+    return false;
+  });
   const [commands, setCommands] = useState<Command[]>([]);
-  const [filteredCommands, setFilteredCommands] = useState<Command[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("tous");
   const [stats, setStats] = useState({
@@ -24,7 +28,7 @@ export default function CommandsPage() {
     cancelled: 0,
   });
 
-  const loadCommands = async () => {
+  const loadCommands = useCallback(async () => {
     setLoading(true);
     try {
       const allCommands = await getAllCommands();
@@ -41,36 +45,24 @@ export default function CommandsPage() {
         cancelled: allCommands.filter((c) => c.statut === "annulée").length,
       };
       setStats(statsObj);
-
-      // Appliquer le filtre
-      if (selectedStatus === "tous") {
-        setFilteredCommands(allCommands);
-      } else {
-        setFilteredCommands(
-          allCommands.filter((c) => c.statut === selectedStatus)
-        );
-      }
     } catch (error) {
       console.error("Erreur lors du chargement des commandes:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    // Vérifier si déjà déverrouillé dans cette session
-    if (typeof window !== "undefined" && sessionStorage.getItem("adminAccess") === "true") {
-      setIsAdminUnlocked(true);
-    }
-    loadCommands();
   }, []);
 
   useEffect(() => {
+    (async () => {
+      await loadCommands();
+    })();
+  }, [loadCommands]);
+
+  const filteredCommands = useMemo(() => {
     if (selectedStatus === "tous") {
-      setFilteredCommands(commands);
-    } else {
-      setFilteredCommands(commands.filter((c) => c.statut === selectedStatus));
+      return commands;
     }
+    return commands.filter((c) => c.statut === selectedStatus);
   }, [selectedStatus, commands]);
 
   const statBoxes = [
