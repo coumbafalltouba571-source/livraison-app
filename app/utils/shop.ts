@@ -32,6 +32,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     image: "/Chaussures Nike.png",
     images: ["/Chaussures Nike.png"],
     category: "Chaussures",
+    autoplay: true,
+    autoplayInterval: 5000,
   },
   {
     id: "5",
@@ -41,6 +43,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     image: "/Chaussures Nike.png",
     images: ["/Chaussures Nike.png"],
     category: "Chaussures",
+    autoplay: true,
+    autoplayInterval: 5000,
   },
   {
     id: "6",
@@ -50,6 +54,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     image: "/Chaussures Nike.png",
     images: ["/Chaussures Nike.png"],
     category: "Chaussures",
+    autoplay: true,
+    autoplayInterval: 5000,
   },
   {
     id: "7",
@@ -57,6 +63,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     price: 22000,
     description: "Puma Running pour vos entraînements intenses",
     image: "/Chaussures Nike.png",
+    autoplay: true,
+    autoplayInterval: 5000,
     images: ["/Chaussures Nike.png"],
     category: "Chaussures",
   },
@@ -109,7 +117,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     ],
     category: "Électronique",
     autoplay: true,
-    autoplayInterval: 5000,
+    autoplayInterval: 3000,
   },
   {
     id: "10",
@@ -125,7 +133,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     ],
     category: "Électronique",
     autoplay: true,
-    autoplayInterval: 5000,
+    autoplayInterval: 3000,
   },
   {
     id: "11",
@@ -141,7 +149,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     ],
     category: "Électronique",
     autoplay: true,
-    autoplayInterval: 5000,
+    autoplayInterval: 3000,
   },
 
   // VÊTEMENTS
@@ -153,6 +161,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     image: "/blog.png",
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
+    autoplay: true,
+    autoplayInterval: 4000,
   },
   {
     id: "12",
@@ -162,6 +172,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     image: "/blog.png",
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
+    autoplay: true,
+    autoplayInterval: 4000,
   },
   {
     id: "13",
@@ -169,6 +181,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     price: 18000,
     description: "Jean confortable et tendance - Coupe ajustée",
     image: "/blog.png",
+    autoplay: true,
+    autoplayInterval: 4000,
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
   },
@@ -178,6 +192,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     price: 20000,
     description: "Ensemble sport complet - Pantalon et t-shirt assortis",
     image: "/blog.png",
+    autoplay: true,
+    autoplayInterval: 4000,
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
   },

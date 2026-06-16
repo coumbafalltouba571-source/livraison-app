@@ -13,7 +13,7 @@ import {
   calculerTarif,
   formatPrix,
   getDescriptionRoute,
-} from "./utils/tarifs";
+  } from "./utils/tarifs";
 import { createCommand } from "./utils/firestoreCommands";
 import Link from "next/link";
 

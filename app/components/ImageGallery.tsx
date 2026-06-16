@@ -29,7 +29,7 @@ export default function ImageGallery({
     return () => clearInterval(interval);
   }, [autoplay, autoplayInterval, images.length]);
 
-  // Si une seule image, l'afficher simplement
+  // Si une seule image, l'afficher simplement avec animation douce
   if (images.length <= 1) {
     return (
       <div
@@ -44,18 +44,29 @@ export default function ImageGallery({
           borderRadius: "12px 12px 0 0",
         }}
       >
-        <Image
-          src={images[0]}
-          alt={productName}
-          fill
-          style={{
-            objectFit: "contain",
-            objectPosition: "center",
-            padding: "10px",
-          }}
-          sizes="(max-width: 768px) 100vw, 300px"
-          priority={false}
-        />
+        <style>{`
+          @keyframes gentleZoom {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+          }
+          .single-image-container {
+            animation: gentleZoom ${autoplayInterval ? autoplayInterval / 1000 : 5}s ease-in-out infinite;
+          }
+        `}</style>
+        <div className="single-image-container" style={{ width: "100%", height: "100%", position: "relative" }}>
+          <Image
+            src={images[0]}
+            alt={productName}
+            fill
+            style={{
+              objectFit: "contain",
+              objectPosition: "center",
+              padding: "10px",
+            }}
+            sizes="(max-width: 768px) 100vw, 300px"
+            priority={false}
+          />
+        </div>
       </div>
     );
   }
@@ -90,6 +101,7 @@ export default function ImageGallery({
         }}
       >
         <Image
+          key={`${productName}-${currentIndex}`}
           src={images[currentIndex]}
           alt={`${productName} - ${currentIndex + 1}`}
           fill
@@ -97,10 +109,17 @@ export default function ImageGallery({
             objectFit: "contain",
             objectPosition: "center",
             padding: "10px",
+            animation: "fadeInImage 0.4s ease-in-out",
           }}
           sizes="(max-width: 768px) 100vw, 300px"
           priority={false}
         />
+        <style>{`
+          @keyframes fadeInImage {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+        `}</style>
       </div>
 
       {/* Navigation Arrows */}
