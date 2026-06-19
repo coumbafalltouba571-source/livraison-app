@@ -42,23 +42,50 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
       return;
     }
 
+    console.log("📝 Début de la validation de la commande...");
     setLoading(true);
+    
+    // Timeout de sécurité: 30 secondes
+    let timeoutId: NodeJS.Timeout | null = null;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error("TIMEOUT: La création de la commande a dépassé 30 secondes. Vérifiez votre connexion Internet et Firebase."));
+      }, 30000);
+    });
+
     try {
       const dateLivraison = new Date();
       dateLivraison.setDate(dateLivraison.getDate() + 1);
 
-      const commandeId = await createCommand({
-        telephone: formData.telephone,
+      console.log("📦 Données de la commande:", {
         client: formData.client,
+        telephone: formData.telephone,
         depart: formData.depart,
         destination: formData.destination,
         description: formData.description,
         prix,
-        statut: "en attente",
-        dateLivraison,
+        type: formData.type,
       });
 
-      setSuccessMessage("✅ Commande créée avec succès!");
+      // Race entre createCommand et timeout
+      const commandeId = await Promise.race([
+        createCommand({
+          telephone: formData.telephone,
+          client: formData.client,
+          depart: formData.depart,
+          destination: formData.destination,
+          description: formData.description,
+          prix,
+          statut: "en attente",
+          dateLivraison,
+        }),
+        timeoutPromise,
+      ]);
+
+      if (timeoutId) clearTimeout(timeoutId);
+
+      console.log("✅ Commande créée avec succès:", commandeId);
+      setSuccessMessage("✅ Commande enregistrée avec succès!");
 
       // Envoyer sur WhatsApp
       const message =
@@ -86,10 +113,35 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
         onSuccess?.();
       }, 2000);
     } catch (error) {
-      console.error("Erreur:", error);
-      alert("Erreur lors de la création de la commande");
+      console.error("❌ Erreur lors de la création de la commande:", error);
+      
+      if (timeoutId) clearTimeout(timeoutId);
+
+      let errorMessage = "Erreur lors de la création de la commande";
+      
+      if (error instanceof Error) {
+        console.error("📋 Détails de l'erreur:");
+        console.error("   Message:", error.message);
+        console.error("   Stack:", error.stack);
+        
+        if (error.message.includes("TIMEOUT")) {
+          errorMessage = "⏱️ Timeout: La sauvegarde a pris trop longtemps. Vérifiez votre connexion Internet et que Firebase est configuré correctement.";
+        } else if (error.message.includes("permission-denied") || error.message.includes("Permission denied")) {
+          errorMessage = "🔒 Erreur de permission: Les règles Firestore ne permettent pas l'accès. Vérifiez firestore.rules et déployez avec 'firebase deploy --only firestore:rules'";
+        } else if (error.message.includes("project not found") || error.message.includes("Project not found")) {
+          errorMessage = "❌ Projet Firebase non trouvé. Vérifiez la configuration dans .env.local";
+        } else if (error.message.includes("missing or insufficient permissions")) {
+          errorMessage = "🔒 Permissions insuffisantes. Vérifiez les règles Firestore.";
+        } else {
+          errorMessage = `❌ ${error.message}`;
+        }
+      }
+      
+      alert(errorMessage);
+      setSuccessMessage("");
     } finally {
       setLoading(false);
+      if (timeoutId) clearTimeout(timeoutId);
     }
   };
 

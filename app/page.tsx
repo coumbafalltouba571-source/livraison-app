@@ -30,6 +30,7 @@ export default function Home() {
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [modePayement, setModePayement] = useState("");
   
   // Recherche intelligente des quartiers
@@ -48,34 +49,77 @@ export default function Home() {
   // Quartiers disponibles
   const quartiers = QUARTIERS_DAKAR;
 
-  // Nouvelle fonction intégrée - Firestore + WhatsApp
+  // Nouvelle fonction intégrée - Firestore + WhatsApp avec Timeout
   const envoyerCommande = async () => {
+    console.log("🔄 DÉBUT: Tentative de validation de la commande");
+    console.log("📋 Données du formulaire:", {
+      telephone,
+      nomClient,
+      depart,
+      destination,
+      description,
+      prix,
+      modePayement,
+    });
+    
     setIsLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    let timeoutHandle: NodeJS.Timeout | null = null;
+    
     try {
-      // 1. Sauvegarder dans Firestore
-      const dateLivraison = new Date();
-      dateLivraison.setDate(dateLivraison.getDate() + 1); // Livraison par défaut demain
+      // Créer une fonction avec timeout pour éviter les blocages infinis
+      const createCommandWithTimeout = (timeoutMs: number = 30000): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          // Timeout de sécurité
+          timeoutHandle = setTimeout(() => {
+            const errorMsg = `⏱️ Timeout Firebase: La requête a pris plus de ${timeoutMs / 1000}s`;
+            console.error(errorMsg);
+            reject(new Error(errorMsg));
+          }, timeoutMs);
 
-      const commandeId = await createCommand({
-        telephone,
-        nomClient,
-        depart,
-        destination,
-        description,
-        prix,
-        modePayement,
-        statut: "en attente",
-        dateLivraison,
-        client: nomClient, // Sauvegarde le nom du client
-      });
+          // Appeler createCommand
+          createCommand({
+            telephone,
+            nomClient,
+            depart,
+            destination,
+            description,
+            prix,
+            modePayement,
+            statut: "en attente",
+            dateLivraison: (() => {
+              const date = new Date();
+              date.setDate(date.getDate() + 1);
+              return date;
+            })(),
+            client: nomClient,
+          })
+            .then((commandeId) => {
+              if (timeoutHandle) clearTimeout(timeoutHandle);
+              console.log("✅ createCommand réussi, ID:", commandeId);
+              resolve(commandeId);
+            })
+            .catch((err) => {
+              if (timeoutHandle) clearTimeout(timeoutHandle);
+              console.error("❌ createCommand erreur:", err);
+              reject(err);
+            });
+        });
+      };
 
-      console.log("✅ Commande sauvegardée dans Firestore:", commandeId);
+      // 1. Sauvegarder dans Firestore avec timeout
+      console.log("⏳ Appel de createCommand avec timeout de 30s...");
+      const commandeId = await createCommandWithTimeout(30000);
+
+      console.log("✅ Commande sauvegardée avec succès dans Firestore:", commandeId);
 
       // 2. Afficher le message de succès
       setSuccessMessage("✅ Commande enregistrée avec succès!");
       setTimeout(() => setSuccessMessage(""), 3000);
 
       // 3. Envoyer le message WhatsApp
+      console.log("📱 Ouverture du dialogue WhatsApp...");
       const origin = typeof window !== "undefined" ? window.location.origin : "";
       const message =
         `Nouvelle commande 🚚%0A%0A` +
@@ -96,37 +140,59 @@ export default function Home() {
         );
       }
 
+      console.log("✅ Dialogue WhatsApp ouvert");
+
       // 4. Réinitialiser le formulaire
       setTimeout(() => {
+        console.log("🔄 Réinitialisation du formulaire...");
         setNomClient("");
         setTelephone("");
         setDepart("");
         setDestination("");
         setDescription("");
         setModePayement("");
+        console.log("✅ Formulaire réinitialisé");
       }, 1000);
     } catch (error) {
-      console.error("❌ Erreur lors de la sauvegarde:", error);
+      console.error("❌ ERREUR GÉNÉRALE LORS DE LA VALIDATION:", error);
       
       // Afficher plus de détails sur l'erreur
+      let errorMessage = "❌ Erreur lors de la sauvegarde de la commande";
+      
       if (error instanceof Error) {
-        console.error("Message d'erreur:", error.message);
-        console.error("Code d'erreur:", (error as unknown as { code?: string }).code);
+        console.error("Message d'erreur complet:", error.message);
+        console.error("Stack trace:", error.stack);
         
-        if ((error as unknown as { code?: string }).code === "permission-denied") {
+        const errorCode = (error as unknown as { code?: string }).code;
+        console.error("Code d'erreur Firebase:", errorCode);
+        
+        if (errorCode === "permission-denied") {
           console.error("🔒 SOLUTION: Les règles Firestore ne permettent pas l'accès.");
-          console.error("1. Allez à Firebase Console → Firestore → Règles");
-          console.error("2. Remplacez par les règles temporaires (voir FIRESTORE_SETUP.md)");
-          console.error("3. Déployez avec: firebase deploy --only firestore:rules");
-          alert("❌ Erreur de permission Firestore. Consultez la console pour les solutions.");
+          console.error("   1. Allez à Firebase Console → Firestore → Règles");
+          console.error("   2. Remplacez par les règles temporaires (voir FIRESTORE_SETUP.md)");
+          console.error("   3. Déployez avec: firebase deploy --only firestore:rules");
+          errorMessage = "❌ Erreur de permission Firestore. Consultez la console pour les solutions.";
+        } else if (error.message.includes("Timeout") || error.message.includes("⏱️")) {
+          errorMessage = "❌ La connexion a dépassé le délai d'attente (30s). Vérifiez votre connexion Internet.";
+        } else if (error.message.includes("Failed to initialize Cloud Firestore")) {
+          errorMessage = "❌ Configuration Firebase invalide. Vérifiez les clés d'environnement.";
         } else {
-          alert(`❌ Erreur: ${error.message}`);
+          errorMessage = `❌ Erreur Firebase: ${error.message}`;
         }
       } else {
-        alert("❌ Erreur lors de la sauvegarde de la commande. Veuillez réessayer.");
+        console.error("Erreur non-Error:", error);
       }
+      
+      console.error("📢 Message utilisateur:", errorMessage);
+      setErrorMessage(errorMessage);
+      setTimeout(() => setErrorMessage(""), 5000); // Afficher pendant 5 secondes
     } finally {
+      console.log("🏁 Fin de la tentative de validation");
+      // S'assurer que le timeout est bien effacé
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      // Toujours remettre le loading à false
       setIsLoading(false);
+      console.log("✅ isLoading remis à false");
     }
   };
   return (
@@ -1244,6 +1310,27 @@ export default function Home() {
               }}
             >
               {successMessage}
+            </div>
+          )}
+
+          {/* Message d'erreur */}
+          {errorMessage && (
+            <div
+              style={{
+                background: "rgba(239, 68, 68, 0.1)",
+                border: "2px solid #ef4444",
+                color: "#ef4444",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                marginBottom: "24px",
+                textAlign: "center",
+                fontWeight: "600",
+                animation: "slideIn 0.3s ease",
+                fontSize: "14px",
+                lineHeight: "1.4",
+              }}
+            >
+              {errorMessage}
             </div>
           )}
 

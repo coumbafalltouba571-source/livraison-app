@@ -39,7 +39,19 @@ export async function createCommand(
   commandData: Omit<Command, "id" | "createdAt" | "updatedAt">
 ): Promise<string> {
   try {
-    console.log(`📝 Tentative d'écriture dans la collection: "${COMMANDS_COLLECTION}"`);
+    console.log(`📝 [createCommand] Tentative d'écriture dans la collection: "${COMMANDS_COLLECTION}"`);
+    console.log(`📝 [createCommand] Données à enregistrer:`, {
+      telephone: commandData.telephone,
+      nomClient: commandData.nomClient,
+      depart: commandData.depart,
+      destination: commandData.destination,
+      prix: commandData.prix,
+      modePayement: commandData.modePayement,
+      statut: commandData.statut,
+    });
+    
+    console.log(`📝 [createCommand] Instance Firestore:`, { db: !!db });
+    
     const docRef = await addDoc(collection(db, COMMANDS_COLLECTION), {
       ...commandData,
       statut: commandData.statut || "en attente",
@@ -50,15 +62,35 @@ export async function createCommand(
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
-    console.log(`✅ Commande créée avec succès: ${docRef.id}`);
+    
+    console.log(`✅ [createCommand] Commande créée avec succès!`);
+    console.log(`✅ [createCommand] ID de la commande: ${docRef.id}`);
+    console.log(`✅ [createCommand] URL du document: /commandes/${docRef.id}`);
+    
     return docRef.id;
   } catch (error) {
-    console.error(`❌ Firestore Error - Collection: "${COMMANDS_COLLECTION}"`);
-    console.error("Erreur lors de la création de la commande:", error);
+    console.error(`❌ [createCommand] Firestore Error - Collection: "${COMMANDS_COLLECTION}"`);
+    console.error(`❌ [createCommand] Erreur lors de la création de la commande:`, error);
+    
     if (error instanceof Error) {
-      console.error("Message d'erreur:", error.message);
-      console.error("Code:", (error as unknown as { code?: string }).code);
+      console.error(`❌ [createCommand] Message d'erreur:`, error.message);
+      console.error(`❌ [createCommand] Code:`, (error as unknown as { code?: string }).code);
+      console.error(`❌ [createCommand] Stack:`, error.stack);
+      
+      // Analyser l'erreur
+      const errorCode = (error as unknown as { code?: string }).code;
+      if (errorCode === "permission-denied") {
+        console.error(`❌ [createCommand] 🔒 Erreur de permission Firestore`);
+        console.error(`   → Les règles Firestore ne permettent pas l'écriture`);
+        console.error(`   → Vérifiez: https://console.firebase.google.com → Firestore → Règles`);
+      } else if (errorCode === "unauthenticated") {
+        console.error(`❌ [createCommand] 🔐 Authentification manquante`);
+      } else if (error.message.includes("Failed to initialize Cloud Firestore")) {
+        console.error(`❌ [createCommand] ⚙️ Configuration Firebase invalide`);
+        console.error(`   → Vérifiez les clés d'environnement dans .env.local`);
+      }
     }
+    
     throw error;
   }
 }
