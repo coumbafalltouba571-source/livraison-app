@@ -48,11 +48,13 @@ export default function ShoppingCart({
     console.log("📋 Données client:", { clientName, clientPhone, paymentMethod });
 
     // Timeout de sécurité augmenté à 30 secondes (Firestore peut être lent)
+    let isTimedOut = false;
     const timeoutId = setTimeout(() => {
+      isTimedOut = true;
       setIsProcessing(false);
       setProcessingMessage("");
       console.error("❌ TIMEOUT: Firestore n'a pas répondu après 30 secondes");
-      setErrorMessage("⏱️ Délai d'attente dépassé. Vérifiez votre connexion et réessayez.");
+      setErrorMessage("⏱️ TIMEOUT (30s). Possible causes:\n   1. Clé API Firebase FAUSSE (vérifiez .env.local - ne doit pas avoir 'xxx')\n   2. Connexion Internet lente\n   3. Serveur Firestore indisponible\n→ Vérifiez la console (F12) pour les erreurs détaillées");
     }, 30000);
 
     try {
@@ -146,14 +148,28 @@ export default function ShoppingCart({
       console.error("❌ === ERREUR VALIDATION COMMANDE ===");
       console.error("Erreur complète:", error);
 
+      const errorDetails = error as any;
+      const errorCode = errorDetails?.code;
       let errorMsg = "Erreur lors de la création de la commande";
+      
       if (error instanceof Error) {
-        errorMsg = error.message;
         console.error("Message d'erreur:", error.message);
+        console.error("Code d'erreur:", errorCode);
         console.error("Stack trace:", error.stack);
+        errorMsg = error.message;
+        
+        // Améliorations pour les erreurs spécifiques
+        if (errorCode === "permission-denied") {
+          errorMsg = `❌ ERREUR PERMISSION\nRègles Firestore invalides.\n→ Allez à Firebase Console → Firestore → Règles\n→ Remplacez par: allow read, write: if true;`;
+        } else if (errorCode === "unauthenticated") {
+          errorMsg = `❌ ERREUR: Configuration Firebase invalide.\nClé API est FAUSSE ou MANQUANTE dans .env.local`;
+        } else if (error.message.includes("Failed to initialize") || 
+                   error.message.includes("Could not initialize")) {
+          errorMsg = `❌ ERREUR FIRESTORE\nVotre clé API dans .env.local est FAUSSE\n- Doit commencer par AIzaSy mais PAS contenir 'xxx'\n- Consultez la console (F12) pour plus de détails`;
+        }
       }
 
-      setErrorMessage(`❌ ${errorMsg}`);
+      setErrorMessage(errorMsg);
       setProcessingMessage("");
       setSuccessMessage("");
       setIsProcessing(false);

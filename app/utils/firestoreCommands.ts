@@ -69,29 +69,52 @@ export async function createCommand(
     
     return docRef.id;
   } catch (error) {
-    console.error(`❌ [createCommand] Firestore Error - Collection: "${COMMANDS_COLLECTION}"`);
-    console.error(`❌ [createCommand] Erreur lors de la création de la commande:`, error);
+    console.error(`❌ [createCommand] ERREUR COMPLÈTE FIRESTORE:`);
+    console.error(`   Collection: "${COMMANDS_COLLECTION}"`);
+    console.error(`   Erreur brute:`, error);
+    
+    let detailedErrorMsg = "Erreur Firestore inconnue";
     
     if (error instanceof Error) {
-      console.error(`❌ [createCommand] Message d'erreur:`, error.message);
-      console.error(`❌ [createCommand] Code:`, (error as unknown as { code?: string }).code);
-      console.error(`❌ [createCommand] Stack:`, error.stack);
+      console.error(`   Message: ${error.message}`);
+      console.error(`   Stack: ${error.stack}`);
+      detailedErrorMsg = error.message;
+      
+      const errorCode = (error as unknown as { code?: string }).code;
+      const errorDetails = error as any;
+      
+      console.error(`   Code: ${errorCode}`);
+      console.error(`   Détails complets:`, errorDetails);
       
       // Analyser l'erreur
-      const errorCode = (error as unknown as { code?: string }).code;
       if (errorCode === "permission-denied") {
-        console.error(`❌ [createCommand] 🔒 Erreur de permission Firestore`);
-        console.error(`   → Les règles Firestore ne permettent pas l'écriture`);
-        console.error(`   → Vérifiez: https://console.firebase.google.com → Firestore → Règles`);
+        console.error(`   🔒 ERREUR: Permissions Firestore insuffisantes`);
+        console.error(`      → Solution: https://console.firebase.google.com → Firestore → Règles`);
+        console.error(`      → Remplacer les règles par: allow read, write: if true;`);
+        detailedErrorMsg = `Permission denied: ${error.message}`;
       } else if (errorCode === "unauthenticated") {
-        console.error(`❌ [createCommand] 🔐 Authentification manquante`);
-      } else if (error.message.includes("Failed to initialize Cloud Firestore")) {
-        console.error(`❌ [createCommand] ⚙️ Configuration Firebase invalide`);
-        console.error(`   → Vérifiez les clés d'environnement dans .env.local`);
+        console.error(`   🔐 ERREUR: Authentification manquante`);
+        console.error(`      → Configuration Firebase invalide`);
+        detailedErrorMsg = `Unauthenticated: ${error.message}`;
+      } else if (errorCode === "invalid-argument") {
+        console.error(`   ⚠️ ERREUR: Argument invalide`);
+        console.error(`      → Les données envoyées ne sont pas valides`);
+        detailedErrorMsg = `Invalid argument: ${error.message}`;
+      } else if (error.message.includes("Could not initialize Cloud Firestore") || 
+                 error.message.includes("Failed to initialize")) {
+        console.error(`   ⚙️ ERREUR: Initialisation Firestore échouée`);
+        console.error(`      → Les clés d'environnement dans .env.local sont FAUSSE ou MANQUANTE`);
+        console.error(`      → Vérifiez: NEXT_PUBLIC_FIREBASE_API_KEY`);
+        console.error(`      → Ne doit pas contenir 'xxx'`);
+        detailedErrorMsg = `Firebase initialization failed: ${error.message}`;
       }
+    } else {
+      detailedErrorMsg = String(error);
+      console.error(`   Erreur (non-Error):`, error);
     }
     
-    throw error;
+    console.error(`❌ [createCommand] MESSAGE FINAL À LANCER:`, detailedErrorMsg);
+    throw new Error(detailedErrorMsg);
   }
 }
 

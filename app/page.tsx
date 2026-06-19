@@ -154,30 +154,38 @@ export default function Home() {
         console.log("✅ Formulaire réinitialisé");
       }, 1000);
     } catch (error) {
-      console.error("❌ ERREUR GÉNÉRALE LORS DE LA VALIDATION:", error);
+      // Nettoyer le timeout
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      setIsLoading(false);
       
-      // Afficher plus de détails sur l'erreur
+      console.error("❌ ERREUR COMPLÈTE - DÉTAILS:", error);
+      
       let errorMessage = "❌ Erreur lors de la sauvegarde de la commande";
+      const errorDetails = error as any;
       
       if (error instanceof Error) {
-        console.error("Message d'erreur complet:", error.message);
+        console.error("Message complet:", error.message);
         console.error("Stack trace:", error.stack);
         
-        const errorCode = (error as unknown as { code?: string }).code;
+        const errorCode = errorDetails.code;
         console.error("Code d'erreur Firebase:", errorCode);
+        console.error("Message détaillé:", error.message);
         
+        // Vérifier les types d'erreurs spécifiques
         if (errorCode === "permission-denied") {
-          console.error("🔒 SOLUTION: Les règles Firestore ne permettent pas l'accès.");
-          console.error("   1. Allez à Firebase Console → Firestore → Règles");
-          console.error("   2. Remplacez par les règles temporaires (voir FIRESTORE_SETUP.md)");
-          console.error("   3. Déployez avec: firebase deploy --only firestore:rules");
-          errorMessage = "❌ Erreur de permission Firestore. Consultez la console pour les solutions.";
+          errorMessage = "❌ ERREUR PERMISSION: Les règles Firestore ne permettent pas l'accès.\n🔧 SOLUTION: Allez à Firebase Console → Firestore → Règles → Remplacez par: allow read, write: if true;";
+        } else if (errorCode === "unauthenticated") {
+          errorMessage = "❌ ERREUR: Authentification Firestore manquante. Configuration Firebase invalide.";
+        } else if (errorCode === "invalid-argument") {
+          errorMessage = `❌ ERREUR: Donnée invalide - ${error.message}`;
         } else if (error.message.includes("Timeout") || error.message.includes("⏱️")) {
-          errorMessage = "❌ La connexion a dépassé le délai d'attente (30s). Vérifiez votre connexion Internet.";
-        } else if (error.message.includes("Failed to initialize Cloud Firestore")) {
-          errorMessage = "❌ Configuration Firebase invalide. Vérifiez les clés d'environnement.";
+          errorMessage = `❌ TIMEOUT après 30 secondes. Possible causes:\n   1. Connexion Internet lente ou coupée\n   2. Clé API Firebase FAUSSE (check console pour détails)\n   3. Serveur Firestore indisponible`;
+        } else if (error.message.includes("Failed to initialize") || 
+                   error.message.includes("Could not initialize") ||
+                   error.message.includes("Firebase initialization failed")) {
+          errorMessage = `❌ ERREUR INITIALISATION FIREBASE:\n   Votre clé API dans .env.local est FAUSSE ou MANQUANTE\n   - Ne doit pas contenir 'xxx'\n   - Allez à: https://console.firebase.google.com → livraison-app → Settings → Web App → Config\n   - Copiez les VRAIES valeurs`;
         } else {
-          errorMessage = `❌ Erreur Firebase: ${error.message}`;
+          errorMessage = `❌ ERREUR FIREBASE: ${error.message}`;
         }
       } else {
         console.error("Erreur non-Error:", error);
@@ -1291,6 +1299,25 @@ export default function Home() {
                   {formatPrix(prix)}
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Message de traitement */}
+          {isLoading && !successMessage && !errorMessage && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)",
+                border: "2px solid rgba(59, 130, 246, 0.3)",
+                color: "#3b82f6",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                marginBottom: "24px",
+                textAlign: "center",
+                fontWeight: "600",
+                animation: "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              }}
+            >
+              ⏳ Traitement de votre commande en cours...
             </div>
           )}
 
