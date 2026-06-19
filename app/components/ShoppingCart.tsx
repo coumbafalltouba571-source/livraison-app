@@ -21,6 +21,7 @@ export default function ShoppingCart({
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [processingMessage, setProcessingMessage] = useState("");
 
   const handleRemoveItem = (productId: string) => {
     const newCart = removeFromCart(cart, productId);
@@ -41,14 +42,15 @@ export default function ShoppingCart({
     setIsProcessing(true);
     setErrorMessage("");
     setSuccessMessage("");
+    setProcessingMessage("⏳ Création de votre commande en cours...");
 
     console.log("🛒 === DÉBUT VALIDATION COMMANDE ===");
     console.log("📋 Données client:", { clientName, clientPhone, paymentMethod });
-    setErrorMessage("⏳ Création de votre commande en cours...");
 
     // Timeout de sécurité augmenté à 30 secondes (Firestore peut être lent)
     const timeoutId = setTimeout(() => {
       setIsProcessing(false);
+      setProcessingMessage("");
       console.error("❌ TIMEOUT: Firestore n'a pas répondu après 30 secondes");
       setErrorMessage("⏱️ Délai d'attente dépassé. Vérifiez votre connexion et réessayez.");
     }, 30000);
@@ -98,6 +100,7 @@ export default function ShoppingCart({
       // Marquer succès IMMÉDIATEMENT (avant WhatsApp)
       console.log("✅ Affichage message succès");
       setSuccessMessage("✅ Commande enregistrée avec succès!");
+      setProcessingMessage("");
       setIsProcessing(false);
 
       console.log("📲 Tentative d'envoi WhatsApp en arrière-plan...");
@@ -151,6 +154,8 @@ export default function ShoppingCart({
       }
 
       setErrorMessage(`❌ ${errorMsg}`);
+      setProcessingMessage("");
+      setSuccessMessage("");
       setIsProcessing(false);
       console.log("🛒 === FIN VALIDATION COMMANDE - ERREUR ===");
     }
@@ -480,6 +485,25 @@ export default function ShoppingCart({
             </div>
 
             {/* Messages */}
+            {processingMessage && (
+              <div
+                style={{
+                  background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)",
+                  color: "#1d4ed8",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  border: "1px solid rgba(59, 130, 246, 0.2)",
+                  textAlign: "center",
+                  animation: "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                }}
+              >
+                {processingMessage}
+              </div>
+            )}
+
             {errorMessage && (
               <div
                 style={{
