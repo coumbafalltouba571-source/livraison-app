@@ -560,7 +560,7 @@ export default function CommandHistoryContent() {
                         margin: "0 0 4px 0",
                         fontWeight: "600",
                       }}>
-                        💳 Paiement
+                        💳 Mode de paiement
                       </p>
                       <p style={{
                         fontSize: "14px",
@@ -568,10 +568,44 @@ export default function CommandHistoryContent() {
                         margin: 0,
                         fontWeight: "600",
                       }}>
-                        {command.modePayement || "Non spécifié"}
+                        {command.modePayement || command.paymentMethod || "Non spécifié"}
                       </p>
                     </div>
                   </div>
+
+                  {command.paymentStatus && (
+                    <div style={{
+                      marginTop: "16px",
+                      paddingTop: "16px",
+                      borderTop: "1px solid #e5e7eb",
+                    }}>
+                      <p style={{
+                        fontSize: "12px",
+                        color: "#9ca3af",
+                        margin: "0 0 8px 0",
+                        fontWeight: "600",
+                      }}>
+                        📊 Statut du paiement
+                      </p>
+                      <div
+                        style={{
+                          display: "inline-block",
+                          padding: "8px 16px",
+                          background: command.paymentStatus === "Confirmé" 
+                            ? "#10b981" 
+                            : command.paymentStatus === "À payer à la livraison"
+                            ? "#f59e0b"
+                            : "#ef4444",
+                          color: "#ffffff",
+                          borderRadius: "20px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {command.paymentStatus}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

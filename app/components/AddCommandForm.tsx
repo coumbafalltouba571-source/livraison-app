@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { createCommand } from "@/app/utils/firestoreCommands";
+import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
+import PaymentSelector from "./PaymentSelector";
 import Link from "next/link";
 import { QUARTIERS_DAKAR } from "@/app/utils/tarifs";
 
@@ -18,6 +20,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
     prix: 0,
     dateLivraison: "",
     notes: "",
+    paymentMethod: "livraison",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -38,6 +41,11 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
       return;
     }
 
+    if (!formData.paymentMethod) {
+      alert("Veuillez choisir un mode de paiement");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const dateLivraison = formData.dateLivraison
@@ -48,7 +56,13 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
             return date;
           })();
 
-      await createCommand({
+      // Déterminer le statut du paiement selon le mode
+      let paymentStatus: "En attente" | "Confirmé" | "À payer à la livraison" | "Annulé" = "En attente";
+      if (formData.paymentMethod === "livraison") {
+        paymentStatus = "À payer à la livraison";
+      }
+
+      const commandId = await createCommand({
         telephone: formData.telephone,
         client: formData.client || formData.telephone,
         depart: formData.depart,
@@ -58,7 +72,26 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
         statut: "en attente",
         dateLivraison,
         notes: formData.notes,
+        paymentMethod: formData.paymentMethod,
+        paymentStatus: paymentStatus,
       });
+
+      // Envoyer les messages WhatsApp
+      const command = {
+        id: commandId,
+        telephone: formData.telephone,
+        client: formData.client || formData.telephone,
+        nomClient: formData.client || formData.telephone,
+        destination: formData.destination,
+        prix: formData.prix,
+        paymentMethod: formData.paymentMethod,
+        dateLivraison: dateLivraison,
+        description: formData.notes || "",
+      };
+
+      setTimeout(() => {
+        sendWhatsAppNotifications(command as any);
+      }, 500);
 
       setSuccessMessage("✅ Commande créée avec succès!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -72,6 +105,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
         prix: 0,
         dateLivraison: "",
         notes: "",
+        paymentMethod: "livraison",
       });
 
       onCommandAdded?.();
@@ -214,6 +248,17 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
+
+        {/* Sélecteur de paiement */}
+        <PaymentSelector
+          value={formData.paymentMethod}
+          onChange={(method) =>
+            setFormData((prev) => ({
+              ...prev,
+              paymentMethod: method,
+            }))
+          }
+        />
 
         {/* Boutons */}
         <div className="flex gap-4 pt-4">

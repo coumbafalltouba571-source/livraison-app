@@ -31,6 +31,8 @@ export interface Command {
   client?: string;
   modePayement?: string;
   paymentMethod?: string;
+  paymentStatus?: "En attente" | "Confirmé" | "À payer à la livraison" | "Annulé";
+  paymentStatusDetails?: string;
   productId?: string;
   productName?: string;
   productImage?: string;

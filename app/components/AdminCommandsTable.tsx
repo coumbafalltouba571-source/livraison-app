@@ -248,6 +248,17 @@ export default function AdminCommandsTable({
             </th>
             <th style={{
               padding: "16px 12px",
+              textAlign: "center",
+              fontSize: "13px",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: "2px solid rgba(255,255,255,0.1)",
+            }}>
+              💳 Paiement
+            </th>
+            <th style={{
+              padding: "16px 12px",
               textAlign: "left",
               fontSize: "13px",
               fontWeight: "600",
@@ -399,6 +410,29 @@ export default function AdminCommandsTable({
                   }}
                 >
                   {STATUS_EMOJIS[command.statut]} {command.statut}
+                </div>
+              </td>
+              <td style={{
+                padding: "12px 12px",
+                textAlign: "center",
+              }}>
+                <div
+                  style={{
+                    display: "inline-block",
+                    padding: "6px 12px",
+                    background: command.paymentStatus === "Confirmé" 
+                      ? "#10b981" 
+                      : command.paymentStatus === "À payer à la livraison"
+                      ? "#f59e0b"
+                      : "#ef4444",
+                    color: "#ffffff",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {command.paymentStatus || "En attente"}
                 </div>
               </td>
               <td style={{

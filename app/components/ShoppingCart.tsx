@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { CartState, DEFAULT_PRODUCTS, removeFromCart, updateQuantity } from "@/app/utils/shop";
 import { createCommand } from "@/app/utils/firestoreCommands";
+import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
+import PaymentSelector from "./PaymentSelector";
+import WavePayment from "./WavePayment";
+import OrangeMoneyPayment from "./OrangeMoneyPayment";
 
 interface ShoppingCartProps {
   cart: CartState;
@@ -99,6 +103,12 @@ export default function ShoppingCart({
       // Créer la commande dans Firestore
       let commandResult: string;
       try {
+        // Déterminer le statut du paiement selon le mode
+        let paymentStatus: "En attente" | "Confirmé" | "À payer à la livraison" | "Annulé" = "En attente";
+        if (paymentMethod === "livraison") {
+          paymentStatus = "À payer à la livraison";
+        }
+
         commandResult = await createCommand({
           telephone: clientPhone,
           phone: clientPhone,
@@ -112,6 +122,7 @@ export default function ShoppingCart({
           total: cart.total,
           modePayement: paymentMethod,
           paymentMethod,
+          paymentStatus: paymentStatus,
           statut: "en attente",
           status: "en attente",
           productId: productIds,
@@ -148,29 +159,22 @@ export default function ShoppingCart({
 
       console.log("📲 Tentative d'envoi WhatsApp en arrière-plan...");
 
-      // Envoyer WhatsApp en ARRIÈRE-PLAN sans bloquer (fire and forget)
-      if (typeof window !== "undefined") {
-        const message =
-          `Nouvelle commande boutique 🛒%0A%0A` +
-          `Nom: ${clientName}%0A` +
-          `Téléphone: ${clientPhone}%0A` +
-          `Adresse: ${clientAddress.trim()}%0A` +
-          `Produits: ${description}%0A` +
-          `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
-          `Paiement: ${paymentMethod}%0A%0A` +
-          `ID Commande: ${commandResult}`;
-
-        // Ouvrir WhatsApp SANS attendre la réponse
-        try {
-          window.open(
-            `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
-            "_blank"
-          );
-          console.log("📲 WhatsApp ouvert");
-        } catch (whatsappError) {
-          console.warn("⚠️ WhatsApp non disponible:", whatsappError);
-        }
-      }
+      // Envoyer les messages WhatsApp
+      setTimeout(() => {
+        const command = {
+          id: commandResult,
+          telephone: clientPhone,
+          client: clientName,
+          nomClient: clientName,
+          destination: clientAddress.trim(),
+          prix: cart.total,
+          paymentMethod: paymentMethod,
+          dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          description: `Achat boutique: ${description}`,
+          orderItems: orderItems,
+        };
+        sendWhatsAppNotifications(command as any);
+      }, 500);
 
       console.log("🔄 Fermeture du modal et vidage du panier dans 1.2s...");
 
@@ -526,50 +530,48 @@ export default function ShoppingCart({
               </div>
 
               {/* Paiement */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "600",
-                    color: "#1f2937",
-                  }}
-                >
-                  💳 Méthode de paiement *
-                </label>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
-                  }}
-                >
-                  {["Wave", "Orange Money", "Cash", "Carte"].map((method) => (
-                    <button
-                      key={method}
-                      onClick={() => setPaymentMethod(method)}
-                      style={{
-                        padding: "10px",
-                        border:
-                          paymentMethod === method
-                            ? "2px solid #7c3aed"
-                            : "1px solid #e5e7eb",
-                        background:
-                          paymentMethod === method
-                            ? "rgba(124, 58, 237, 0.1)"
-                            : "#f9fafb",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        fontSize: "12px",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      {method}
-                    </button>
-                  ))}
-                </div>
+              <div style={{ marginBottom: "24px" }}>
+                <PaymentSelector
+                  value={paymentMethod}
+                  onChange={(method) => setPaymentMethod(method)}
+                />
               </div>
+
+              {/* Affichage Wave si sélectionné */}
+              {paymentMethod === "wave" && (
+                <WavePayment
+                  total={cart.total}
+                  clientName={clientName}
+                  onPaymentClick={() => {
+                    console.log("Redirection Wave effectuée");
+                  }}
+                />
+              )}
+
+              {/* Affichage Orange Money si sélectionné */}
+              {paymentMethod === "orange" && (
+                <OrangeMoneyPayment
+                  total={cart.total}
+                  clientName={clientName}
+                  clientPhone={clientPhone}
+                />
+              )}
+
+              {/* Rappel paiement à la livraison */}
+              {paymentMethod === "livraison" && (
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%)",
+                  border: "1px solid rgba(34, 197, 94, 0.3)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "24px",
+                  fontSize: "14px",
+                  color: "#15803d",
+                  fontWeight: "600",
+                }}>
+                  💵 Vous paierez {cart.total.toLocaleString("fr-FR")} FCFA au livreur à la réception
+                </div>
+              )}
             </div>
 
             {/* Messages */}
