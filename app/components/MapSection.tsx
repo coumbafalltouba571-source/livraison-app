@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "react-leaflet";
 import { useEffect, useState } from "react";
+import { calculerDistance, QUARTIERS_COORDS } from "@/app/utils/tarifs";
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -25,44 +26,27 @@ const DefaultIcon = L.icon({
   shadowSize: [41, 41],
 });
 
+// Icône personnalisée pour départ
+const DepartIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+// Icône personnalisée pour destination
+const DestinationIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 L.Marker.prototype.setIcon(DefaultIcon);
-
-const quartiers = {
-  Plateau: [14.6708, -17.4381],
-  Médina: [14.6833, -17.4500],
-  Parcelles: [14.7560, -17.4480],
-  Almadies: [14.7368, -17.5110],
-  Ouakam: [14.7247, -17.4906],
-  Pikine: [14.7645, -17.3900],
-  KeurMassar: [14.7860, -17.3113],
-  GrandYoff: [14.7392, -17.4576],
-  Yoff: [14.7470, -17.4900],
-  Mermoz: [14.7062, -17.4758],
-  SacreCoeur: [14.7285, -17.4638],
-  Liberté6: [14.7448, -17.4549],
-  HLM: [14.6951, -17.4467],
-  Hann: [14.7217, -17.4294],
-  Rufisque: [14.7158, -17.2733],
-  Guediawaye: [14.7761, -17.3956],
-  Diamniadio: [14.7300, -17.2000],
-  Ngor: [14.7449, -17.5150],
-  Fann: [14.6937, -17.4677],
-  Cambérène: [14.7640, -17.4480],
-};
-
-function calculDistance(point1: number[], point2: number[]) {
-  const dx = point1[0] - point2[0];
-  const dy = point1[1] - point2[1];
-
-  return (Math.sqrt(dx * dx + dy * dy) * 111).toFixed(1);
-}
-
-function calculPrix(distance: number) {
-  const prixBase = 1000;
-  const prixParKm = 250;
-
-  return Math.round(prixBase + distance * prixParKm);
-}
 
 function ZoomRoute({ points }: { points: [number, number][] }) {
   const map = useMap();
@@ -85,22 +69,25 @@ export default function MapSection({
   destination?: string;
   prix?: number;
 }) {
-  // Initialiser avec departCoords si disponible, sinon null
-  const [livreurPosition, setLivreurPosition] = useState<[number, number] | null>(() => {
-    const depart_loc = depart && quartiers[depart as keyof typeof quartiers];
-    if (depart_loc && Array.isArray(depart_loc)) {
-      return depart_loc as [number, number];
-    }
-    return null;
-  });
-  const [deliveryStatus, setDeliveryStatus] = useState<"Commande reçue" | "Livreur en route" | "Livraison en cours" | "Livré">("Commande reçue");
+  // Récupérer les coordonnées des quartiers
+  const pointDepart = depart && QUARTIERS_COORDS[depart];
+  const pointDestination = destination && QUARTIERS_COORDS[destination];
   
-  const pointDepart =
-    depart && quartiers[depart as keyof typeof quartiers];
+  const [distance, setDistance] = useState(0);
+  const [deliveryStatus, setDeliveryStatus] = useState<"Commande reçue" | "Livreur en route" | "Livraison en cours" | "Livré">("Commande reçue");
+  const [livreurPosition, setLivreurPosition] = useState<[number, number]>([14.7167, -17.4674]);
 
-  const pointDestination =
-    destination &&
-    quartiers[destination as keyof typeof quartiers];
+  // Calculer la distance
+  useEffect(() => {
+    if (depart && destination) {
+      const d = calculerDistance(depart, destination);
+      setDistance(d);
+    }
+  }, [depart, destination]);
+
+  // Centre par défaut (Dakar)
+  const defaultCenter: [number, number] = [14.7167, -17.4674];
+  const center = pointDepart || defaultCenter;
 
   // Assurer que les coordonnées sont correctement typées
   const departCoords: [number, number] | null = pointDepart
@@ -115,35 +102,11 @@ export default function MapSection({
   const points: [number, number][] =
     departCoords && destinationCoords ? [departCoords, destinationCoords] : [];
 
-  const distance =
-    departCoords && destinationCoords
-      ? calculDistance(departCoords, destinationCoords)
-      : null;
-
-  const prixDynamique = distance
-    ? calculPrix(Number(distance))
-    : null;
-
-  const tempsEstime = distance
-    ? Math.round(Number(distance) * 4)
-    : null;
-
   // Animation du livreur qui se déplace de départ vers destination
   useEffect(() => {
-    // Logs pour déboguer
-    console.log("🗺️ MapSection Debug:");
-    console.log("Départ:", depart, "→", departCoords);
-    console.log("Destination:", destination, "→", destinationCoords);
-    console.log("Points array:", points);
-    console.log("Points length:", points.length);
-
     if (!departCoords || !destinationCoords) {
-      console.warn("⚠️ Coordonnées manquantes - polyline ne s'affichera pas");
       return;
     }
-
-    console.log("✅ Coordonnées valides - démarrage de l'animation");
-    console.log("Interpolation de:", departCoords, "vers:", destinationCoords);
 
     // Simuler le mouvement du livreur
     const steps = 50;
@@ -179,7 +142,7 @@ export default function MapSection({
     }, 500); // Mise à jour toutes les 500ms
 
     return () => clearInterval(interval);
-  }, [departCoords, destinationCoords, points]);
+  }, [departCoords, destinationCoords]);
 
   return (
     <section
@@ -251,7 +214,7 @@ export default function MapSection({
                 fontWeight: "700",
               }}
             >
-              💰 Prix : {prixDynamique} FCFA
+              💰 Prix : {prix || 'N/A'} FCFA
             </div>
 
             <div
@@ -265,7 +228,7 @@ export default function MapSection({
                 fontWeight: "700",
               }}
             >
-              ⏱ Temps : {tempsEstime} min
+              ⏱ Temps : {distance ? Math.round(distance * 4) : 'N/A'} min
             </div>
 
             {/* Statut de livraison */}
@@ -314,152 +277,45 @@ export default function MapSection({
             }}
           >
             <TileLayer
-  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-/>
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
 
-            {Object.entries(quartiers).map(
-              ([nom, position], idx) => (
-                <Marker
-                  key={idx}
-                  position={position as [number, number]}
-                >
-                  <Popup>
-                    <div
-                      style={{
-                        minWidth: "220px",
-                        fontFamily: "sans-serif",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          margin: "0 0 10px",
-                          color: "#2563eb",
-                        }}
-                      >
-                        🚚 Livraison Dakar
-                      </h3>
-
-                      <p>
-                        <strong>📍 Départ :</strong>{" "}
-                        {depart}
-                      </p>
-
-                      <p>
-                        <strong>🎯 Destination :</strong>{" "}
-                        {destination}
-                      </p>
-
-                      <p>
-                        <strong>📏 Distance :</strong>{" "}
-                        {distance} KM
-                      </p>
-
-                      <p>
-                        <strong>⏱ Temps :</strong>{" "}
-                        {tempsEstime} min
-                      </p>
-
-                      <div
-                        style={{
-                          marginTop: "10px",
-                          padding: "10px",
-                          borderRadius: "12px",
-                          background:
-                            "linear-gradient(135deg,#2563eb,#7c3aed)",
-                          color: "white",
-                          fontWeight: "bold",
-                          textAlign: "center",
-                          fontSize: "20px",
-                        }}
-                      >
-                        💰 {prixDynamique} FCFA
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              )
-            )}
-
+            {/* Affiche la polyline si les deux points sont disponibles */}
             {points.length === 2 && (
-              <>
-                {/* Polyline animée */}
-                <Polyline
-                  positions={points}
-                  pathOptions={{
-                    color: "#7c3aed",
-                    weight: 6,
-                    opacity: 1,
-                    dashArray: "10, 5",
-                    lineCap: "round",
-                    lineJoin: "round",
-                  }}
-                />
-
-                {/* Marqueur de départ */}
-                <CircleMarker
-                  center={departCoords!}
-                  radius={12}
-                  pathOptions={{
-                    color: "#22c55e",
-                    fillColor: "#22c55e",
-                    fillOpacity: 1,
-                  }}
-                >
-                  <Tooltip permanent direction="top">
-                    📍 Départ
-                  </Tooltip>
-
-                  <Popup>
-                    🚀 Départ : {depart}
-                  </Popup>
-                </CircleMarker>
-
-                {/* Marqueur de destination */}
-                <CircleMarker
-                  center={destinationCoords!}
-                  radius={12}
-                  pathOptions={{
-                    color: "#ef4444",
-                    fillColor: "#ef4444",
-                    fillOpacity: 1,
-                  }}
-                >
-                  <Tooltip permanent direction="top">
-                    🎯 Destination
-                  </Tooltip>
-
-                  <Popup>
-                    🚚 Destination : {destination}
-                  </Popup>
-                </CircleMarker>
-
-                {/* Marqueur livreur animé */}
-                {livreurPosition && (
-                  <CircleMarker
-                    center={livreurPosition}
-                    radius={10}
-                    pathOptions={{
-                      color: "#facc15",
-                      fillColor: "#facc15",
-                      fillOpacity: 1,
-                      weight: 3,
-                    }}
-                  >
-                    <Tooltip permanent direction="top">
-                      🛵 Livreur - {deliveryStatus}
-                    </Tooltip>
-                    <Popup>
-                      <div style={{ fontFamily: "sans-serif", minWidth: "180px" }}>
-                        <strong>🛵 Livreur</strong>
-                        <p style={{ margin: "5px 0" }}>Statut: {deliveryStatus}</p>
-                      </div>
-                    </Popup>
-                  </CircleMarker>
-                )}
-
-                <ZoomRoute points={points} />
-              </>
+              <Polyline positions={points} color="blue" weight={3} />
             )}
+
+            {/* Marker pour le départ */}
+            {departCoords && (
+              <Marker position={departCoords} icon={DepartIcon}>
+                <Popup>📍 Départ: {depart}</Popup>
+              </Marker>
+            )}
+
+            {/* Marker pour la destination */}
+            {destinationCoords && (
+              <Marker position={destinationCoords} icon={DestinationIcon}>
+                <Popup>📍 Destination: {destination}</Popup>
+              </Marker>
+            )}
+
+            {/* Marker pour la position du livreur */}
+            {livreurPosition && (
+              <CircleMarker
+                center={livreurPosition}
+                radius={8}
+                color="#ef4444"
+                fillColor="#fca5a5"
+                fillOpacity={0.7}
+              >
+                <Tooltip direction="top" offset={[0, -10]} permanent>
+                  🚗 Livreur
+                </Tooltip>
+              </CircleMarker>
+            )}
+
+            {/* Zoom automatique si les deux points sont présents */}
+            {points.length === 2 && <ZoomRoute points={points} />}
           </MapContainer>
         </div>
       </div>
