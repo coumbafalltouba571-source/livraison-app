@@ -30,6 +30,9 @@ const STATUS_EMOJIS: { [key: string]: string } = {
   "annulée": "❌",
 };
 
+const isValidProductImage = (image?: string): image is string =>
+  !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
+
 export default function AdminCommandsTable({
   commands,
   onUpdate,
@@ -73,7 +76,9 @@ export default function AdminCommandsTable({
             {
               productId: command.productId || "",
               productName: command.productName,
-              productImage: command.productImage?.split(",")[0] || "",
+              productImage: isValidProductImage(command.productImage?.split(",")[0])
+                ? command.productImage?.split(",")[0] || ""
+                : "",
               quantity: command.quantity || 1,
               price: command.price || command.prix,
               total: command.total || command.prix,
@@ -309,7 +314,7 @@ export default function AdminCommandsTable({
               <td style={{
                 padding: "12px 12px",
               }}>
-                {getOrderItems(command)[0]?.productImage ? (
+                {isValidProductImage(getOrderItems(command)[0]?.productImage) ? (
                   <Image
                     src={getOrderItems(command)[0].productImage}
                     alt={getOrderItems(command)[0].productName}

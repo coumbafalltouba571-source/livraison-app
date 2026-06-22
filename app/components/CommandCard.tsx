@@ -29,6 +29,9 @@ const STATUS_ICONS: Record<string, string> = {
   annulée: "❌",
 };
 
+const isValidProductImage = (image?: string): image is string =>
+  !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
+
 export default function CommandCard({ command, onUpdate }: CommandCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -91,14 +94,18 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
             {
               productId: command.productId || "",
               productName: command.productName,
-              productImage: command.productImage?.split(",")[0] || "",
+              productImage: isValidProductImage(command.productImage?.split(",")[0])
+                ? command.productImage?.split(",")[0] || ""
+                : "",
               quantity: command.quantity || 1,
               price: command.price || command.prix,
               total: command.total || command.prix,
             },
           ]
         : [];
-  const firstProductImage = orderItems[0]?.productImage;
+  const firstProductImage = isValidProductImage(orderItems[0]?.productImage)
+    ? orderItems[0]?.productImage
+    : "";
   const deliveryAddress = command.address || command.destination;
 
   return (

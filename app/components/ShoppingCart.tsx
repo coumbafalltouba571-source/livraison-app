@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CartState, removeFromCart, updateQuantity } from "@/app/utils/shop";
+import { CartState, DEFAULT_PRODUCTS, removeFromCart, updateQuantity } from "@/app/utils/shop";
 import { createCommand } from "@/app/utils/firestoreCommands";
 
 interface ShoppingCartProps {
@@ -9,6 +9,22 @@ interface ShoppingCartProps {
   onUpdateCart: (newCart: CartState) => void;
   onClose: () => void;
 }
+
+const isValidProductImage = (image?: string): image is string =>
+  !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
+
+const getProductImage = (productId: string, productImage?: string) => {
+  if (isValidProductImage(productImage)) {
+    return productImage;
+  }
+
+  const defaultProductImage = DEFAULT_PRODUCTS.find((product) => product.id === productId)?.image;
+  if (isValidProductImage(defaultProductImage)) {
+    return defaultProductImage;
+  }
+
+  return "";
+};
 
 export default function ShoppingCart({
   cart,
@@ -66,14 +82,14 @@ export default function ShoppingCart({
       const orderItems = cart.items.map((item) => ({
         productId: item.product.id,
         productName: item.product.name,
-        productImage: item.product.image,
+        productImage: getProductImage(item.product.id, item.product.image),
         quantity: item.quantity,
         price: item.product.price,
         total: item.product.price * item.quantity,
       }));
       const productIds = orderItems.map((item) => item.productId).join(",");
       const productNames = orderItems.map((item) => item.productName).join(", ");
-      const productImages = orderItems.map((item) => item.productImage).join(",");
+      const productImage = orderItems[0]?.productImage || "";
       const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
       console.log("📦 Tentative d'enregistrement dans Firestore...");
@@ -100,7 +116,7 @@ export default function ShoppingCart({
           status: "en attente",
           productId: productIds,
           productName: productNames,
-          productImage: productImages,
+          productImage,
           quantity: totalQuantity,
           price: orderItems[0]?.price || cart.total,
           address: clientAddress.trim(),

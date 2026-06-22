@@ -6,6 +6,9 @@ import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/fir
 import Link from "next/link";
 import Image from "next/image";
 
+const isValidProductImage = (image?: string): image is string =>
+  !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
+
 export default function CommandHistoryContent() {
   const searchParams = useSearchParams();
   const telephone = searchParams.get("tel") || "";
@@ -105,7 +108,9 @@ export default function CommandHistoryContent() {
             {
               productId: command.productId || "",
               productName: command.productName,
-              productImage: command.productImage?.split(",")[0] || "",
+              productImage: isValidProductImage(command.productImage?.split(",")[0])
+                ? command.productImage?.split(",")[0] || ""
+                : "",
               quantity: command.quantity || 1,
               price: command.price || command.prix,
               total: command.total || command.prix,
@@ -391,7 +396,7 @@ export default function CommandHistoryContent() {
                       borderRadius: "12px",
                       border: "1px solid #e5e7eb",
                     }}>
-                      {getOrderItems(command)[0].productImage ? (
+                      {isValidProductImage(getOrderItems(command)[0].productImage) ? (
                         <Image
                           src={getOrderItems(command)[0].productImage}
                           alt={getOrderItems(command)[0].productName}
