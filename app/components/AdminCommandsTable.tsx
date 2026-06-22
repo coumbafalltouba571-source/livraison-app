@@ -4,6 +4,7 @@ import { Command, updateCommandStatus } from "@/app/utils/firestoreCommands";
 import { useState } from "react";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
+import Image from "next/image";
 
 interface AdminCommandsTableProps {
   commands: Command[];
@@ -64,6 +65,22 @@ export default function AdminCommandsTable({
     return allStatuses.filter((s) => s !== currentStatus);
   };
 
+  const getOrderItems = (command: Command) =>
+    command.orderItems && command.orderItems.length > 0
+      ? command.orderItems
+      : command.productName
+        ? [
+            {
+              productId: command.productId || "",
+              productName: command.productName,
+              productImage: command.productImage?.split(",")[0] || "",
+              quantity: command.quantity || 1,
+              price: command.price || command.prix,
+              total: command.total || command.prix,
+            },
+          ]
+        : [];
+
   if (loading) {
     return (
       <div style={{
@@ -106,7 +123,7 @@ export default function AdminCommandsTable({
       <table style={{
         width: "100%",
         borderCollapse: "collapse",
-        minWidth: "1200px",
+        minWidth: "1500px",
       }}>
         <thead>
           <tr style={{
@@ -146,6 +163,39 @@ export default function AdminCommandsTable({
               borderBottom: "2px solid rgba(255,255,255,0.1)",
             }}>
               Téléphone
+            </th>
+            <th style={{
+              padding: "16px 12px",
+              textAlign: "left",
+              fontSize: "13px",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: "2px solid rgba(255,255,255,0.1)",
+            }}>
+              Image produit
+            </th>
+            <th style={{
+              padding: "16px 12px",
+              textAlign: "left",
+              fontSize: "13px",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: "2px solid rgba(255,255,255,0.1)",
+            }}>
+              Produit commandé
+            </th>
+            <th style={{
+              padding: "16px 12px",
+              textAlign: "left",
+              fontSize: "13px",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: "2px solid rgba(255,255,255,0.1)",
+            }}>
+              Adresse livraison
             </th>
             <th style={{
               padding: "16px 12px",
@@ -255,6 +305,54 @@ export default function AdminCommandsTable({
                 fontFamily: "monospace",
               }}>
                 {command.telephone}
+              </td>
+              <td style={{
+                padding: "12px 12px",
+              }}>
+                {getOrderItems(command)[0]?.productImage ? (
+                  <Image
+                    src={getOrderItems(command)[0].productImage}
+                    alt={getOrderItems(command)[0].productName}
+                    width={64}
+                    height={64}
+                    style={{
+                      width: "64px",
+                      height: "64px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                      border: "1px solid #e5e7eb",
+                      background: "#f9fafb",
+                      padding: "4px",
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>N/A</span>
+                )}
+              </td>
+              <td style={{
+                padding: "12px 12px",
+                fontSize: "13px",
+                color: "#1f2937",
+                minWidth: "180px",
+              }}>
+                {getOrderItems(command).length > 0
+                  ? getOrderItems(command).map((item) => (
+                      <div key={`${item.productId}-${item.productName}`} style={{ marginBottom: "6px" }}>
+                        <div style={{ fontWeight: "700" }}>{item.productName}</div>
+                        <div style={{ color: "#6b7280", fontSize: "12px" }}>
+                          {item.price.toLocaleString("fr-FR")} FCFA × {item.quantity} = {item.total.toLocaleString("fr-FR")} FCFA
+                        </div>
+                      </div>
+                    ))
+                  : "Commande livraison"}
+              </td>
+              <td style={{
+                padding: "12px 12px",
+                fontSize: "14px",
+                color: "#1f2937",
+                minWidth: "160px",
+              }}>
+                {command.address || command.destination || "N/A"}
               </td>
               <td style={{
                 padding: "12px 12px",

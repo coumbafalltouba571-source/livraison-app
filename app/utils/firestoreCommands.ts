@@ -17,15 +17,34 @@ import {
 export interface Command {
   id?: string;
   telephone: string;
+  phone?: string;
   nomClient?: string;
+  customerName?: string;
   depart: string;
   destination: string;
   prix: number;
+  total?: number;
   description: string;
   statut: "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
+  status?: Command["statut"];
   dateLivraison?: Date | Timestamp;
   client?: string;
   modePayement?: string;
+  paymentMethod?: string;
+  productId?: string;
+  productName?: string;
+  productImage?: string;
+  quantity?: number;
+  price?: number;
+  address?: string;
+  orderItems?: {
+    productId: string;
+    productName: string;
+    productImage: string;
+    quantity: number;
+    price: number;
+    total: number;
+  }[];
   notes?: string;
   userId?: string;
   createdAt: Date | Timestamp;
@@ -81,7 +100,7 @@ export async function createCommand(
       detailedErrorMsg = error.message;
       
       const errorCode = (error as unknown as { code?: string }).code;
-      const errorDetails = error as any;
+      const errorDetails = error as { code?: string };
       
       console.error(`   Code: ${errorCode}`);
       console.error(`   Détails complets:`, errorDetails);

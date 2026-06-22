@@ -4,6 +4,7 @@ import { Command, updateCommandStatus, deleteCommand } from "@/app/utils/firesto
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import Image from "next/image";
 
 interface CommandCardProps {
   command: Command;
@@ -82,9 +83,38 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
 
   const createdDate =
     command.createdAt instanceof Date ? command.createdAt : new Date(command.createdAt as unknown as string);
+  const orderItems =
+    command.orderItems && command.orderItems.length > 0
+      ? command.orderItems
+      : command.productName
+        ? [
+            {
+              productId: command.productId || "",
+              productName: command.productName,
+              productImage: command.productImage?.split(",")[0] || "",
+              quantity: command.quantity || 1,
+              price: command.price || command.prix,
+              total: command.total || command.prix,
+            },
+          ]
+        : [];
+  const firstProductImage = orderItems[0]?.productImage;
+  const deliveryAddress = command.address || command.destination;
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+      {firstProductImage && (
+        <div className="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+          <Image
+            src={firstProductImage}
+            alt={orderItems[0]?.productName || "Produit commandé"}
+            width={480}
+            height={176}
+            className="h-44 w-full object-contain p-3"
+          />
+        </div>
+      )}
+
       {/* Header avec statut */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
@@ -136,6 +166,25 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
 
       {/* Détails de la commande */}
       <div className="space-y-3 mb-4">
+        {orderItems.length > 0 && (
+          <div className="flex items-start gap-3 bg-gray-50 p-3 rounded">
+            <span className="text-xl">📦</span>
+            <div className="flex-1">
+              <p className="text-sm text-gray-500">Produit commandé</p>
+              <div className="space-y-2">
+                {orderItems.map((item) => (
+                  <div key={`${item.productId}-${item.productName}`} className="text-sm text-gray-900">
+                    <p className="font-semibold">{item.productName}</p>
+                    <p className="text-gray-600">
+                      Prix: {item.price.toLocaleString()} FCFA · Quantité: {item.quantity} · Total: {item.total.toLocaleString()} FCFA
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Route */}
         <div className="flex items-start gap-3">
           <span className="text-xl">📍</span>
@@ -147,9 +196,19 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
               <p className="text-xs text-gray-400">vers</p>
               <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
             </div>
-            <p className="text-gray-900 font-medium">{command.destination}</p>
+            <p className="text-gray-900 font-medium">{deliveryAddress}</p>
           </div>
         </div>
+
+        {deliveryAddress && (
+          <div className="flex items-start gap-2">
+            <span className="text-xl">📍</span>
+            <div>
+              <p className="text-sm text-gray-500">Adresse livraison</p>
+              <p className="text-gray-900 font-medium">{deliveryAddress}</p>
+            </div>
+          </div>
+        )}
 
         {/* Prix et téléphone */}
         <div className="grid grid-cols-2 gap-4">

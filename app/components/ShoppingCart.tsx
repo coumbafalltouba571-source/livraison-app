@@ -17,6 +17,7 @@ export default function ShoppingCart({
 }: ShoppingCartProps) {
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [clientAddress, setClientAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -34,7 +35,7 @@ export default function ShoppingCart({
   };
 
   const handleCheckout = async () => {
-    if (!clientName.trim() || !clientPhone.trim() || !paymentMethod) {
+    if (!clientName.trim() || !clientPhone.trim() || !clientAddress.trim() || !paymentMethod) {
       setErrorMessage("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -45,7 +46,7 @@ export default function ShoppingCart({
     setProcessingMessage("⏳ Création de votre commande en cours...");
 
     console.log("🛒 === DÉBUT VALIDATION COMMANDE ===");
-    console.log("📋 Données client:", { clientName, clientPhone, paymentMethod });
+    console.log("📋 Données client:", { clientName, clientPhone, clientAddress, paymentMethod });
 
     // Timeout de sécurité augmenté à 30 secondes (Firestore peut être lent)
     let isTimedOut = false;
@@ -62,6 +63,18 @@ export default function ShoppingCart({
       const description = cart.items
         .map((item) => `${item.quantity}x ${item.product.name}`)
         .join(", ");
+      const orderItems = cart.items.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        productImage: item.product.image,
+        quantity: item.quantity,
+        price: item.product.price,
+        total: item.product.price * item.quantity,
+      }));
+      const productIds = orderItems.map((item) => item.productId).join(",");
+      const productNames = orderItems.map((item) => item.productName).join(", ");
+      const productImages = orderItems.map((item) => item.productImage).join(",");
+      const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
       console.log("📦 Tentative d'enregistrement dans Firestore...");
       console.log("📄 Description produits:", description);
@@ -72,14 +85,26 @@ export default function ShoppingCart({
       try {
         commandResult = await createCommand({
           telephone: clientPhone,
+          phone: clientPhone,
           client: clientName,
           nomClient: clientName,
+          customerName: clientName,
           depart: "Boutique",
-          destination: "À livrer",
+          destination: clientAddress.trim(),
           description: `Achat boutique: ${description}`,
           prix: cart.total,
+          total: cart.total,
           modePayement: paymentMethod,
+          paymentMethod,
           statut: "en attente",
+          status: "en attente",
+          productId: productIds,
+          productName: productNames,
+          productImage: productImages,
+          quantity: totalQuantity,
+          price: orderItems[0]?.price || cart.total,
+          address: clientAddress.trim(),
+          orderItems,
           dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
         });
 
@@ -113,6 +138,7 @@ export default function ShoppingCart({
           `Nouvelle commande boutique 🛒%0A%0A` +
           `Nom: ${clientName}%0A` +
           `Téléphone: ${clientPhone}%0A` +
+          `Adresse: ${clientAddress.trim()}%0A` +
           `Produits: ${description}%0A` +
           `Total: ${cart.total.toLocaleString("fr-FR")} FCFA%0A` +
           `Paiement: ${paymentMethod}%0A%0A` +
@@ -137,6 +163,7 @@ export default function ShoppingCart({
         onUpdateCart({ items: [], total: 0 });
         setClientName("");
         setClientPhone("");
+        setClientAddress("");
         setPaymentMethod("");
         setSuccessMessage("");
         console.log("🎉 === FIN VALIDATION COMMANDE - SUCCÈS ===");
@@ -148,7 +175,7 @@ export default function ShoppingCart({
       console.error("❌ === ERREUR VALIDATION COMMANDE ===");
       console.error("Erreur complète:", error);
 
-      const errorDetails = error as any;
+      const errorDetails = error as { code?: string };
       const errorCode = errorDetails?.code;
       let errorMsg = "Erreur lors de la création de la commande";
       
@@ -442,6 +469,35 @@ export default function ShoppingCart({
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="+221 77 XXX XX XX"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "10px",
+                    fontSize: "14px",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              {/* Adresse */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                    fontWeight: "600",
+                    color: "#1f2937",
+                  }}
+                >
+                  📍 Adresse de livraison *
+                </label>
+                <input
+                  type="text"
+                  value={clientAddress}
+                  onChange={(e) => setClientAddress(e.target.value)}
+                  placeholder="Ex : Keur Massar Unité 5"
+                  required
                   style={{
                     width: "100%",
                     padding: "12px 16px",

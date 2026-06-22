@@ -161,7 +161,7 @@ export default function Home() {
       console.error("❌ ERREUR COMPLÈTE - DÉTAILS:", error);
       
       let errorMessage = "❌ Erreur lors de la sauvegarde de la commande";
-      const errorDetails = error as any;
+      const errorDetails = error as { code?: string };
       
       if (error instanceof Error) {
         console.error("Message complet:", error.message);

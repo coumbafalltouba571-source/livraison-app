@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/firestoreCommands";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function CommandHistoryContent() {
   const searchParams = useSearchParams();
@@ -95,6 +96,22 @@ export default function CommandHistoryContent() {
     };
     return emojis[status] || "📋";
   };
+
+  const getOrderItems = (command: Command) =>
+    command.orderItems && command.orderItems.length > 0
+      ? command.orderItems
+      : command.productName
+        ? [
+            {
+              productId: command.productId || "",
+              productName: command.productName,
+              productImage: command.productImage?.split(",")[0] || "",
+              quantity: command.quantity || 1,
+              price: command.price || command.prix,
+              total: command.total || command.prix,
+            },
+          ]
+        : [];
 
   return (
     <main style={{
@@ -362,6 +379,82 @@ export default function CommandHistoryContent() {
                     </div>
                   </div>
 
+                  {getOrderItems(command).length > 0 && (
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "96px 1fr",
+                      gap: "16px",
+                      alignItems: "center",
+                      marginBottom: "16px",
+                      padding: "12px",
+                      background: "#f9fafb",
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                    }}>
+                      {getOrderItems(command)[0].productImage ? (
+                        <Image
+                          src={getOrderItems(command)[0].productImage}
+                          alt={getOrderItems(command)[0].productName}
+                          width={96}
+                          height={96}
+                          style={{
+                            width: "96px",
+                            height: "96px",
+                            objectFit: "contain",
+                            borderRadius: "10px",
+                            background: "#ffffff",
+                            border: "1px solid #e5e7eb",
+                            padding: "6px",
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: "96px",
+                          height: "96px",
+                          borderRadius: "10px",
+                          background: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#9ca3af",
+                          fontSize: "12px",
+                        }}>
+                          Image
+                        </div>
+                      )}
+                      <div>
+                        <p style={{
+                          fontSize: "12px",
+                          color: "#9ca3af",
+                          margin: "0 0 8px 0",
+                          fontWeight: "600",
+                        }}>
+                          📦 Produit commandé
+                        </p>
+                        {getOrderItems(command).map((item) => (
+                          <div key={`${item.productId}-${item.productName}`} style={{ marginBottom: "8px" }}>
+                            <p style={{
+                              fontSize: "15px",
+                              color: "#1f2937",
+                              margin: "0 0 4px 0",
+                              fontWeight: "700",
+                            }}>
+                              {item.productName}
+                            </p>
+                            <p style={{
+                              fontSize: "13px",
+                              color: "#6b7280",
+                              margin: 0,
+                            }}>
+                              Prix: {item.price.toLocaleString("fr-FR")} FCFA · Quantité: {item.quantity} · Total: {item.total.toLocaleString("fr-FR")} FCFA
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
@@ -395,7 +488,7 @@ export default function CommandHistoryContent() {
                         margin: "0 0 4px 0",
                         fontWeight: "600",
                       }}>
-                        📍 Destination
+                        📍 Adresse de livraison
                       </p>
                       <p style={{
                         fontSize: "14px",
@@ -403,7 +496,7 @@ export default function CommandHistoryContent() {
                         margin: 0,
                         fontWeight: "600",
                       }}>
-                        {command.destination}
+                        {command.address || command.destination}
                       </p>
                     </div>
                   </div>
