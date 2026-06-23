@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import HeroSection from "./components/HeroSection";
 import ServicesSection from "./components/ServicesSection";
@@ -33,6 +33,10 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState("");
   const [modePayement, setModePayement] = useState("");
   
+  // Ref pour la section calculateur
+  const calculatorSectionRef = useRef<HTMLDivElement>(null);
+  const telephoneInputRef = useRef<HTMLInputElement>(null);
+  
   // Recherche intelligente des quartiers
   const [searchDepart, setSearchDepart] = useState("");
   const [searchDestination, setSearchDestination] = useState("");
@@ -48,6 +52,17 @@ export default function Home() {
 
   // Quartiers disponibles
   const quartiers = QUARTIERS_DAKAR;
+
+  // Fonction pour scroller vers le calculateur
+  const handleScrollToCalculator = () => {
+    if (calculatorSectionRef.current) {
+      calculatorSectionRef.current.scrollIntoView({ behavior: "smooth" });
+      // Focus automatique sur le champ téléphone après le scroll
+      setTimeout(() => {
+        telephoneInputRef.current?.focus();
+      }, 500);
+    }
+  };
 
   // Nouvelle fonction intégrée - Firestore + WhatsApp avec Timeout
   const envoyerCommande = async () => {
@@ -757,109 +772,124 @@ export default function Home() {
             </div>
 
             {/* Carte Boutique */}
-            <div style={{
-              borderRadius: "24px",
-              overflow: "hidden",
-              background: "#ffffff",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              border: "2px solid transparent",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-12px)";
-              e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
-              e.currentTarget.style.borderColor = "#7c3aed";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
-              e.currentTarget.style.borderColor = "transparent";
-            }}>
+            <Link href="/boutique" style={{ textDecoration: "none" }}>
               <div style={{
-                position: "relative",
-                width: "100%",
-                height: "200px",
+                borderRadius: "24px",
                 overflow: "hidden",
-                background: "#f0f4f8",
+                background: "#ffffff",
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                border: "2px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-12px)";
+                e.currentTarget.style.boxShadow = "0 25px 50px rgba(124, 58, 237, 0.15)";
+                e.currentTarget.style.borderColor = "#7c3aed";
+                // Zoom sur l'image
+                const img = e.currentTarget.querySelector("img") as HTMLImageElement;
+                if (img) {
+                  img.style.transform = "scale(1.1)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.08)";
+                e.currentTarget.style.borderColor = "transparent";
+                // Reset zoom sur l'image
+                const img = e.currentTarget.querySelector("img") as HTMLImageElement;
+                if (img) {
+                  img.style.transform = "scale(1)";
+                }
               }}>
-                <Image
-                  src="/boutique_bg.png"
-                  alt="Service Boutique"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
                 <div style={{
-                  position: "absolute",
-                  top: "12px",
-                  right: "12px",
-                  background: "rgba(124, 58, 237, 0.9)",
-                  color: "#ffffff",
-                  padding: "8px 14px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  backdropFilter: "blur(10px)",
+                  position: "relative",
+                  width: "100%",
+                  height: "200px",
+                  overflow: "hidden",
+                  background: "#f0f4f8",
                 }}>
-                  Bientôt disponible
+                  <Image
+                    src="/boutique_bg.png"
+                    alt="Service Boutique"
+                    fill
+                    style={{ 
+                      objectFit: "cover",
+                      transition: "transform 0.3s ease",
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    top: "12px",
+                    right: "12px",
+                    background: "rgba(124, 58, 237, 0.9)",
+                    color: "#ffffff",
+                    padding: "8px 14px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    backdropFilter: "blur(10px)",
+                  }}>
+                    Bientôt disponible
+                  </div>
+                </div>
+                <div style={{
+                  padding: "24px",
+                }}>
+                  <div style={{
+                    fontSize: "40px",
+                    marginBottom: "12px",
+                  }}>🛍️</div>
+                  <h3 style={{
+                    fontSize: "20px",
+                    fontWeight: "700",
+                    color: "#0f172a",
+                    margin: "0 0 8px 0",
+                  }}>
+                    Service Boutique
+                  </h3>
+                  <p style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    margin: "0 0 16px 0",
+                    lineHeight: "1.6",
+                  }}>
+                    Tous vos achats en boutique livrés rapidement chez vous
+                  </p>
+                  <div style={{
+                    display: "flex",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}>
+                    <span style={{
+                      display: "inline-block",
+                      background: "#ede9fe",
+                      color: "#7c3aed",
+                      padding: "6px 12px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                    }}>🎁 Flexible</span>
+                    <span style={{
+                      display: "inline-block",
+                      background: "#dbeafe",
+                      color: "#2563eb",
+                      padding: "6px 12px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                    }}>💳 Simple</span>
+                  </div>
                 </div>
               </div>
-              <div style={{
-                padding: "24px",
-              }}>
-                <div style={{
-                  fontSize: "40px",
-                  marginBottom: "12px",
-                }}>🛍️</div>
-                <h3 style={{
-                  fontSize: "20px",
-                  fontWeight: "700",
-                  color: "#0f172a",
-                  margin: "0 0 8px 0",
-                }}>
-                  Service Boutique
-                </h3>
-                <p style={{
-                  fontSize: "14px",
-                  color: "#64748b",
-                  margin: "0 0 16px 0",
-                  lineHeight: "1.6",
-                }}>
-                  Tous vos achats en boutique livrés rapidement chez vous
-                </p>
-                <div style={{
-                  display: "flex",
-                  gap: "8px",
-                  flexWrap: "wrap",
-                }}>
-                  <span style={{
-                    display: "inline-block",
-                    background: "#ede9fe",
-                    color: "#7c3aed",
-                    padding: "6px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                  }}>🎁 Flexible</span>
-                  <span style={{
-                    display: "inline-block",
-                    background: "#dbeafe",
-                    color: "#2563eb",
-                    padding: "6px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                  }}>💳 Simple</span>
-                </div>
-              </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
       {/* Historique - conservé dans header uniquement */}
 
       {/* SECTION 1: Hero Section */}
-      <HeroSection />
+      <HeroSection onCommandClick={handleScrollToCalculator} />
 
       {/* SECTION 2: Services */}
       <ServicesSection />
@@ -872,6 +902,8 @@ export default function Home() {
 
       {/* SECTION 5: Formulaire de tarification (Code existant conservé) */}
       <section
+        id="calculateur-tarif"
+        ref={calculatorSectionRef}
         style={{
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
           padding: "80px 16px",
@@ -944,6 +976,7 @@ export default function Home() {
               📱 Votre téléphone
             </label>
             <input
+              ref={telephoneInputRef}
               placeholder="+221 77 XXX XX XX"
               value={telephone}
               onChange={(e) => setTelephone(e.target.value)}

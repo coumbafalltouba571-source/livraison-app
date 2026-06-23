@@ -19,8 +19,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://livraisonpro-senegal.com"),
-  title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
-  description: "Livraison Pro est une plateforme de livraison rapide au Sénégal. Commandez vos colis, courses et produits à Dakar, Keur Massar, Yoff, Parcelles Assainies, Guédiawaye, Pikine, Rufisque et partout au Sénégal.",
+  title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
+  description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
   keywords: "livraison sénégal, livraison dakar, livreur dakar, livraison keur massar, livraison yoff, livraison guédiawaye, livraison pikine, livraison rufisque, livraison express sénégal, service de livraison sénégal, livraison pro sénégal",
   authors: [{ name: "Livraison Pro" }],
   creator: "Livraison Pro",
@@ -44,8 +44,8 @@ export const metadata: Metadata = {
     locale: "fr_SN",
     url: "https://livraisonpro-senegal.com",
     siteName: "Livraison Pro Sénégal",
-    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
-    description: "Livraison Pro est une plateforme de livraison rapide au Sénégal. Commandez vos colis, courses et produits à Dakar, Keur Massar, Yoff, Parcelles Assainies, Guédiawaye, Pikine, Rufisque et partout au Sénégal.",
+    title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
+    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
     images: [
       {
         url: "https://livraisonpro-senegal.com/logo2_app.png",
@@ -57,8 +57,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
-    description: "Livraison Pro est une plateforme de livraison rapide au Sénégal.",
+    title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
+    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
     images: ["https://livraisonpro-senegal.com/logo2_app.png"],
   },
   icons: {
