@@ -18,9 +18,58 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Livraison Pro - Gestion des Livraisons",
-  description: "Plateforme moderne de gestion des livraisons à Dakar. Dashboard admin, suivi GPS en temps réel, tarification automatique.",
-  keywords: "livraison, Dakar, GPS, tracking, admin",
+  metadataBase: new URL("https://livraisonpro-senegal.com"),
+  title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
+  description: "Livraison Pro est une plateforme de livraison rapide au Sénégal. Commandez vos colis, courses et produits à Dakar, Keur Massar, Yoff, Parcelles Assainies, Guédiawaye, Pikine, Rufisque et partout au Sénégal.",
+  keywords: "livraison sénégal, livraison dakar, livreur dakar, livraison keur massar, livraison yoff, livraison guédiawaye, livraison pikine, livraison rufisque, livraison express sénégal, service de livraison sénégal, livraison pro sénégal",
+  authors: [{ name: "Livraison Pro" }],
+  creator: "Livraison Pro",
+  publisher: "Livraison Pro",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://livraisonpro-senegal.com",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_SN",
+    url: "https://livraisonpro-senegal.com",
+    siteName: "Livraison Pro Sénégal",
+    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
+    description: "Livraison Pro est une plateforme de livraison rapide au Sénégal. Commandez vos colis, courses et produits à Dakar, Keur Massar, Yoff, Parcelles Assainies, Guédiawaye, Pikine, Rufisque et partout au Sénégal.",
+    images: [
+      {
+        url: "https://livraisonpro-senegal.com/logo2_app.png",
+        width: 1200,
+        height: 630,
+        alt: "Livraison Pro Sénégal",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et partout au Sénégal",
+    description: "Livraison Pro est une plateforme de livraison rapide au Sénégal.",
+    images: ["https://livraisonpro-senegal.com/logo2_app.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  category: "Livraison",
+  classification: "Service de Livraison",
+  verification: {
+    google: "lMa-CgLKm7W2d21OXryG32bZ2WHvr7N7untNs5zrOYQ",
+  },
 };
 
 export default function RootLayout({
@@ -40,6 +89,47 @@ export default function RootLayout({
         overflow: "visible",
       }}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "name": "Livraison Pro Sénégal",
+              "image": "https://livraisonpro-senegal.com/logo2_app.png",
+              "description": "Service de livraison rapide au Sénégal",
+              "url": "https://livraisonpro-senegal.com",
+              "telephone": "+221 77 XXX XXXX",
+              "email": "contact@livraisonpro-senegal.com",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Dakar",
+                "addressLocality": "Dakar",
+                "addressRegion": "Dakar",
+                "postalCode": "00000",
+                "addressCountry": "SN"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 14.7167,
+                "longitude": -17.4674
+              },
+              "areaServed": {
+                "@type": "Place",
+                "name": "Sénégal"
+              },
+              "priceRange": "AFCFA",
+              "serviceType": "Delivery Service",
+              "sameAs": [
+                "https://www.facebook.com/livraisonpro",
+                "https://www.instagram.com/livraisonpro",
+                "https://wa.me/221XXX"
+              ]
+            }),
+          }}
+        />
+      </head>
       <body 
         className="min-h-full flex flex-col"
         style={{
