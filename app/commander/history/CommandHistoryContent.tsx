@@ -143,12 +143,18 @@ export default function CommandHistoryContent() {
       console.error("❌ ERREUR COMPLÈTE lors du chargement des commandes:", err);
       
       let errorMessage = "Erreur lors de la récupération des commandes";
+      let isIndexError = false;
 
       if (err instanceof Error) {
         console.error(`   Message: ${err.message}`);
         console.error(`   Stack: ${err.stack}`);
         
-        if (err.message.includes("Timeout")) {
+        // Détecter l'erreur d'index Firestore
+        if (err.message.includes("The query requires an index") || err.message.includes("requires an index")) {
+          isIndexError = true;
+          errorMessage = "⚙️ Les index Firestore sont en cours de création. Cette page sera opérationnelle dans 5 à 10 minutes. Veuillez réessayer plus tard.";
+          console.warn("⚠️ Index Firestore manquant - L'administrateur Firestore doit créer l'index composite");
+        } else if (err.message.includes("Timeout")) {
           errorMessage = "Délai d'attente dépassé. Vérifiez votre connexion Internet ou réessayez.";
         } else if (err.message.includes("permission-denied")) {
           errorMessage = "Erreur de permissions Firestore. Contactez le support.";
@@ -621,17 +627,39 @@ export default function CommandHistoryContent() {
         {/* État: Erreur */}
         {isError && (
           <div style={{
-            background: "rgba(239, 68, 68, 0.1)",
-            border: "2px solid #ef4444",
-            color: "#dc2626",
-            padding: "16px 20px",
+            background: error.includes("⚙️") ? "rgba(59, 130, 246, 0.1)" : "rgba(239, 68, 68, 0.1)",
+            border: `2px solid ${error.includes("⚙️") ? "#3b82f6" : "#ef4444"}`,
+            color: error.includes("⚙️") ? "#1e40af" : "#dc2626",
+            padding: "20px",
             borderRadius: "12px",
             marginBottom: "24px",
             fontWeight: "600",
             textAlign: "center",
             fontSize: "clamp(12px, 2vw, 14px)",
           }}>
-            ❌ {error}
+            {error}
+            {error.includes("⚙️") && (
+              <div style={{
+                marginTop: "16px",
+                fontSize: "clamp(11px, 1.5vw, 12px)",
+                fontWeight: "500",
+                opacity: 0.8,
+              }}>
+                <p style={{ margin: "0 0 8px 0" }}>
+                  💡 L'administrateur Firestore peut accélérer ce processus:
+                </p>
+                <p style={{ margin: "0 0 8px 0" }}>
+                  Ouvrir Firebase Console → Firestore Database → Indexes
+                </p>
+                <p style={{ margin: "0 0 8px 0" }}>
+                  Créer l'index composite sur:
+                </p>
+                <p style={{ margin: "0 0 8px 0", fontFamily: "monospace", background: "rgba(255,255,255,0.2)", padding: "8px", borderRadius: "6px" }}>
+                  Collection: commandes<br/>
+                  Champs: telephone (↑) + createdAt (↓)
+                </p>
+              </div>
+            )}
           </div>
         )}
 
