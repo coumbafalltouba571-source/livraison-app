@@ -10,7 +10,7 @@ import { Mail, Phone, User, Lock, Loader2, ChevronRight } from "lucide-react";
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { signUpWithEmail, signUpWithPhone, isLoading, error, isAuthenticated } = useAuthStore();
+  const { signUpWithEmail, sendOTP, isLoading, error, isAuthenticated } = useAuthStore();
 
   const [step, setStep] = useState<"method" | "email" | "phone">("method");
   const [fullName, setFullName] = useState("");
@@ -18,8 +18,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [phonePassword, setPhonePassword] = useState("");
-  const [phoneConfirmPassword, setPhoneConfirmPassword] = useState("");
   const [localError, setLocalError] = useState("");
 
   // Redirect if already logged in
@@ -54,21 +52,25 @@ export default function RegisterPage() {
   const handlePhoneSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    console.log("🔵 [REGISTER] Phone signup initiated with phone:", phone, "and name:", fullName);
 
-    if (!fullName || !phone || !phonePassword || !phoneConfirmPassword) {
+    if (!fullName || !phone) {
       setLocalError(t("common.required", "Required field"));
       return;
     }
 
-    if (phonePassword !== phoneConfirmPassword) {
-      setLocalError(t("auth.confirmPassword", "Passwords don't match"));
-      return;
-    }
-
     try {
-      await signUpWithPhone(phone, phonePassword, fullName);
+      console.log("🔵 [REGISTER] Sending OTP for phone registration...");
+      await sendOTP(phone);
+      console.log("✅ [REGISTER] OTP sent, storing data and redirecting...");
+      
+      // Store phone and full name for use after verification
+      sessionStorage.setItem('pendingPhoneRegister', phone);
+      sessionStorage.setItem('pendingRegisterName', fullName);
+      
       router.push("/auth/verify-otp");
     } catch (err: any) {
+      console.error("❌ [REGISTER] Phone signup failed:", err.message);
       setLocalError(err.message);
     }
   };
@@ -222,44 +224,23 @@ export default function RegisterPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+221 77 123 45 67"
+                  placeholder="773629075 ou +221773629075"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">Entrez votre numéro Sénégal (9 ou 12 chiffres)</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("auth.password", "Password")}
-                </label>
-                <input
-                  type="password"
-                  value={phonePassword}
-                  onChange={(e) => setPhonePassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("auth.confirmPassword", "Confirm Password")}
-                </label>
-                <input
-                  type="password"
-                  value={phoneConfirmPassword}
-                  onChange={(e) => setPhoneConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading}
-                />
-              </div>
+              
+              {/* reCAPTCHA Container - IMPORTANT! */}
+              <div id="recaptcha-container" className="mb-4"></div>
+              
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("auth.signUp", "Sign Up")}
+                {t("auth.sendCode", "Send Verification Code")}
               </button>
               <button
                 type="button"

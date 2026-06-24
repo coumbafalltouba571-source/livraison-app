@@ -14,6 +14,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/firebase";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { formatPhoneNumber, isValidSenegalPhone } from "@/app/utils/phoneFormatter";
 
 export interface UserProfile {
   uid: string;
@@ -214,29 +215,77 @@ export const useAuthStore = create<AuthStore>()(
       sendOTP: async (phoneNumber: string) => {
         try {
           set({ isLoading: true, error: null });
-          console.log("🔵 [OTP] Sending OTP to:", phoneNumber);
           
-          const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            size: 'invisible',
-            callback: (token: string) => {
-              console.log("✅ [RECAPTCHA] reCAPTCHA verified, token received");
-            },
-            'expired-callback': () => {
-              console.warn("⚠️ [RECAPTCHA] reCAPTCHA token expired");
+          // Format phone number to Senegal format
+          const formattedPhone = formatPhoneNumber(phoneNumber);
+          console.log("🔵 [OTP] Phone formatted:", formattedPhone);
+          
+          // Validate Senegal phone format
+          if (!isValidSenegalPhone(formattedPhone)) {
+            throw new Error("Invalid Senegal phone number. Must be +221XXXXXXXXX (9 digits)");
+          }
+          
+          console.log("🔵 [OTP] Sending OTP to:", formattedPhone);
+          console.log("🔵 [OTP] reCAPTCHA Verifier status:", useAuthStore.getState().recaptchaVerifier ? "Initialized" : "Not initialized");
+          
+          // Get or create RecaptchaVerifier
+          let verifier = useAuthStore.getState().recaptchaVerifier;
+          
+          if (!verifier) {
+            console.warn("⚠️ [OTP] RecaptchaVerifier not found, creating new one");
+            try {
+              verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                size: 'normal',
+                callback: (token: string) => {
+                  console.log("✅ [RECAPTCHA] reCAPTCHA verified, token received");
+                },
+                'expired-callback': () => {
+                  console.warn("⚠️ [RECAPTCHA] reCAPTCHA token expired");
+                },
+                'error-callback': (error: any) => {
+                  console.error("❌ [RECAPTCHA] reCAPTCHA error:", error);
+                }
+              });
+              set({ recaptchaVerifier: verifier });
+              console.log("✅ [OTP] Created new RecaptchaVerifier");
+            } catch (recaptchaError: any) {
+              console.error("❌ [OTP] Failed to create RecaptchaVerifier:", recaptchaError.message);
+              throw new Error(`RecaptchaVerifier error: ${recaptchaError.message}`);
             }
-          });
+          }
 
+          console.log("🔵 [OTP] Calling signInWithPhoneNumber API...");
           const confirmationResult = await signInWithPhoneNumber(
             auth,
-            phoneNumber,
-            recaptchaVerifier
+            formattedPhone,
+            verifier
           );
 
-          console.log("✅ [OTP] OTP sent successfully to:", phoneNumber);
-          set({ confirmationResult, recaptchaVerifier });
+          console.log("✅ [OTP] OTP sent successfully to:", formattedPhone);
+          console.log("🔵 [OTP] Waiting for user to enter verification code...");
+          
+          set({ confirmationResult, recaptchaVerifier: verifier });
         } catch (error: any) {
-          console.error("❌ [OTP] Failed to send OTP:", error.code, error.message);
-          set({ error: error.message });
+          console.error("❌ [OTP] Failed to send OTP:");
+          console.error("   Error Code:", error.code);
+          console.error("   Error Message:", error.message);
+          console.error("   Full Error:", error);
+          
+          // More detailed error messages
+          let userMessage = error.message;
+          if (error.code === "auth/invalid-phone-number") {
+            userMessage = "Invalid phone number format. Must be +221XXXXXXXXX";
+          } else if (error.code === "auth/too-many-requests") {
+            userMessage = "Too many attempts. Please try again later.";
+          } else if (error.code === "auth/operation-not-allowed") {
+            userMessage = "Phone authentication is not enabled in Firebase.";
+          } else if (error.code === "auth/quota-exceeded") {
+            userMessage = "SMS quota exceeded. Please contact support.";
+          } else if (error.message?.includes("reCAPTCHA")) {
+            userMessage = "reCAPTCHA verification failed. Please try again.";
+          }
+          
+          set({ error: userMessage });
           throw error;
         } finally {
           set({ isLoading: false });

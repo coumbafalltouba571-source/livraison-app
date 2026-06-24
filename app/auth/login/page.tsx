@@ -10,13 +10,12 @@ import { Mail, Lock, Phone, Loader2 } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { signInWithEmail, signInWithPhone, signInWithGoogle, isLoading, error, isAuthenticated } = useAuthStore();
+  const { signInWithEmail, sendOTP, signInWithGoogle, isLoading, error, isAuthenticated } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<"email" | "phone" | "google">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [phonePassword, setPhonePassword] = useState("");
   const [localError, setLocalError] = useState("");
 
   // Redirect if already logged in
@@ -46,16 +45,23 @@ export default function LoginPage() {
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    console.log("🔵 [LOGIN] Phone login initiated with phone:", phone);
 
-    if (!phone || !phonePassword) {
+    if (!phone) {
       setLocalError(t("common.required", "Required field"));
       return;
     }
 
     try {
-      await signInWithPhone(phone, phonePassword);
-      router.push("/");
+      console.log("🔵 [LOGIN] Sending OTP for phone login...");
+      await sendOTP(phone);
+      console.log("✅ [LOGIN] OTP sent, redirecting to verify page...");
+      
+      // Store phone for potential use after verification
+      sessionStorage.setItem('pendingPhoneLogin', phone);
+      router.push("/auth/verify-otp");
     } catch (err: any) {
+      console.error("❌ [LOGIN] Phone login failed:", err.message);
       setLocalError(err.message);
     }
   };
@@ -177,31 +183,23 @@ export default function LoginPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+221 77 123 45 67"
+                  placeholder="773629075 ou +221773629075"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">Entrez votre numéro Sénégal (9 ou 12 chiffres)</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("auth.password", "Password")}
-                </label>
-                <input
-                  type="password"
-                  value={phonePassword}
-                  onChange={(e) => setPhonePassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading}
-                />
-              </div>
+              
+              {/* reCAPTCHA Container - IMPORTANT! */}
+              <div id="recaptcha-container" className="mb-4"></div>
+              
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("auth.signIn", "Sign In")}
+                {t("auth.sendCode", "Send Verification Code")}
               </button>
             </form>
           )}
