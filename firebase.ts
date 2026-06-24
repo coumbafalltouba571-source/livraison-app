@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getAuth, type Auth } from "firebase/auth";
 
 // Vérifier que les clés Firebase sont configurées
 const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
@@ -69,10 +70,12 @@ console.log("🔥 Firebase Configuration Status:", {
 
 let app;
 let db!: Firestore;
+let auth!: Auth;
 
 try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
+  auth = getAuth(app);
   console.log("✅ Firebase initialisé avec succès");
 } catch (error) {
   console.error("❌ ERREUR lors de l'initialisation Firebase:", error);
@@ -81,4 +84,4 @@ try {
   // C'est préférable au cas où la clé est fausse
 }
 
-export { db };
+export { db, auth };

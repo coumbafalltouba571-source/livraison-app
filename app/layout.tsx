@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "@/app/providers/AuthProvider";
+import Navbar from "@/app/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -140,7 +142,10 @@ export default function RootLayout({
           overflowY: "auto",
         }}
       >
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
