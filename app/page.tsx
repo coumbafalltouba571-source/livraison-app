@@ -32,6 +32,7 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [modePayement, setModePayement] = useState("");
+  const [isImageHovered, setIsImageHovered] = useState(false);
   
   // Ref pour la section calculateur
   const calculatorSectionRef = useRef<HTMLDivElement>(null);
@@ -382,23 +383,73 @@ export default function Home() {
         }} />
 
         <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px", boxSizing: "border-box", margin: "0 auto" }} className="livreur-container">
-          <Image
-            src="/livreur_bg.png"
-            alt="Livreur"
-            width={700}
-            height={700}
-            priority
-            className="livreur-image"
+          <div
+            onClick={handleScrollToCalculator}
+            onMouseEnter={() => setIsImageHovered(true)}
+            onMouseLeave={() => setIsImageHovered(false)}
             style={{
-              objectFit: "contain",
-              objectPosition: "center center",
-              width: "100%",
-              height: "auto",
-              maxHeight: "650px",
-              filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
-              display: "block",
+              cursor: "pointer",
+              position: "relative",
+              transition: "transform 0.3s ease",
+              transform: isImageHovered ? "scale(1.05)" : "scale(1)",
             }}
-          />
+          >
+            <Image
+              src="/livreur_bg.png"
+              alt="Livreur"
+              width={700}
+              height={700}
+              priority
+              className="livreur-image"
+              style={{
+                objectFit: "contain",
+                objectPosition: "center center",
+                width: "100%",
+                height: "auto",
+                maxHeight: "650px",
+                filter: isImageHovered 
+                  ? "drop-shadow(0 25px 50px rgba(0, 0, 0, 0.3))" 
+                  : "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
+                display: "block",
+                transition: "filter 0.3s ease",
+              }}
+            />
+
+            {/* Bouton flottant "Commander maintenant" sur l'image */}
+            <Link
+              href="/commander"
+              style={{
+                position: "absolute",
+                bottom: "40px",
+                right: "30px",
+                padding: "12px 24px",
+                backgroundColor: "#fbbf24",
+                color: "#0f172a",
+                borderRadius: "50px",
+                textDecoration: "none",
+                fontWeight: "700",
+                fontSize: "14px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 10px 25px rgba(251, 191, 36, 0.3)",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                zIndex: 5,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "0 15px 35px rgba(251, 191, 36, 0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 10px 25px rgba(251, 191, 36, 0.3)";
+              }}
+            >
+              Commander 🚀
+            </Link>
+          </div>
         </div>
 
         {/* Logo en bas à droite du hero - aucun chevauchement */}
@@ -889,7 +940,10 @@ export default function Home() {
       {/* Historique - conservé dans header uniquement */}
 
       {/* SECTION 1: Hero Section */}
-      <HeroSection onCommandClick={handleScrollToCalculator} />
+      <HeroSection 
+        onCommandClick={handleScrollToCalculator}
+        onImageClick={handleScrollToCalculator}
+      />
 
       {/* SECTION 2: Services */}
       <ServicesSection />

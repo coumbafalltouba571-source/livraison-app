@@ -1,10 +1,16 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+
 interface HeroSectionProps {
   onCommandClick?: () => void;
+  onImageClick?: () => void;
 }
 
-export default function HeroSection({ onCommandClick }: HeroSectionProps) {
+export default function HeroSection({ onCommandClick, onImageClick }: HeroSectionProps) {
+  const [isImageHovered, setIsImageHovered] = useState(false);
+
   return (
     <section
       style={{
@@ -267,11 +273,18 @@ export default function HeroSection({ onCommandClick }: HeroSectionProps) {
 
         {/* Illustration - Livreur SVG */}
         <div
+          onClick={onImageClick}
+          onMouseEnter={() => setIsImageHovered(true)}
+          onMouseLeave={() => setIsImageHovered(false)}
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             animation: "slideInRight 0.8s ease",
+            cursor: "pointer",
+            position: "relative",
+            transition: "transform 0.3s ease",
+            transform: isImageHovered ? "scale(1.05)" : "scale(1)",
           }}
         >
           <svg
@@ -280,7 +293,10 @@ export default function HeroSection({ onCommandClick }: HeroSectionProps) {
             viewBox="0 0 400 500"
             style={{
               maxWidth: "500px",
-              filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
+              filter: isImageHovered 
+                ? "drop-shadow(0 25px 50px rgba(0, 0, 0, 0.3))" 
+                : "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
+              transition: "filter 0.3s ease",
             }}
           >
             {/* Ombre au sol */}
@@ -359,6 +375,41 @@ export default function HeroSection({ onCommandClick }: HeroSectionProps) {
               <line x1="50" y1="160" x2="80" y2="170" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
             </g>
           </svg>
+
+          {/* Bouton flottant "Commander maintenant" sur l'image */}
+          <Link
+            href="/commander"
+            style={{
+              position: "absolute",
+              bottom: "30px",
+              right: "20px",
+              padding: "12px 24px",
+              backgroundColor: "#fbbf24",
+              color: "#0f172a",
+              borderRadius: "50px",
+              textDecoration: "none",
+              fontWeight: "700",
+              fontSize: "14px",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              boxShadow: "0 10px 25px rgba(251, 191, 36, 0.3)",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              zIndex: 5,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = "0 15px 35px rgba(251, 191, 36, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 25px rgba(251, 191, 36, 0.3)";
+            }}
+          >
+            Commander 🚀
+          </Link>
         </div>
       </div>
 
