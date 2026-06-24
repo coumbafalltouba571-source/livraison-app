@@ -60,7 +60,7 @@ export default function HelpCenterPage() {
         {/* Contact Options */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <a
-            href="https://wa.me/221XXXXXXXXX"
+            href="https://wa.me/221773629075"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition border-l-4 border-green-500"
@@ -75,14 +75,14 @@ export default function HelpCenterPage() {
           </a>
 
           <a
-            href="mailto:support@livraisonpro.com"
+            href="mailto:mackasarr7@gmail.com"
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition border-l-4 border-blue-500"
           >
             <Mail className="w-8 h-8 text-blue-600 mb-3" />
             <h3 className="font-semibold text-gray-900 mb-2">{t("help.email", "Email")}</h3>
             <p className="text-sm text-gray-600 mb-4">Envoyez-nous vos questions par email</p>
             <div className="flex items-center gap-1 text-blue-600 text-sm font-semibold">
-              support@livraisonpro.com
+              mackasarr7@gmail.com
               <ExternalLink className="w-4 h-4" />
             </div>
           </a>
@@ -91,7 +91,7 @@ export default function HelpCenterPage() {
             <MessageCircle className="w-8 h-8 text-purple-600 mb-3" />
             <h3 className="font-semibold text-gray-900 mb-2">{t("help.contact", "Contact")}</h3>
             <p className="text-sm text-gray-600 mb-4">Disponible 24/7 pour votre assistance</p>
-            <p className="text-purple-600 text-sm font-semibold">+221 77 XXX XX XX</p>
+            <p className="text-purple-600 text-sm font-semibold">+221773629075</p>
           </div>
         </div>
 
