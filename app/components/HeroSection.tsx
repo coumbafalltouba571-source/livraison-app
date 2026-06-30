@@ -144,34 +144,6 @@ export default function HeroSection({ onCommandClick, onImageClick }: HeroSectio
             }}
           >
             <button
-              onClick={onCommandClick}
-              style={{
-                padding: "16px 36px",
-                fontSize: "16px",
-                fontWeight: "700",
-                color: "#7c3aed",
-                background: "#ffffff",
-                border: "none",
-                borderRadius: "50px",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow =
-                  "0 15px 40px rgba(0, 0, 0, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 30px rgba(0, 0, 0, 0.2)";
-              }}
-            >
-              Commander maintenant 🚀
-            </button>
-
-            <button
               style={{
                 padding: "16px 36px",
                 fontSize: "16px",
@@ -271,8 +243,9 @@ export default function HeroSection({ onCommandClick, onImageClick }: HeroSectio
           </div>
         </div>
 
-        {/* Illustration - Livreur SVG */}
-        <div
+        {/* Illustration - Livreur SVG (entièrement cliquable) */}
+        <Link
+          href="/commander"
           onClick={onImageClick}
           onMouseEnter={() => setIsImageHovered(true)}
           onMouseLeave={() => setIsImageHovered(false)}
@@ -285,6 +258,7 @@ export default function HeroSection({ onCommandClick, onImageClick }: HeroSectio
             position: "relative",
             transition: "transform 0.3s ease",
             transform: isImageHovered ? "scale(1.05)" : "scale(1)",
+            textDecoration: "none",
           }}
         >
           <svg
@@ -376,41 +350,8 @@ export default function HeroSection({ onCommandClick, onImageClick }: HeroSectio
             </g>
           </svg>
 
-          {/* Bouton flottant "Commander maintenant" sur l'image */}
-          <Link
-            href="/commander"
-            style={{
-              position: "absolute",
-              bottom: "30px",
-              right: "20px",
-              padding: "12px 24px",
-              backgroundColor: "#fbbf24",
-              color: "#0f172a",
-              borderRadius: "50px",
-              textDecoration: "none",
-              fontWeight: "700",
-              fontSize: "14px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 10px 25px rgba(251, 191, 36, 0.3)",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              zIndex: 5,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-              e.currentTarget.style.boxShadow = "0 15px 35px rgba(251, 191, 36, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 25px rgba(251, 191, 36, 0.3)";
-            }}
-          >
-            Commander 🚀
-          </Link>
-        </div>
+          {/* Le bouton jaune a été retiré ; l'image entière redirige maintenant vers /commander */}
+        </Link>
       </div>
 
       <style>{`

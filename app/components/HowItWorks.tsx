@@ -187,35 +187,6 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        {/* CTA */}
-        <div style={{ textAlign: "center" }}>
-          <button
-            style={{
-              padding: "16px 40px",
-              fontSize: "16px",
-              fontWeight: "700",
-              color: "#ffffff",
-              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-              border: "none",
-              borderRadius: "50px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 10px 30px rgba(124, 58, 237, 0.3)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 15px 40px rgba(124, 58, 237, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 10px 30px rgba(124, 58, 237, 0.3)";
-            }}
-          >
-            Commander maintenant 🚀
-          </button>
-        </div>
       </div>
     </section>
   );

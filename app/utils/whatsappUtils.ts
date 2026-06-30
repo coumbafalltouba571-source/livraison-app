@@ -19,57 +19,9 @@ function formatPhoneForWhatsApp(phone: string): string {
   return "221" + cleaned;
 }
 
-// Message WhatsApp au CLIENT
+// Message WhatsApp au CLIENT - désactivé conformément à la demande
 export function sendWhatsAppToClient(command: Command): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    const clientPhone = formatPhoneForWhatsApp(command.telephone);
-    const clientName = command.client || command.nomClient || "Cher client";
-    
-    // Récupérer les détails du produit
-    const orderItems = command.orderItems && command.orderItems.length > 0
-      ? command.orderItems
-      : command.productName
-        ? [{
-            productName: command.productName,
-            quantity: command.quantity || 1,
-            total: command.total || command.prix,
-          }]
-        : [];
-
-    // Formater les produits
-    const productsText = orderItems
-      .map((item: any) => `${item.quantity}x ${item.productName} - ${(item.total || item.price || 0).toLocaleString('fr-FR')} FCFA`)
-      .join("\n");
-
-    const address = command.address || command.destination || "À livrer";
-    const paymentMethod = command.paymentMethod || command.modePayement || "Non spécifié";
-    const deliveryDate = command.dateLivraison 
-      ? new Date(command.dateLivraison instanceof Date ? command.dateLivraison : (command.dateLivraison as any).toDate()).toLocaleDateString('fr-FR')
-      : new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR');
-
-    const message = 
-      `Bonjour ${clientName} 👋\n\n` +
-      `Votre commande a été enregistrée avec succès sur *Livraison Pro*.\n\n` +
-      `📦 *Produits :*\n${productsText}\n\n` +
-      `💰 *Montant Total :* ${command.prix.toLocaleString('fr-FR')} FCFA\n` +
-      `📍 *Adresse de livraison :* ${address}\n` +
-      `📅 *Date prévue :* ${deliveryDate}\n\n` +
-      `💳 *Mode de paiement :*\n${paymentMethod}\n\n` +
-      `Votre commande est en attente de traitement.\n\n` +
-      `Merci pour votre confiance.\n\n` +
-      `Équipe Livraison Pro 🚚`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${clientPhone}?text=${encodedMessage}`;
-
-    // Ouvrir WhatsApp sans bloquer
-    window.open(whatsappUrl, "_blank");
-    console.log(`📲 Message WhatsApp envoyé au client: ${clientPhone}`);
-  } catch (error) {
-    console.error("❌ Erreur lors de l'envoi du message WhatsApp client:", error);
-  }
+  console.info("ℹ️ Envoi WhatsApp au client désactivé. Seule l'alerte admin est conservée.", command.id);
 }
 
 // Message WhatsApp à l'ADMIN
@@ -99,17 +51,25 @@ export function sendWhatsAppToAdmin(command: Command): void {
     const clientPhone = command.telephone || "Non fourni";
     const address = command.address || command.destination || "Non spécifiée";
     const paymentMethod = command.paymentMethod || command.modePayement || "Non spécifié";
+    const departure = command.depart || "Non spécifié";
+    const destination = command.destination || address;
+    const orderDate = new Date().toLocaleDateString("fr-FR");
+    const orderTime = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
-    const message = 
-      `🚨 *NOUVELLE COMMANDE* 🚨\n\n` +
-      `👤 *Client :* ${clientName}\n` +
-      `📱 *Téléphone :* ${clientPhone}\n` +
-      `📦 *Produits :* ${productsText}\n` +
-      `💰 *Total :* ${command.prix.toLocaleString('fr-FR')} FCFA\n` +
-      `📍 *Adresse :* ${address}\n` +
-      `💳 *Paiement :* ${paymentMethod}\n` +
-      `🆔 *ID Commande :* ${command.id || 'N/A'}\n\n` +
-      `⏰ *${new Date().toLocaleString('fr-FR')}*`;
+    const message =
+      `📦 NOUVELLE COMMANDE\n\n` +
+      `ID : ${command.id || "N/A"}\n` +
+      `Nom du client : ${clientName}\n` +
+      `Téléphone : ${clientPhone}\n` +
+      `Produit : ${productsText || "Non spécifié"}\n` +
+      `Quantité : ${command.quantity || 1}\n` +
+      `Prix : ${command.prix.toLocaleString('fr-FR')} FCFA\n` +
+      `Adresse de livraison : ${address}\n` +
+      `Départ : ${departure}\n` +
+      `Destination : ${destination}\n` +
+      `Paiement : ${paymentMethod}\n` +
+      `Date : ${orderDate}\n` +
+      `Heure : ${orderTime}`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodedMessage}`;
@@ -122,11 +82,7 @@ export function sendWhatsAppToAdmin(command: Command): void {
   }
 }
 
-// Fonction pour envoyer les deux messages
+// Fonction pour envoyer uniquement le message WhatsApp à l'admin
 export function sendWhatsAppNotifications(command: Command): void {
-  sendWhatsAppToClient(command);
-  // Délai pour éviter les conflits
-  setTimeout(() => {
-    sendWhatsAppToAdmin(command);
-  }, 500);
+  sendWhatsAppToAdmin(command);
 }

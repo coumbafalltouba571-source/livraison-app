@@ -13,6 +13,10 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
+import { createOrderNotification } from "@/app/utils/notifications";
+import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
+import { sendSmsToClient } from "@/app/utils/smsService";
+import { queueWhatsAppBusinessMessage } from "@/app/utils/whatsappBusiness";
 
 export interface Command {
   id?: string;
@@ -20,6 +24,7 @@ export interface Command {
   phone?: string;
   nomClient?: string;
   customerName?: string;
+  client?: string;
   depart: string;
   destination: string;
   prix: number;
@@ -28,7 +33,6 @@ export interface Command {
   statut: "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
   status?: Command["statut"];
   dateLivraison?: Date | Timestamp;
-  client?: string;
   modePayement?: string;
   paymentMethod?: string;
   paymentStatus?: "En attente" | "Confirmé" | "À payer à la livraison" | "Annulé";
@@ -49,6 +53,10 @@ export interface Command {
   }[];
   notes?: string;
   userId?: string;
+  driverLatitude?: number;
+  driverLongitude?: number;
+  driverUpdatedAt?: Date | Timestamp;
+  driverStatus?: string;
   createdAt: Date | Timestamp;
   updatedAt: Date | Timestamp;
 }
@@ -80,9 +88,54 @@ export async function createCommand(
         commandData.dateLivraison instanceof Date
           ? Timestamp.fromDate(commandData.dateLivraison)
           : commandData.dateLivraison,
+      driverUpdatedAt:
+        commandData.driverUpdatedAt instanceof Date
+          ? Timestamp.fromDate(commandData.driverUpdatedAt)
+          : commandData.driverUpdatedAt,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
+
+    const orderPayload = {
+      id: docRef.id,
+      ...commandData,
+      telephone: commandData.telephone,
+      phone: commandData.phone || commandData.telephone,
+      nomClient: commandData.nomClient || commandData.client,
+      customerName: commandData.customerName || commandData.client || commandData.nomClient,
+      client: commandData.client || commandData.nomClient,
+      depart: commandData.depart,
+      destination: commandData.destination,
+      prix: commandData.prix,
+      total: commandData.total || commandData.prix,
+      description: commandData.description,
+      statut: commandData.statut || "en attente",
+      paymentMethod: commandData.paymentMethod || commandData.modePayement,
+      paymentStatus: commandData.paymentStatus || (commandData.paymentMethod === "livraison" ? "À payer à la livraison" : "En attente"),
+      address: commandData.address || commandData.destination,
+      orderItems: commandData.orderItems,
+      dateLivraison: commandData.dateLivraison,
+      driverLatitude: commandData.driverLatitude,
+      driverLongitude: commandData.driverLongitude,
+      driverUpdatedAt: commandData.driverUpdatedAt,
+      driverStatus: commandData.driverStatus,
+      notes: commandData.notes,
+    } as Command;
+
+    await Promise.allSettled([
+      createOrderNotification(orderPayload),
+      sendSmsToClient(orderPayload),
+      queueWhatsAppBusinessMessage({
+        to: orderPayload.telephone,
+        orderId: docRef.id,
+        message: `Bonjour ${orderPayload.client || orderPayload.nomClient || "Cher client"}, votre commande ${docRef.id} a bien été reçue.`,
+      }),
+      Promise.resolve().then(() => {
+        if (typeof window !== "undefined") {
+          sendWhatsAppNotifications(orderPayload);
+        }
+      }),
+    ]);
     
     console.log(`✅ [createCommand] Commande créée avec succès!`);
     console.log(`✅ [createCommand] ID de la commande: ${docRef.id}`);
@@ -159,6 +212,10 @@ export async function getAllCommands(): Promise<Command[]> {
           data.dateLivraison instanceof Timestamp
             ? data.dateLivraison.toDate()
             : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
         createdAt:
           data.createdAt instanceof Timestamp
             ? data.createdAt.toDate()
@@ -206,6 +263,10 @@ export async function getCommandsByStatus(
           data.dateLivraison instanceof Timestamp
             ? data.dateLivraison.toDate()
             : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
         createdAt:
           data.createdAt instanceof Timestamp
             ? data.createdAt.toDate()
@@ -244,6 +305,10 @@ export async function updateCommand(
         updates.dateLivraison instanceof Date
           ? Timestamp.fromDate(updates.dateLivraison)
           : updates.dateLivraison,
+      driverUpdatedAt:
+        updates.driverUpdatedAt instanceof Date
+          ? Timestamp.fromDate(updates.driverUpdatedAt)
+          : updates.driverUpdatedAt,
       updatedAt: Timestamp.now(),
     });
     console.log(`✅ Commande mise à jour avec succès: ${commandId}`);
@@ -328,6 +393,10 @@ export async function getTodayCommands(): Promise<Command[]> {
           data.dateLivraison instanceof Timestamp
             ? data.dateLivraison.toDate()
             : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
         createdAt:
           data.createdAt instanceof Timestamp
             ? data.createdAt.toDate()
@@ -372,6 +441,10 @@ export async function getCommandById(commandId: string): Promise<Command | null>
         data.dateLivraison instanceof Timestamp
           ? data.dateLivraison.toDate()
           : data.dateLivraison,
+      driverUpdatedAt:
+        data.driverUpdatedAt instanceof Timestamp
+          ? data.driverUpdatedAt.toDate()
+          : data.driverUpdatedAt,
       createdAt:
         data.createdAt instanceof Timestamp
           ? data.createdAt.toDate()
@@ -415,6 +488,10 @@ export async function getCommandsByPhone(telephone: string): Promise<Command[]> 
           data.dateLivraison instanceof Timestamp
             ? data.dateLivraison.toDate()
             : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
         createdAt:
           data.createdAt instanceof Timestamp
             ? data.createdAt.toDate()
@@ -460,6 +537,10 @@ export function subscribeToCommand(
           data.dateLivraison instanceof Timestamp
             ? data.dateLivraison.toDate()
             : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
         createdAt:
           data.createdAt instanceof Timestamp
             ? data.createdAt.toDate()

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Command } from "@/app/utils/firestoreCommands";
-import { db } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { Command, getCommandById } from "@/app/utils/firestoreCommands";
+import { getShortOrderNumber } from "@/app/utils/commandUtils";
 import Link from "next/link";
 import CommandCard from "@/app/components/CommandCard";
 
@@ -18,27 +17,19 @@ export default function CommandDetailPage() {
   useEffect(() => {
     async function loadCommand() {
       try {
-        const docRef = doc(db, "commandes", commandId);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setCommand({
-            id: docSnap.id,
-            ...data,
-            dateLivraison:
-              data.dateLivraison?.toDate ? data.dateLivraison.toDate() : data.dateLivraison,
-            createdAt:
-              data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
-            updatedAt:
-              data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
-          } as Command);
-        } else {
-          setError("Commande non trouvée");
+        if (!commandId) {
+          throw new Error("Commande non trouvée");
         }
+
+        const cmd = await getCommandById(commandId);
+        if (!cmd) {
+          throw new Error("Commande non trouvée");
+        }
+
+        setCommand(cmd);
       } catch (err) {
         console.error("Erreur:", err);
-        setError("Erreur lors du chargement");
+        setError(err instanceof Error ? err.message : "Erreur lors du chargement");
       } finally {
         setLoading(false);
       }
@@ -84,11 +75,22 @@ export default function CommandDetailPage() {
           ← Retour à l&apos;historique
         </Link>
 
-        <CommandCard command={command} onUpdate={() => {
-          if (typeof window !== "undefined") {
-            window.location.reload();
-          }
-        }} />
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Détails de la commande</h1>
+          <p className="text-gray-600 mt-2">
+            {getShortOrderNumber(command.id)} · ID Firestore : {command.id}
+          </p>
+        </div>
+
+        <CommandCard
+          command={command}
+          onUpdate={() => {
+            if (typeof window !== "undefined") {
+              window.location.reload();
+            }
+          }}
+          showDetails
+        />
       </div>
     </main>
   );

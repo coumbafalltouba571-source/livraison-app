@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { CartState, DEFAULT_PRODUCTS, removeFromCart, updateQuantity } from "@/app/utils/shop";
 import { createCommand } from "@/app/utils/firestoreCommands";
-import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
 import PaymentSelector from "./PaymentSelector";
 import WavePayment from "./WavePayment";
 import OrangeMoneyPayment from "./OrangeMoneyPayment";
+import NotificationToast from "./NotificationToast";
 
 interface ShoppingCartProps {
   cart: CartState;
@@ -43,6 +43,7 @@ export default function ShoppingCart({
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [processingMessage, setProcessingMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   const handleRemoveItem = (productId: string) => {
     const newCart = removeFromCart(cart, productId);
@@ -156,25 +157,10 @@ export default function ShoppingCart({
       setSuccessMessage("✅ Commande enregistrée avec succès!");
       setProcessingMessage("");
       setIsProcessing(false);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 5000);
 
-      console.log("📲 Tentative d'envoi WhatsApp en arrière-plan...");
-
-      // Envoyer les messages WhatsApp
-      setTimeout(() => {
-        const command = {
-          id: commandResult,
-          telephone: clientPhone,
-          client: clientName,
-          nomClient: clientName,
-          destination: clientAddress.trim(),
-          prix: cart.total,
-          paymentMethod: paymentMethod,
-          dateLivraison: new Date(Date.now() + 24 * 60 * 60 * 1000),
-          description: `Achat boutique: ${description}`,
-          orderItems: orderItems,
-        };
-        sendWhatsAppNotifications(command as any);
-      }, 500);
+      console.log("📲 Notification et WhatsApp déclenchés via la création de commande...");
 
       console.log("🔄 Fermeture du modal et vidage du panier dans 1.2s...");
 
@@ -237,6 +223,8 @@ export default function ShoppingCart({
         }}
         onClick={onClose}
       />
+
+      <NotificationToast visible={showToast} onClose={() => setShowToast(false)} />
 
       {/* Modal Panier */}
       <div

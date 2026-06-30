@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/firestoreCommands";
+import { getShortOrderNumber, normalizeOrderSearchValue, getWhatsAppShareUrl, getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -235,12 +236,21 @@ export default function CommandHistoryContent() {
   const getFilteredCommands = () => {
     let filtered = [...commands];
 
-    // Filtre par numéro de commande
+    // Filtre par numéro de commande court ou ID Firestore
     if (searchOrderNumber.trim()) {
-      filtered = filtered.filter((cmd) =>
-        cmd.id?.includes(searchOrderNumber.trim()) ||
-        cmd.id?.slice(-6).toUpperCase().includes(searchOrderNumber.toUpperCase())
-      );
+      const searchValue = normalizeOrderSearchValue(searchOrderNumber.trim());
+      filtered = filtered.filter((cmd) => {
+        const id = cmd.id?.toUpperCase() || "";
+        const shortId = getShortOrderNumber(cmd.id).replace(/#/g, "").toUpperCase();
+        const normalizedSearch = searchValue.replace(/^GDN/, "");
+
+        return (
+          id.includes(searchValue) ||
+          id.includes(normalizedSearch) ||
+          shortId.includes(normalizedSearch) ||
+          shortId.includes(searchValue)
+        );
+      });
     }
 
     // Filtre par statut
@@ -826,7 +836,14 @@ export default function CommandHistoryContent() {
                         color: "#9ca3af",
                         marginBottom: "4px",
                       }}>
-                        Commande #{command.id?.slice(-6).toUpperCase()}
+                        Numéro de commande : {getShortOrderNumber(command.id)}
+                      </div>
+                      <div style={{
+                        fontSize: "clamp(11px, 2vw, 12px)",
+                        color: "#9ca3af",
+                        marginBottom: "4px",
+                      }}>
+                        ID Firestore : {command.id}
                       </div>
                       <div style={{
                         fontSize: "clamp(12px, 2vw, 14px)",
@@ -1086,9 +1103,80 @@ export default function CommandHistoryContent() {
                     paddingTop: "16px",
                     borderTop: "1px solid #e5e7eb",
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                     gap: "12px",
                   }}>
+                    {/* Bouton Copier l'ID */}
+                    <button
+                      onClick={async () => {
+                        if (!command.id) return;
+                        try {
+                          await navigator.clipboard.writeText(command.id);
+                          alert("✅ ID copié dans le presse-papiers.");
+                        } catch (err) {
+                          console.error("Erreur copie ID :", err);
+                          alert("Erreur lors de la copie de l'ID.");
+                        }
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "12px 16px",
+                        background: "#2563eb",
+                        color: "#ffffff",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: "600",
+                        fontSize: "clamp(12px, 1.5vw, 13px)",
+                        transition: "all 0.3s",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 8px 20px rgba(37, 99, 235, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      📋 Copier l'ID
+                    </button>
+
+                    {/* Bouton Partager */}
+                    <a
+                      href={getWhatsAppShareUrl(command)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "12px 16px",
+                        background: "#10b981",
+                        color: "#ffffff",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: "600",
+                        fontSize: "clamp(12px, 1.5vw, 13px)",
+                        transition: "all 0.3s",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      📤 Partager
+                    </a>
+
                     {/* Bouton Commander à nouveau */}
                     <Link
                       href={`/?depart=${encodeURIComponent(command.depart || "")}&destination=${encodeURIComponent(command.address || command.destination || "")}`}
@@ -1121,7 +1209,7 @@ export default function CommandHistoryContent() {
 
                     {/* Bouton Contacter le livreur */}
                     <a
-                      href={`https://wa.me/${normalizePhoneNumber(command.telephone).replace(/\D/g, "")}?text=Bonjour%2C%20je%20contacte%20concernant%20la%20commande%20%23${command.id?.slice(-6).toUpperCase()}`}
+                      href={getAdminWhatsAppUrl(command)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -1150,6 +1238,36 @@ export default function CommandHistoryContent() {
                     >
                       💬 Contacter le livreur
                     </a>
+                    <Link
+                      href={`/track/${command.id}`}
+                      style={
+                        {
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "12px 16px",
+                          background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                          color: "#ffffff",
+                          borderRadius: "8px",
+                          textDecoration: "none",
+                          fontWeight: "600",
+                          fontSize: "clamp(12px, 1.5vw, 13px)",
+                          transition: "all 0.3s",
+                          border: "none",
+                          cursor: "pointer",
+                        }
+                      }
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 8px 20px rgba(37, 99, 235, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      📍 Suivre la commande
+                    </Link>
                   </div>
                 </div>
               ))}

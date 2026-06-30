@@ -38,7 +38,7 @@ export default function Footer() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              🚚 Livraison Dakar
+              🚚 Livraison Pro
             </h2>
 
             <p
@@ -162,7 +162,7 @@ export default function Footer() {
             fontSize: "14px",
           }}
         >
-          <span>© 2026 Livraison Dakar - Tous droits réservés</span>
+          <span>© 2026 Livraison Pro - Tous droits réservés</span>
 
           <div
             style={{

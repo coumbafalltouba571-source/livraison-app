@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createCommand } from "@/app/utils/firestoreCommands";
-import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
 import PaymentSelector from "./PaymentSelector";
 import Link from "next/link";
 import { QUARTIERS_DAKAR } from "@/app/utils/tarifs";
@@ -75,23 +74,6 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
         paymentMethod: formData.paymentMethod,
         paymentStatus: paymentStatus,
       });
-
-      // Envoyer les messages WhatsApp
-      const command = {
-        id: commandId,
-        telephone: formData.telephone,
-        client: formData.client || formData.telephone,
-        nomClient: formData.client || formData.telephone,
-        destination: formData.destination,
-        prix: formData.prix,
-        paymentMethod: formData.paymentMethod,
-        dateLivraison: dateLivraison,
-        description: formData.notes || "",
-      };
-
-      setTimeout(() => {
-        sendWhatsAppNotifications(command as any);
-      }, 500);
 
       setSuccessMessage("✅ Commande créée avec succès!");
       setTimeout(() => setSuccessMessage(""), 3000);

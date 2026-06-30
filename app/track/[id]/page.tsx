@@ -4,12 +4,36 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { getCommandById, Command } from "@/app/utils/firestoreCommands";
+import { Command, subscribeToCommand } from "@/app/utils/firestoreCommands";
+import { QUARTIERS_COORDS } from "@/app/utils/tarifs";
+import { calculateDistanceKm, estimateArrivalMinutes } from "@/app/utils/commandUtils";
 
 const LiveTracking = dynamic(
   () => import("@/app/components/LiveTracking"),
   { ssr: false }
 );
+
+const DEFAULT_CENTER: [number, number] = [14.7167, -17.4674];
+
+const parseCommandLocation = (value?: string): [number, number] | null => {
+  if (!value) return null;
+  const cleaned = value.trim();
+
+  const parts = cleaned.split(",").map((part) => part.trim());
+  if (parts.length === 2) {
+    const lat = Number(parts[0]);
+    const lng = Number(parts[1]);
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+      return [lat, lng];
+    }
+  }
+
+  if (cleaned in QUARTIERS_COORDS) {
+    return QUARTIERS_COORDS[cleaned as keyof typeof QUARTIERS_COORDS];
+  }
+
+  return null;
+};
 
 export default function TrackingPage() {
   const params = useParams();
@@ -19,20 +43,27 @@ export default function TrackingPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadCommand = async () => {
-      try {
-        if (!id) throw new Error("Command ID not found");
-        const cmd = await getCommandById(id);
-        if (!cmd) throw new Error("Command not found");
-        setCommand(cmd);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load command");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!id) {
+      setError("ID de commande introuvable");
+      setLoading(false);
+      return;
+    }
 
-    loadCommand();
+    const unsubscribe = subscribeToCommand(id, (cmd) => {
+      if (!cmd) {
+        setError("Commande introuvable");
+        setCommand(null);
+        setLoading(false);
+        return;
+      }
+      setCommand(cmd);
+      setLoading(false);
+      setError(null);
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
   }, [id]);
 
   if (loading) {
@@ -59,14 +90,18 @@ export default function TrackingPage() {
     );
   }
 
-  // Parse coordinates from the command (assuming they're stored as "latitude,longitude")
-  const parseCoords = (coordStr: string): [number, number] => {
-    const [lat, lng] = coordStr.split(",").map(Number);
-    return [lat || 48.8566, lng || 2.3522]; // Default to Paris
-  };
+  const startCoords = parseCommandLocation(command.depart) || DEFAULT_CENTER;
+  const endCoords = parseCommandLocation(command.address || command.destination) || DEFAULT_CENTER;
+  const driverCoords =
+    command.driverLatitude !== undefined && command.driverLongitude !== undefined
+      ? [command.driverLatitude, command.driverLongitude] as [number, number]
+      : null;
 
-  const [startLat, startLng] = parseCoords(command.depart || "48.8566,2.3522");
-  const [endLat, endLng] = parseCoords(command.destination || "48.8566,2.3522");
+  const distanceRemaining = driverCoords && endCoords
+    ? calculateDistanceKm(driverCoords[0], driverCoords[1], endCoords[0], endCoords[1])
+    : calculateDistanceKm(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
+
+  const estimatedMinutes = estimateArrivalMinutes(distanceRemaining);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
@@ -85,11 +120,13 @@ export default function TrackingPage() {
         {/* Map */}
         <div className="mb-8">
           <LiveTracking
-            startLat={startLat}
-            startLng={startLng}
-            endLat={endLat}
-            endLng={endLng}
-            orderId={command.id}
+            startCoords={startCoords}
+            endCoords={endCoords}
+            driverCoords={driverCoords}
+            driverStatus={command.driverStatus}
+            departLabel={command.depart}
+            destinationLabel={command.address || command.destination}
+            driverUpdatedAt={command.driverUpdatedAt}
           />
         </div>
 
@@ -108,12 +145,12 @@ export default function TrackingPage() {
                 <p className="font-semibold text-gray-800">{command.telephone || "N/A"}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Prix</p>
-                <p className="font-semibold text-blue-600 text-lg">{command.prix || "0"} €</p>
+                <p className="text-sm text-gray-600">Distance restante</p>
+                <p className="font-semibold text-gray-800">{distanceRemaining.toFixed(1)} km</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Notes</p>
-                <p className="font-semibold text-gray-800">{command.notes || "Aucune"}</p>
+                <p className="text-sm text-gray-600">Temps estimé d'arrivée</p>
+                <p className="font-semibold text-gray-800">{estimatedMinutes} min</p>
               </div>
             </div>
           </div>
@@ -127,20 +164,18 @@ export default function TrackingPage() {
                 <p className="font-bold text-lg text-blue-600 capitalize">{command.statut || "Inconnu"}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Date de Livraison Prévue</p>
+                <p className="text-sm text-gray-600">Dernière mise à jour GPS</p>
                 <p className="font-semibold text-gray-800">
-                  {command.dateLivraison
-                    ? new Date(command.dateLivraison as unknown as string).toLocaleDateString("fr-FR")
-                    : "Non définie"}
+                  {command.driverUpdatedAt
+                    ? typeof command.driverUpdatedAt === "object" && "toDate" in command.driverUpdatedAt
+                      ? command.driverUpdatedAt.toDate().toLocaleString("fr-FR")
+                      : new Date(command.driverUpdatedAt).toLocaleString("fr-FR")
+                    : "Non disponible"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Créée le</p>
-                <p className="font-semibold text-gray-800">
-                  {command.createdAt
-                    ? new Date(command.createdAt as unknown as string).toLocaleString("fr-FR")
-                    : "N/A"}
-                </p>
+                <p className="text-sm text-gray-600">Statut du livreur</p>
+                <p className="font-semibold text-gray-800">{command.driverStatus || "N/A"}</p>
               </div>
             </div>
           </div>

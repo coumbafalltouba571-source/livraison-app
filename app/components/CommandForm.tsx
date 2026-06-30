@@ -87,24 +87,6 @@ export default function CommandForm({ isOpen, onClose, onSuccess }: CommandFormP
       console.log("✅ Commande créée avec succès:", commandeId);
       setSuccessMessage("✅ Commande enregistrée avec succès!");
 
-      // Envoyer sur WhatsApp
-      const message =
-        `Nouvelle commande 🚚%0A%0A` +
-        `ID: ${commandeId}%0A` +
-        `Nom: ${formData.client}%0A` +
-        `Téléphone: ${formData.telephone}%0A` +
-        `Départ: ${formData.depart}%0A` +
-        `Destination: ${formData.destination}%0A` +
-        `Description: ${formData.description}%0A` +
-        `Type: ${formData.type}%0A` +
-        `Prix: ${prix} FCFA`;
-
-      if (typeof window !== "undefined") {
-        window.open(
-          `https://wa.me/221773629075?text=${encodeURIComponent(message)}`,
-          "_blank"
-        );
-      }
 
       setTimeout(() => {
         setFormData({ telephone: "", client: "", depart: "", destination: "", description: "", type: "standard" });

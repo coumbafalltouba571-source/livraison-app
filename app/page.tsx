@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import HeroSection from "./components/HeroSection";
 import ServicesSection from "./components/ServicesSection";
 import HowItWorks from "./components/HowItWorks";
 import AdvantagesSection from "./components/AdvantagesSection";
@@ -135,28 +134,7 @@ export default function Home() {
       setTimeout(() => setSuccessMessage(""), 3000);
 
       // 3. Envoyer le message WhatsApp
-      console.log("📱 Ouverture du dialogue WhatsApp...");
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
-      const message =
-        `Nouvelle commande 🚚%0A%0A` +
-        `ID: ${commandeId}%0A` +
-        `Client: ${nomClient}%0A` +
-        `Téléphone: ${telephone}%0A` +
-        `Départ: ${depart}%0A` +
-        `Destination: ${destination}%0A` +
-        `Description: ${description}%0A` +
-        `Prix: ${prix} FCFA%0A` +
-        `Paiement: ${modePayement}%0A%0A` +
-        `Voir l'historique: ${origin}/commands`;
-
-      if (typeof window !== "undefined") {
-        window.open(
-          `https://wa.me/221773629075?text=${message}`,
-          "_blank"
-        );
-      }
-
-      console.log("✅ Dialogue WhatsApp ouvert");
+      console.log("📱 Notification et WhatsApp déclenchés via la création de commande.");
 
       // 4. Réinitialiser le formulaire
       setTimeout(() => {
@@ -288,6 +266,25 @@ export default function Home() {
             🛡️ Admin
           </Link>
           <Link
+            href="/admin/notifications"
+            style={{
+              padding: "10px 16px",
+              background: "rgba(255, 255, 255, 0.1)",
+              color: "#ffffff",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "600",
+              fontSize: "13px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              transition: "all 0.3s",
+              whiteSpace: "nowrap",
+              minWidth: "auto",
+              flexShrink: 0,
+            }}
+          >
+            🔔 Notifications
+          </Link>
+          <Link
             href="/boutique"
             style={{
               padding: "10px 16px",
@@ -383,15 +380,26 @@ export default function Home() {
         }} />
 
         <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "700px", padding: "0 15px", boxSizing: "border-box", margin: "0 auto" }} className="livreur-container">
-          <div
+          <button
+            type="button"
             onClick={handleScrollToCalculator}
             onMouseEnter={() => setIsImageHovered(true)}
             onMouseLeave={() => setIsImageHovered(false)}
             style={{
               cursor: "pointer",
               position: "relative",
-              transition: "transform 0.3s ease",
-              transform: isImageHovered ? "scale(1.05)" : "scale(1)",
+              display: "block",
+              width: "100%",
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              transition: "transform 0.3s ease, filter 0.3s ease",
+              transform: isImageHovered ? "scale(1.03)" : "scale(1)",
+              boxShadow: isImageHovered
+                ? "0 25px 50px rgba(0, 0, 0, 0.18)"
+                : "0 20px 40px rgba(0, 0, 0, 0.14)",
+              borderRadius: "24px",
+              overflow: "hidden",
             }}
           >
             <Image
@@ -402,54 +410,15 @@ export default function Home() {
               priority
               className="livreur-image"
               style={{
-                objectFit: "contain",
+                objectFit: "cover",
                 objectPosition: "center center",
                 width: "100%",
                 height: "auto",
-                maxHeight: "650px",
-                filter: isImageHovered 
-                  ? "drop-shadow(0 25px 50px rgba(0, 0, 0, 0.3))" 
-                  : "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2))",
                 display: "block",
-                transition: "filter 0.3s ease",
+                transition: "transform 0.3s ease, filter 0.3s ease",
               }}
             />
-
-            {/* Bouton flottant "Commander maintenant" sur l'image */}
-            <Link
-              href="/commander"
-              style={{
-                position: "absolute",
-                bottom: "40px",
-                right: "30px",
-                padding: "12px 24px",
-                backgroundColor: "#fbbf24",
-                color: "#0f172a",
-                borderRadius: "50px",
-                textDecoration: "none",
-                fontWeight: "700",
-                fontSize: "14px",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: "0 10px 25px rgba(251, 191, 36, 0.3)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                zIndex: 5,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = "0 15px 35px rgba(251, 191, 36, 0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 10px 25px rgba(251, 191, 36, 0.3)";
-              }}
-            >
-              Commander 🚀
-            </Link>
-          </div>
+          </button>
         </div>
 
         {/* Logo en bas à droite du hero - aucun chevauchement */}
@@ -938,12 +907,6 @@ export default function Home() {
         </div>
       </section>
       {/* Historique - conservé dans header uniquement */}
-
-      {/* SECTION 1: Hero Section */}
-      <HeroSection 
-        onCommandClick={handleScrollToCalculator}
-        onImageClick={handleScrollToCalculator}
-      />
 
       {/* SECTION 2: Services */}
       <ServicesSection />

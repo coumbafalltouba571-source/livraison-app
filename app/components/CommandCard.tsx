@@ -5,10 +5,13 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Image from "next/image";
+import Link from "next/link";
+import { getShortOrderNumber, getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
 
 interface CommandCardProps {
   command: Command;
   onUpdate: () => void;
+  showDetails?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -32,7 +35,7 @@ const STATUS_ICONS: Record<string, string> = {
 const isValidProductImage = (image?: string): image is string =>
   !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
 
-export default function CommandCard({ command, onUpdate }: CommandCardProps) {
+export default function CommandCard({ command, onUpdate, showDetails = false }: CommandCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -107,9 +110,33 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
     ? orderItems[0]?.productImage
     : "";
   const deliveryAddress = command.address || command.destination;
+  const orderNumber = getShortOrderNumber(command.id);
+  const isDelivered = command.statut === "livrée";
+  const statusRealTimeText = isDelivered
+    ? "✅ Commande livrée."
+    : `Statut en temps réel : ${command.statut}`;
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+      {showDetails && (
+        <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="flex flex-col gap-3 text-sm text-slate-700">
+            <div className="font-semibold text-slate-900">📋 Détails de la commande</div>
+            <div>Numéro de commande : <span className="font-semibold">{orderNumber}</span></div>
+            <div>ID Firestore : <span className="font-mono break-all">{command.id}</span></div>
+            <div>Date : {format(createdDate, "dd MMM yyyy HH:mm", { locale: fr })}</div>
+            <div>Client : {command.client || command.nomClient || command.customerName || "N/A"}</div>
+            <div>Téléphone : {command.telephone}</div>
+            <div>Départ : {command.depart}</div>
+            <div>Destination : {deliveryAddress}</div>
+            <div>Description : {command.description || "N/A"}</div>
+            <div>Prix : {command.prix.toLocaleString()} FCFA</div>
+            <div>Paiement : {command.modePayement || command.paymentMethod || "N/A"}</div>
+            <div>Statut : {command.statut}</div>
+          </div>
+        </div>
+      )}
+
       {firstProductImage && (
         <div className="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
           <Image
@@ -274,29 +301,69 @@ export default function CommandCard({ command, onUpdate }: CommandCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-4 border-t border-gray-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-gray-200">
         <a
           href={`tel:${command.telephone}`}
-          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+          className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
         >
           📞 Appeler
         </a>
         <a
-          href={`https://wa.me/221${command.telephone.replace(/\s/g, "")}`}
+          href={getAdminWhatsAppUrl(command)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 bg-green-400 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+          className="flex items-center justify-center gap-2 bg-green-400 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
         >
           💬 WhatsApp
         </a>
         <button
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+          type="button"
+          onClick={async () => {
+            if (!command.id) return;
+            try {
+              await navigator.clipboard.writeText(command.id);
+              alert("✅ ID copié dans le presse-papiers.");
+            } catch (err) {
+              console.error("Erreur copie ID :", err);
+              alert("Erreur lors de la copie de l'ID.");
+            }
+          }}
+          className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
         >
-          🗑️ {isDeleting ? "..." : "Supprimer"}
+          📋 Copier l'ID
         </button>
+        <Link
+          href={`/?depart=${encodeURIComponent(command.depart || "")}&destination=${encodeURIComponent(deliveryAddress || "")}&telephone=${encodeURIComponent(command.telephone || "")}&client=${encodeURIComponent(
+            command.client || command.nomClient || command.customerName || ""
+          )}`}
+          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+        >
+          🔄 Commander à nouveau
+        </Link>
+        <Link
+          href={`/track/${command.id}`}
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+        >
+          📍 Suivre la commande
+        </Link>
+        {showDetails && (
+          <div className="sm:col-span-2 p-4 rounded-xl bg-blue-50 border border-blue-100 text-blue-900 text-sm">
+            {statusRealTimeText}
+          </div>
+        )}
       </div>
+      {showDetails && (
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="font-semibold text-slate-900 mb-1">Description</div>
+            <div>{command.description || "N/A"}</div>
+          </div>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="font-semibold text-slate-900 mb-1">Paiement</div>
+            <div>{command.modePayement || command.paymentMethod || "N/A"}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

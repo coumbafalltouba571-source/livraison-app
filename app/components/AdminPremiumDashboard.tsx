@@ -5,6 +5,7 @@ import { Command, getAllCommands } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
 import AdminCommandsTable from "@/app/components/AdminCommandsTable";
 import AddCommandForm from "@/app/components/AddCommandForm";
+import AdminNotificationsPanel from "@/app/components/AdminNotificationsPanel";
 import Link from "next/link";
 import {
   BarChart3,
@@ -17,6 +18,7 @@ import {
   Calendar,
   Package,
   CheckCircle,
+  BellRing,
 } from "lucide-react";
 
 type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
@@ -151,6 +153,14 @@ export default function AdminPremiumDashboard() {
           >
             <Truck size={20} />
             {sidebarOpen && <span>Commandes</span>}
+            {sidebarOpen && <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold">Nouveau</span>}
+          </Link>
+          <Link
+            href="/admin/notifications"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition"
+          >
+            <BellRing size={20} />
+            {sidebarOpen && <span>Notifications</span>}
           </Link>
           <Link
             href="/"
@@ -229,6 +239,10 @@ export default function AdminPremiumDashboard() {
               <AddCommandForm onCommandAdded={loadData} />
             </div>
           )}
+
+          <div className="mb-8">
+            <AdminNotificationsPanel />
+          </div>
 
           {/* FILTERS */}
           <div className="mb-6">
