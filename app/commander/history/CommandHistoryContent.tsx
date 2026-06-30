@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef, MouseEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Command, getCommandsByPhone, subscribeToCommand } from "@/app/utils/firestoreCommands";
 import { getShortOrderNumber, normalizeOrderSearchValue, getWhatsAppShareUrl, getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
+import { formatPhoneNumber } from "@/app/utils/phoneFormatter";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -36,7 +37,7 @@ export default function CommandHistoryContent() {
   const [error, setError] = useState("");
   const [inputTelephone, setInputTelephone] = useState(telephone);
   const [hasSearched, setHasSearched] = useState(!!telephone);
-  const [unsubscribers, setUnsubscribers] = useState<(() => void)[]>([]);
+  const unsubscribersRef = useRef<(() => void)[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Filtrage: recherche par numéro, date et statut
@@ -44,19 +45,66 @@ export default function CommandHistoryContent() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const router = useRouter();
+
+  const handleReorder = (command: Command) => {
+    console.log("🔁 Commander à nouveau clicked", {
+      id: command.id,
+      telephone: command.telephone,
+      depart: command.depart,
+      destination: command.address || command.destination,
+      client: command.client || command.nomClient || command.customerName,
+    });
+
+    router.push(
+      `/?depart=${encodeURIComponent(command.depart || "")}` +
+      `&destination=${encodeURIComponent(command.address || command.destination || "")}` +
+      `&telephone=${encodeURIComponent(command.telephone || command.phone || "")}` +
+      `&client=${encodeURIComponent(command.client || command.nomClient || command.customerName || "")}`
+    );
+  };
+
+  const handleTrack = async (event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>, command: Command) => {
+    event.preventDefault();
+    console.log("📍 Suivre la commande clicked", { id: command.id, telephone: command.telephone, depart: command.depart, destination: command.address || command.destination });
+
+    let commandId = command.id;
+    if (!commandId) {
+      console.warn("⚠️ Command ID absent, tentative de recherche Firestore via téléphone");
+      const phone = formatPhoneNumber(command.telephone || command.phone || "");
+      if (!phone) {
+        alert("Impossible de localiser cette commande. Téléphone manquant.");
+        return;
+      }
+      const matches = await getCommandsByPhone(phone);
+      const matched = matches.find((cmd) =>
+        cmd.depart === command.depart &&
+        (cmd.destination === command.destination || cmd.address === command.address)
+      );
+      commandId = matched?.id || matches[0]?.id;
+      console.log("🔎 Command ID recherché via Firestore:", { foundId: commandId, matchesCount: matches.length });
+    }
+
+    if (!commandId) {
+      alert("Impossible de trouver l'ID de la commande pour le suivi.");
+      return;
+    }
+
+    router.push(`/track/${commandId}`);
+  };
 
   // Cleanup des abonnements
   const cleanupSubscriptions = useCallback(() => {
-    console.log(`🧹 Nettoyage de ${unsubscribers.length} abonnements`);
-    unsubscribers.forEach((unsub) => {
+    console.log(`🧹 Nettoyage de ${unsubscribersRef.current.length} abonnements`);
+    unsubscribersRef.current.forEach((unsub) => {
       try {
         unsub();
       } catch (err) {
         console.error("❌ Erreur lors du nettoyage d'un abonnement:", err);
       }
     });
-    setUnsubscribers([]);
-  }, [unsubscribers]);
+    unsubscribersRef.current = [];
+  }, []);
 
   // Charger les commandes du client avec timeout
   const loadClientCommands = useCallback(async (tel: string) => {
@@ -93,7 +141,8 @@ export default function CommandHistoryContent() {
       });
 
       // Promise du chargement
-      const normalizedPhone = normalizePhoneNumber(tel);
+      const normalizedPhone = formatPhoneNumber(tel);
+      console.log(`📱 Recherche avec numéro normalisé: "${tel}" → "${normalizedPhone}"`);
       const loadPromise = getCommandsByPhone(normalizedPhone);
 
       // Race les deux promises
@@ -132,7 +181,7 @@ export default function CommandHistoryContent() {
         }
       });
 
-      setUnsubscribers(newUnsubscribers);
+      unsubscribersRef.current = newUnsubscribers;
       setLoadingState("success");
     } catch (err) {
       // Annuler le timeout en cas d'erreur
@@ -186,7 +235,7 @@ export default function CommandHistoryContent() {
         console.log("🧹 Cleanup: timeout annulé au démontage");
       }
     };
-  }, [telephone, loadClientCommands, cleanupSubscriptions]);
+  }, [telephone, loadClientCommands]);
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
@@ -1178,8 +1227,9 @@ export default function CommandHistoryContent() {
                     </a>
 
                     {/* Bouton Commander à nouveau */}
-                    <Link
-                      href={`/?depart=${encodeURIComponent(command.depart || "")}&destination=${encodeURIComponent(command.address || command.destination || "")}`}
+                    <button
+                      type="button"
+                      onClick={() => handleReorder(command)}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -1205,7 +1255,7 @@ export default function CommandHistoryContent() {
                       }}
                     >
                       🔄 Commander à nouveau
-                    </Link>
+                    </button>
 
                     {/* Bouton Contacter le livreur */}
                     <a
@@ -1238,25 +1288,24 @@ export default function CommandHistoryContent() {
                     >
                       💬 Contacter le livreur
                     </a>
-                    <Link
-                      href={`/track/${command.id}`}
-                      style={
-                        {
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "12px 16px",
-                          background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-                          color: "#ffffff",
-                          borderRadius: "8px",
-                          textDecoration: "none",
-                          fontWeight: "600",
-                          fontSize: "clamp(12px, 1.5vw, 13px)",
-                          transition: "all 0.3s",
-                          border: "none",
-                          cursor: "pointer",
-                        }
-                      }
+                    <button
+                      type="button"
+                      onClick={(e) => handleTrack(e as unknown as MouseEvent<HTMLAnchorElement>, command)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "12px 16px",
+                        background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                        color: "#ffffff",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: "600",
+                        fontSize: "clamp(12px, 1.5vw, 13px)",
+                        transition: "all 0.3s",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = "translateY(-2px)";
                         e.currentTarget.style.boxShadow = "0 8px 20px rgba(37, 99, 235, 0.3)";
@@ -1267,7 +1316,7 @@ export default function CommandHistoryContent() {
                       }}
                     >
                       📍 Suivre la commande
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))}

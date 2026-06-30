@@ -8,16 +8,18 @@ import {
   getDocs,
   getDoc,
   query,
-  orderBy,
   where,
+  orderBy,
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
 import { createOrderNotification } from "@/app/utils/notifications";
+import { formatPhoneNumber } from "@/app/utils/phoneFormatter";
 
 export interface Command {
   id?: string;
   telephone: string;
+  telephoneNormalized?: string;
   phone?: string;
   nomClient?: string;
   customerName?: string;
@@ -77,9 +79,19 @@ export async function createCommand(
     });
     
     console.log(`📝 [createCommand] Instance Firestore:`, { db: !!db });
+
+    const normalizedTelephone = formatPhoneNumber(commandData.telephone || commandData.phone || "");
+    const normalizedPhone = commandData.phone
+      ? formatPhoneNumber(commandData.phone)
+      : normalizedTelephone;
+
+    console.log(`📱 [createCommand] Téléphone normalisé: "${commandData.telephone}" → "${normalizedTelephone}"`);
     
     const docRef = await addDoc(collection(db, COMMANDS_COLLECTION), {
       ...commandData,
+      telephone: normalizedTelephone,
+      phone: normalizedPhone,
+      telephoneNormalized: normalizedTelephone,
       statut: commandData.statut || "en attente",
       dateLivraison:
         commandData.dateLivraison instanceof Date
@@ -477,16 +489,83 @@ async function sendOrderNotifications(orderPayload: Command): Promise<boolean> {
 }
 
 // Récupérer les commandes par numéro de téléphone (client)
+function buildPhoneVariants(phone: string): string[] {
+  const normalized = formatPhoneNumber(phone);
+  const digitsOnly = normalized.replace(/\D/g, "");
+  const variants = new Set<string>([normalized]);
+
+  if (normalized.startsWith("+")) {
+    variants.add(normalized.slice(1));
+  }
+
+  if (digitsOnly.startsWith("221")) {
+    variants.add(digitsOnly);
+    variants.add(digitsOnly.slice(3));
+    variants.add(`00${digitsOnly}`);
+  } else if (digitsOnly.length === 9) {
+    variants.add(digitsOnly);
+    variants.add(`+221${digitsOnly}`);
+    variants.add(`221${digitsOnly}`);
+    variants.add(`00221${digitsOnly}`);
+  }
+
+  return Array.from(variants).filter(Boolean).slice(0, 10);
+}
+
 export async function getCommandsByPhone(telephone: string): Promise<Command[]> {
   try {
-    console.log(`📖 Tentative de lecture des commandes du client - Tel: "${telephone}"`);
+    const normalized = formatPhoneNumber(telephone);
+    const variants = buildPhoneVariants(telephone);
+    console.log(`📖 Tentative de lecture des commandes du client - Tel: "${telephone}" → normalized: "${normalized}"`);
+    console.log(`📖 Requête Firestore variants:`, variants);
+
     const q = query(
       collection(db, COMMANDS_COLLECTION),
-      where("telephone", "==", telephone),
-      orderBy("createdAt", "desc")
+      where("telephone", "in", variants)
     );
     const querySnapshot = await getDocs(q);
     const commands: Command[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      commands.push({
+        id: doc.id,
+        ...data,
+        dateLivraison:
+          data.dateLivraison instanceof Timestamp
+            ? data.dateLivraison.toDate()
+            : data.dateLivraison,
+        driverUpdatedAt:
+          data.driverUpdatedAt instanceof Timestamp
+            ? data.driverUpdatedAt.toDate()
+            : data.driverUpdatedAt,
+        createdAt:
+          data.createdAt instanceof Timestamp
+            ? data.createdAt.toDate()
+            : data.createdAt,
+        updatedAt:
+          data.updatedAt instanceof Timestamp
+            ? data.updatedAt.toDate()
+            : data.updatedAt,
+      } as Command);
+    });
+
+    commands.sort((a, b) => {
+      const aDate = a.createdAt instanceof Date
+        ? a.createdAt.getTime()
+        : a.createdAt instanceof Timestamp
+          ? a.createdAt.toDate().getTime()
+          : new Date(a.createdAt).getTime();
+      const bDate = b.createdAt instanceof Date
+        ? b.createdAt.getTime()
+        : b.createdAt instanceof Timestamp
+          ? b.createdAt.toDate().getTime()
+          : new Date(b.createdAt).getTime();
+      return bDate - aDate;
+    });
+
+    console.log(`✅ ${commands.length} commandes trouvées pour le client`);
+    return commands;
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();

@@ -1010,6 +1010,7 @@ export default function Home() {
                 transition: "all 0.3s ease",
               }}
               onFocus={(e) => {
+              
                 (e.target as HTMLInputElement).style.borderColor = "#7c3aed";
                 (e.target as HTMLInputElement).style.boxShadow =
                   "0 0 16px rgba(124, 58, 237, 0.3)";
