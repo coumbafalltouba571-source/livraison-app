@@ -46,6 +46,9 @@ export async function sendSmsToClient(order: Partial<Command> & { id?: string })
   const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
   const infobipApiKey = process.env.INFOBIP_API_KEY;
   const infobipBaseUrl = process.env.INFOBIP_BASE_URL;
+  const orangeApiKey = process.env.ORANGE_SMS_API_KEY;
+  const orangeBaseUrl = process.env.ORANGE_SMS_BASE_URL;
+  const orangeFrom = process.env.ORANGE_SMS_FROM || "Livraison Pro";
 
   if (twilioSid && twilioToken && twilioFrom) {
     try {
@@ -86,6 +89,27 @@ export async function sendSmsToClient(order: Partial<Command> & { id?: string })
       return true;
     } catch (error) {
       console.error("❌ SMS Infobip non envoyé:", error);
+      return false;
+    }
+  }
+
+  if (orangeApiKey && orangeBaseUrl) {
+    try {
+      await fetch(orangeBaseUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${orangeApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: orangeFrom,
+          to: [phone],
+          text: smsMessage,
+        }),
+      });
+      return true;
+    } catch (error) {
+      console.error("❌ SMS Orange non envoyé:", error);
       return false;
     }
   }

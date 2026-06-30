@@ -14,9 +14,6 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { createOrderNotification } from "@/app/utils/notifications";
-import { sendWhatsAppNotifications } from "@/app/utils/whatsappUtils";
-import { sendSmsToClient } from "@/app/utils/smsService";
-import { queueWhatsAppBusinessMessage } from "@/app/utils/whatsappBusiness";
 
 export interface Command {
   id?: string;
@@ -124,17 +121,7 @@ export async function createCommand(
 
     await Promise.allSettled([
       createOrderNotification(orderPayload),
-      sendSmsToClient(orderPayload),
-      queueWhatsAppBusinessMessage({
-        to: orderPayload.telephone,
-        orderId: docRef.id,
-        message: `Bonjour ${orderPayload.client || orderPayload.nomClient || "Cher client"}, votre commande ${docRef.id} a bien été reçue.`,
-      }),
-      Promise.resolve().then(() => {
-        if (typeof window !== "undefined") {
-          sendWhatsAppNotifications(orderPayload);
-        }
-      }),
+      sendOrderNotifications(orderPayload),
     ]);
     
     console.log(`✅ [createCommand] Commande créée avec succès!`);
@@ -464,6 +451,28 @@ export async function getCommandById(commandId: string): Promise<Command | null>
       console.error("Code:", (error as unknown as { code?: string }).code);
     }
     throw error;
+  }
+}
+
+async function sendOrderNotifications(orderPayload: Command): Promise<boolean> {
+  try {
+    const response = await fetch("/api/notifications/send-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderPayload),
+    });
+
+    if (!response.ok) {
+      console.error("❌ Échec de l'envoi des notifications de commande", await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("❌ Impossible d'appeler l'API de notification de commande:", error);
+    return false;
   }
 }
 
