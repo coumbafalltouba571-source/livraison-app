@@ -16,6 +16,12 @@ import {
 import { createOrderNotification } from "@/app/utils/notifications";
 import { formatPhoneNumber } from "@/app/utils/phoneFormatter";
 
+function cleanFirestoreData<T extends Record<string, unknown>>(data: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  ) as Partial<T>;
+}
+
 export interface Command {
   id?: string;
   telephone: string;
@@ -87,7 +93,7 @@ export async function createCommand(
 
     console.log(`📱 [createCommand] Téléphone normalisé: "${commandData.telephone}" → "${normalizedTelephone}"`);
     
-    const docRef = await addDoc(collection(db, COMMANDS_COLLECTION), {
+    const commandPayload = cleanFirestoreData({
       ...commandData,
       telephone: normalizedTelephone,
       phone: normalizedPhone,
@@ -104,6 +110,8 @@ export async function createCommand(
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
+
+    const docRef = await addDoc(collection(db, COMMANDS_COLLECTION), commandPayload);
 
     const orderPayload = {
       id: docRef.id,
