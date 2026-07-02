@@ -38,16 +38,13 @@ const parseCommandLocation = (value?: string): [number, number] | null => {
 export default function TrackingPage() {
   const params = useParams();
   const id = params.id as string;
+  const noId = !id;
   const [command, setCommand] = useState<Command | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(!noId);
+  const [error, setError] = useState<string | null>(noId ? "ID de commande introuvable" : null);
 
   useEffect(() => {
-    if (!id) {
-      setError("ID de commande introuvable");
-      setLoading(false);
-      return;
-    }
+    if (noId) return;
 
     const unsubscribe = subscribeToCommand(id, (cmd) => {
       if (!cmd) {
@@ -64,7 +61,7 @@ export default function TrackingPage() {
     return () => {
       unsubscribe?.();
     };
-  }, [id]);
+  }, [id, noId]);
 
   if (loading) {
     return (
@@ -149,7 +146,7 @@ export default function TrackingPage() {
                 <p className="font-semibold text-gray-800">{distanceRemaining.toFixed(1)} km</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Temps estimé d'arrivée</p>
+                <p className="text-sm text-gray-600">Temps estimé d&apos;arrivée</p>
                 <p className="font-semibold text-gray-800">{estimatedMinutes} min</p>
               </div>
             </div>

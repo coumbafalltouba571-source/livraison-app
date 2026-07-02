@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/auth";
 import { useTranslation } from "@/app/hooks/useTranslation";
-import { Mail, Phone, User, Lock, Loader2, ChevronRight } from "lucide-react";
+import { Mail, Phone, Loader2, ChevronRight } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,8 +44,12 @@ export default function RegisterPage() {
     try {
       await signUpWithEmail(email, password, fullName);
       router.push("/auth/verify-email");
-    } catch (err: any) {
-      setLocalError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setLocalError(err.message);
+      } else {
+        setLocalError(String(err));
+      }
     }
   };
 
@@ -69,9 +73,13 @@ export default function RegisterPage() {
       sessionStorage.setItem('pendingRegisterName', fullName);
       
       router.push("/auth/verify-otp");
-    } catch (err: any) {
-      console.error("❌ [REGISTER] Phone signup failed:", err.message);
-      setLocalError(err.message);
+    } catch (err: unknown) {
+      console.error("❌ [REGISTER] Phone signup failed:", err);
+      if (err instanceof Error) {
+        setLocalError(err.message);
+      } else {
+        setLocalError(String(err));
+      }
     }
   };
 

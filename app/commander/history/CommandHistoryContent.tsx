@@ -223,9 +223,15 @@ export default function CommandHistoryContent() {
   }, [cleanupSubscriptions]);
 
   useEffect(() => {
-    if (telephone) {
-      loadClientCommands(telephone);
+    if (!telephone) {
+      return;
     }
+
+    const load = async () => {
+      await loadClientCommands(telephone);
+    };
+
+    void load();
 
     // Cleanup au démontage
     return () => {
@@ -235,7 +241,7 @@ export default function CommandHistoryContent() {
         console.log("🧹 Cleanup: timeout annulé au démontage");
       }
     };
-  }, [telephone, loadClientCommands]);
+  }, [telephone, loadClientCommands, cleanupSubscriptions]);
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {

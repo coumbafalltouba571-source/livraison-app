@@ -10,8 +10,13 @@ function parseDateValue(value: unknown): Date | null {
   if (value instanceof Date) {
     return value;
   }
-  if (typeof value === "object" && value !== null && "toDate" in value && typeof (value as any).toDate === "function") {
-    return (value as any).toDate();
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (value as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (value as { toDate: () => Date }).toDate();
   }
   const parsed = new Date(String(value));
   return Number.isNaN(parsed.getTime()) ? null : parsed;

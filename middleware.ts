@@ -15,6 +15,10 @@ const publicRoutes = [
   "/legal/privacy",
 ];
 
+// Public routes are intentionally listed for future auth enforcement.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _publicRoutes = publicRoutes;
+
 // List of routes that require authentication
 const privateRoutes = [
   "/settings",

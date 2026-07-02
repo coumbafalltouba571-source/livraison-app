@@ -28,7 +28,13 @@ export default function AdminNotificationsPanel() {
   };
 
   useEffect(() => {
-    loadNotifications();
+    const initialize = () => {
+      setTimeout(() => {
+        void loadNotifications();
+      }, 0);
+    };
+
+    initialize();
     const unsubscribe = listenToNotifications((items) => {
       setNotifications(items);
       setLoading(false);

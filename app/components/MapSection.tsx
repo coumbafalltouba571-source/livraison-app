@@ -10,7 +10,7 @@ import {
   CircleMarker,
   Tooltip,
 } from "react-leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { calculerDistance, QUARTIERS_COORDS } from "@/app/utils/tarifs";
 
 import "leaflet/dist/leaflet.css";
@@ -73,21 +73,18 @@ export default function MapSection({
   const pointDepart = depart && QUARTIERS_COORDS[depart];
   const pointDestination = destination && QUARTIERS_COORDS[destination];
   
-  const [distance, setDistance] = useState(0);
   const [deliveryStatus, setDeliveryStatus] = useState<"Commande reçue" | "Livreur en route" | "Livraison en cours" | "Livré">("Commande reçue");
   const [livreurPosition, setLivreurPosition] = useState<[number, number]>([14.7167, -17.4674]);
 
-  // Calculer la distance
-  useEffect(() => {
+  const distance = useMemo(() => {
     if (depart && destination) {
-      const d = calculerDistance(depart, destination);
-      setDistance(d);
+      return calculerDistance(depart, destination);
     }
+    return 0;
   }, [depart, destination]);
 
   // Centre par défaut (Dakar)
   const defaultCenter: [number, number] = [14.7167, -17.4674];
-  const center = pointDepart || defaultCenter;
 
   // Assurer que les coordonnées sont correctement typées
   const departCoords: [number, number] | null = pointDepart

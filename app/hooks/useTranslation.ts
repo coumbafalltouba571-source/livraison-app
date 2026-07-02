@@ -6,11 +6,11 @@ export function useTranslation() {
 
   const t = (path: string, defaultValue: string = ""): string => {
     const keys = path.split(".");
-    let value: any = translations[language];
+    let value: unknown = translations[language];
 
     for (const key of keys) {
-      if (value && typeof value === "object" && key in value) {
-        value = value[key];
+      if (typeof value === "object" && value !== null && key in value) {
+        value = (value as Record<string, unknown>)[key];
       } else {
         return defaultValue;
       }

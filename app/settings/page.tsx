@@ -43,8 +43,8 @@ export default function SettingsPage() {
       setSuccessMessage(t("messages.updateSuccess", "Profile updated successfully"));
       setIsEditing(false);
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (error: any) {
-      setErrorMessage(error.message);
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -77,8 +77,8 @@ export default function SettingsPage() {
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (error: any) {
-      setErrorMessage(error.message);
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -86,8 +86,8 @@ export default function SettingsPage() {
     try {
       await logout();
       router.push("/");
-    } catch (error: any) {
-      setErrorMessage(error.message);
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : String(error));
     }
   };
 

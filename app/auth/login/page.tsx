@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/auth";
 import { useTranslation } from "@/app/hooks/useTranslation";
-import { Mail, Lock, Phone, Loader2 } from "lucide-react";
+import { Mail, Phone, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,8 +37,12 @@ export default function LoginPage() {
     try {
       await signInWithEmail(email, password);
       router.push("/");
-    } catch (err: any) {
-      setLocalError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setLocalError(err.message);
+      } else {
+        setLocalError(String(err));
+      }
     }
   };
 
@@ -60,9 +64,13 @@ export default function LoginPage() {
       // Store phone for potential use after verification
       sessionStorage.setItem('pendingPhoneLogin', phone);
       router.push("/auth/verify-otp");
-    } catch (err: any) {
-      console.error("❌ [LOGIN] Phone login failed:", err.message);
-      setLocalError(err.message);
+    } catch (err: unknown) {
+      console.error("❌ [LOGIN] Phone login failed:", err);
+      if (err instanceof Error) {
+        setLocalError(err.message);
+      } else {
+        setLocalError(String(err));
+      }
     }
   };
 
@@ -71,8 +79,12 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
       router.push("/");
-    } catch (err: any) {
-      setLocalError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setLocalError(err.message);
+      } else {
+        setLocalError(String(err));
+      }
     }
   };
 

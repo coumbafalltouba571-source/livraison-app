@@ -2,7 +2,13 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/app/store/auth";
-import { useLanguageStore } from "@/app/store/language";
+import { useLanguageStore, type Language } from "@/app/store/language";
+
+const allowedLanguages: Language[] = ["fr", "en", "es", "wo"];
+
+function isValidLanguage(value: unknown): value is Language {
+  return typeof value === "string" && allowedLanguages.includes(value as Language);
+}
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
@@ -15,10 +21,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     // Set language from user profile or localStorage
     const savedLanguage = localStorage.getItem("app-language");
-    if (userProfile?.language) {
-      setLanguage(userProfile.language as any);
-    } else if (savedLanguage) {
-      setLanguage(savedLanguage as any);
+
+    if (isValidLanguage(userProfile?.language)) {
+      setLanguage(userProfile.language);
+    } else if (isValidLanguage(savedLanguage)) {
+      setLanguage(savedLanguage);
     }
   }, [initializeAuth, setLanguage, userProfile?.language]);
 

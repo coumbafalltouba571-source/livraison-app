@@ -54,6 +54,25 @@ interface AuthStore {
 
 const db = getFirestore();
 
+const parseFirebaseError = (error: unknown) => {
+  if (typeof error === "string") {
+    return { message: error, code: undefined };
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const parsed = error as { message?: unknown; code?: unknown };
+    const message = typeof parsed.message === "string"
+      ? parsed.message
+      : typeof parsed.code === "string"
+      ? parsed.code
+      : "Une erreur inconnue est survenue";
+    const code = typeof parsed.code === "string" ? parsed.code : undefined;
+    return { message, code };
+  }
+
+  return { message: "Une erreur inconnue est survenue", code: undefined };
+};
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
@@ -82,8 +101,9 @@ export const useAuthStore = create<AuthStore>()(
 
           await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
           set({ user: userCredential.user, userProfile, isAuthenticated: true });
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -110,8 +130,9 @@ export const useAuthStore = create<AuthStore>()(
 
           await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
           set({ user: userCredential.user, userProfile, isAuthenticated: true });
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -127,8 +148,9 @@ export const useAuthStore = create<AuthStore>()(
           const userProfile = userDocSnap.data() as UserProfile;
 
           set({ user: userCredential.user, userProfile, isAuthenticated: true });
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -140,8 +162,10 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true, error: null });
           const tempEmail = `${phone.replace(/\D/g, "")}@phone.livraisonpro.local`;
           await signInWithEmailAndPassword(auth, tempEmail, password);
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          console.error("❌ [AUTH] Google Sign-In error:", parsedError.code, parsedError.message);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -180,9 +204,10 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           set({ user: userCredential.user, userProfile, isAuthenticated: true });
-        } catch (error: any) {
-          console.error("❌ [AUTH] Google Sign-In error:", error.code, error.message);
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          console.error("❌ [AUTH] Google Sign-In error:", parsedError.code, parsedError.message);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -200,15 +225,16 @@ export const useAuthStore = create<AuthStore>()(
             'expired-callback': () => {
               console.warn("⚠️ [RECAPTCHA] reCAPTCHA expired");
             },
-            'error-callback': (error: any) => {
+            'error-callback': (error: unknown) => {
               console.error("❌ [RECAPTCHA] reCAPTCHA error:", error);
             }
           });
           set({ recaptchaVerifier: verifier });
           console.log("✅ [RECAPTCHA] RecaptchaVerifier created successfully");
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
           console.error("❌ [RECAPTCHA] Failed to initialize RecaptchaVerifier:", error);
-          set({ error: `RecaptchaVerifier error: ${error.message}` });
+          set({ error: `RecaptchaVerifier error: ${parsedError.message}` });
         }
       },
 
@@ -242,15 +268,16 @@ export const useAuthStore = create<AuthStore>()(
                 'expired-callback': () => {
                   console.warn("⚠️ [RECAPTCHA] reCAPTCHA token expired");
                 },
-                'error-callback': (error: any) => {
+                'error-callback': (error: unknown) => {
                   console.error("❌ [RECAPTCHA] reCAPTCHA error:", error);
                 }
               });
               set({ recaptchaVerifier: verifier });
               console.log("✅ [OTP] Created new RecaptchaVerifier");
-            } catch (recaptchaError: any) {
-              console.error("❌ [OTP] Failed to create RecaptchaVerifier:", recaptchaError.message);
-              throw new Error(`RecaptchaVerifier error: ${recaptchaError.message}`);
+            } catch (recaptchaError: unknown) {
+              const parsedRecaptchaError = parseFirebaseError(recaptchaError);
+              console.error("❌ [OTP] Failed to create RecaptchaVerifier:", parsedRecaptchaError.message);
+              throw new Error(`RecaptchaVerifier error: ${parsedRecaptchaError.message}`);
             }
           }
 
@@ -265,23 +292,23 @@ export const useAuthStore = create<AuthStore>()(
           console.log("🔵 [OTP] Waiting for user to enter verification code...");
           
           set({ confirmationResult, recaptchaVerifier: verifier });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
           console.error("❌ [OTP] Failed to send OTP:");
-          console.error("   Error Code:", error.code);
-          console.error("   Error Message:", error.message);
+          console.error("   Error Code:", parsedError.code);
+          console.error("   Error Message:", parsedError.message);
           console.error("   Full Error:", error);
           
-          // More detailed error messages
-          let userMessage = error.message;
-          if (error.code === "auth/invalid-phone-number") {
+          let userMessage = parsedError.message;
+          if (parsedError.code === "auth/invalid-phone-number") {
             userMessage = "Invalid phone number format. Must be +221XXXXXXXXX";
-          } else if (error.code === "auth/too-many-requests") {
+          } else if (parsedError.code === "auth/too-many-requests") {
             userMessage = "Too many attempts. Please try again later.";
-          } else if (error.code === "auth/operation-not-allowed") {
+          } else if (parsedError.code === "auth/operation-not-allowed") {
             userMessage = "Phone authentication is not enabled in Firebase.";
-          } else if (error.code === "auth/quota-exceeded") {
+          } else if (parsedError.code === "auth/quota-exceeded") {
             userMessage = "SMS quota exceeded. Please contact support.";
-          } else if (error.message?.includes("reCAPTCHA")) {
+          } else if (parsedError.message.includes("reCAPTCHA")) {
             userMessage = "reCAPTCHA verification failed. Please try again.";
           }
           
@@ -322,9 +349,10 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             confirmationResult: null 
           });
-        } catch (error: any) {
-          console.error("❌ [OTP] Failed to verify OTP:", error.code, error.message);
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          console.error("❌ [OTP] Failed to verify OTP:", parsedError.code, parsedError.message);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -336,8 +364,9 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true, error: null });
           await signOut(auth);
           set({ user: null, userProfile: null, isAuthenticated: false, confirmationResult: null });
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -354,8 +383,9 @@ export const useAuthStore = create<AuthStore>()(
           set((state) => ({
             userProfile: state.userProfile ? { ...state.userProfile, ...data } : null,
           }));
-        } catch (error: any) {
-          set({ error: error.message });
+        } catch (error: unknown) {
+          const parsedError = parseFirebaseError(error);
+          set({ error: parsedError.message });
           throw error;
         } finally {
           set({ isLoading: false });
