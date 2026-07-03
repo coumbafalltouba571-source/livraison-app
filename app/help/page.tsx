@@ -91,7 +91,7 @@ export default function HelpCenterPage() {
             <MessageCircle className="w-8 h-8 text-purple-600 mb-3" />
             <h3 className="font-semibold text-gray-900 mb-2">{t("help.contact", "Contact")}</h3>
             <p className="text-sm text-gray-600 mb-4">Disponible 24/7 pour votre assistance</p>
-            <p className="text-purple-600 text-sm font-semibold">+221773629075</p>
+              <p className="text-purple-600 text-sm font-semibold">+221 77 362 90 75</p>
           </div>
         </div>
 
@@ -132,7 +132,7 @@ export default function HelpCenterPage() {
                 <ExternalLink className="w-4 h-4 text-blue-600" />
               </h3>
               <p className="text-sm text-gray-600">
-                Lire nos conditions d'utilisation et nos obligations légales
+                Lire nos conditions d&apos;utilisation et nos obligations légales
               </p>
             </div>
           </Link>

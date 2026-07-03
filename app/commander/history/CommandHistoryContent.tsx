@@ -629,7 +629,7 @@ export default function CommandHistoryContent() {
                       color: "#374151",
                       marginBottom: "8px",
                     }}>
-                      📅 Jusqu'au
+                      📅 Jusqu&apos;au
                     </label>
                     <input
                       type="date"
@@ -711,7 +711,7 @@ export default function CommandHistoryContent() {
                 opacity: 0.8,
               }}>
                 <p style={{ margin: "0 0 8px 0" }}>
-                  💡 L'administrateur Firestore peut accélérer ce processus:
+                  💡 L&apos;administrateur Firestore peut accélérer ce processus:
                 </p>
                 <p style={{ margin: "0 0 8px 0" }}>
                   Ouvrir Firebase Console → Firestore Database → Indexes
@@ -1197,7 +1197,7 @@ export default function CommandHistoryContent() {
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     >
-                      📋 Copier l'ID
+                      📋 Copier l&apos;ID
                     </button>
 
                     {/* Bouton Partager */}

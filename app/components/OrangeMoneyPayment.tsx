@@ -14,9 +14,13 @@ export default function OrangeMoneyPayment({
   // Numéro Orange Money du marchand
   const ORANGE_MONEY_NUMBER = "772000000";
 
-  const handleCopyNumber = () => {
-    navigator.clipboard.writeText(ORANGE_MONEY_NUMBER);
-    alert("✅ Numéro copié: " + ORANGE_MONEY_NUMBER);
+  const handleCopyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(ORANGE_MONEY_NUMBER);
+      alert(`✅ Numéro copié: ${ORANGE_MONEY_NUMBER}`);
+    } catch {
+      alert("⚠️ Copie impossible. Veuillez copier le numéro manuellement.");
+    }
   };
 
   return (
@@ -144,7 +148,7 @@ export default function OrangeMoneyPayment({
           lineHeight: "1.8",
         }}>
           <li>Ouvrez Orange Money sur votre téléphone</li>
-          <li>Sélectionnez "Envoyer de l'argent"</li>
+          <li>Sélectionnez &quot;Envoyer de l&apos;argent&quot;</li>
           <li>Entrez le numéro: <strong>{ORANGE_MONEY_NUMBER}</strong></li>
           <li>Entrez le montant: <strong>{total.toLocaleString("fr-FR")} FCFA</strong></li>
           <li>Validez la transaction</li>

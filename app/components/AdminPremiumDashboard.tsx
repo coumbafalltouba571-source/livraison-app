@@ -180,7 +180,7 @@ export default function AdminPremiumDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">Dashboard Admin</h2>
-                <p className="text-gray-600 mt-1">Bienvenue sur votre tableau de bord</p>
+                <p className="text-gray-600 mt-1">Bienvenue sur votre tableau de bord de suivi et de gestion</p>
               </div>
               <button
                 onClick={() => setShowForm(!showForm)}
@@ -332,8 +332,8 @@ export default function AdminPremiumDashboard() {
               </h3>
               <p className="text-gray-600">
                 {selectedStatus === "tous"
-                  ? "Créez une nouvelle commande pour commencer"
-                  : `Aucune commande avec le statut "${selectedStatus}"`}
+                  ? "Créez une nouvelle commande pour commencer ou attendez les nouvelles commandes clients"
+                  : `Aucune commande avec le statut "${selectedStatus}" pour le moment`}
               </p>
             </div>
           ) : viewMode === "table" ? (

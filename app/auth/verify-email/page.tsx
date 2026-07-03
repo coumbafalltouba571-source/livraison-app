@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
 
           <div className="bg-blue-50 p-4 rounded-lg mb-6">
             <p className="text-sm text-gray-700">
-              📧 Veuillez cliquer sur le lien de vérification dans l'email pour activer votre compte.
+              📧 Veuillez cliquer sur le lien de vérification dans l&apos;email pour activer votre compte.
             </p>
           </div>
 

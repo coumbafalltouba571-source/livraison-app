@@ -23,7 +23,7 @@ export default function PrivacyPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700">
-              Livraison Pro (« Nous » ou « Notre ») s'engage à protéger votre vie privée. Cette Politique de
+              Livraison Pro (&quot;Nous&quot; ou &quot;Notre&quot;) s&apos;engage à protéger votre vie privée. Cette Politique de
               confidentialité explique comment nous collectons, utilisons, divulguons et protégeons vos informations.
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Sécurité des données</h2>
             <p className="text-gray-700">
               Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos informations personnelles
-              contre l'accès non autorisé, la modification ou la divulgation.
+              contre l&apos;accès non autorisé, la modification ou la divulgation.
             </p>
           </div>
 

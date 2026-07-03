@@ -122,17 +122,17 @@ export default function CommandCard({ command, onUpdate, showDetails = false }: 
         <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
           <div className="flex flex-col gap-3 text-sm text-slate-700">
             <div className="font-semibold text-slate-900">📋 Détails de la commande</div>
-            <div>Numéro de commande : <span className="font-semibold">{orderNumber}</span></div>
-            <div>ID Firestore : <span className="font-mono break-all">{command.id}</span></div>
-            <div>Date : {format(createdDate, "dd MMM yyyy HH:mm", { locale: fr })}</div>
-            <div>Client : {command.client || command.nomClient || command.customerName || "N/A"}</div>
-            <div>Téléphone : {command.telephone}</div>
-            <div>Départ : {command.depart}</div>
-            <div>Destination : {deliveryAddress}</div>
-            <div>Description : {command.description || "N/A"}</div>
-            <div>Prix : {command.prix.toLocaleString()} FCFA</div>
-            <div>Paiement : {command.modePayement || command.paymentMethod || "N/A"}</div>
-            <div>Statut : {command.statut}</div>
+            <div>Numéro de commande&nbsp;: <span className="font-semibold">{orderNumber}</span></div>
+            <div>ID Firestore&nbsp;: <span className="font-mono break-all">{command.id}</span></div>
+            <div>Date&nbsp;: {format(createdDate, "dd MMM yyyy HH:mm", { locale: fr })}</div>
+            <div>Client&nbsp;: {command.client || command.nomClient || command.customerName || "N/A"}</div>
+            <div>Téléphone&nbsp;: {command.telephone}</div>
+            <div>Départ&nbsp;: {command.depart}</div>
+            <div>Destination&nbsp;: {deliveryAddress}</div>
+            <div>Description&nbsp;: {command.description || "N/A"}</div>
+            <div>Prix&nbsp;: {command.prix.toLocaleString()} FCFA</div>
+            <div>Paiement&nbsp;: {command.modePayement || command.paymentMethod || "N/A"}</div>
+            <div>Statut&nbsp;: {command.statut}</div>
           </div>
         </div>
       )}
@@ -325,12 +325,12 @@ export default function CommandCard({ command, onUpdate, showDetails = false }: 
               alert("✅ ID copié dans le presse-papiers.");
             } catch (err) {
               console.error("Erreur copie ID :", err);
-              alert("Erreur lors de la copie de l'ID.");
+              alert("Erreur lors de la copie de l&apos;ID.");
             }
           }}
           className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
         >
-          📋 Copier l'ID
+          📋 Copier l&apos;ID
         </button>
         <Link
           href={`/?depart=${encodeURIComponent(command.depart || "")}&destination=${encodeURIComponent(deliveryAddress || "")}&telephone=${encodeURIComponent(command.telephone || "")}&client=${encodeURIComponent(

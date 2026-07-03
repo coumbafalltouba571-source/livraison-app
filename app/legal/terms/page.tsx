@@ -23,8 +23,8 @@ export default function TermsPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptation des conditions</h2>
             <p className="text-gray-700">
-              En utilisant le service Livraison Pro, vous acceptez nos conditions d'utilisation. Si vous n'êtes pas
-              d'accord avec l'une de ces conditions, vous ne pouvez pas utiliser notre service.
+              En utilisant le service Livraison Pro, vous acceptez nos conditions d&apos;utilisation. Si vous n&apos;êtes pas
+              d&apos;accord avec l&apos;une de ces conditions, vous ne pouvez pas utiliser notre service.
             </p>
           </div>
 
@@ -49,7 +49,7 @@ export default function TermsPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Responsabilité</h2>
             <p className="text-gray-700">
-              Livraison Pro n'est pas responsable des pertes, dommages ou retards causés par des circonstances
+              Livraison Pro n&apos;est pas responsable des pertes, dommages ou retards causés par des circonstances
               indépendantes de notre volonté, y compris les catastrophes naturelles, les grèves ou les conditions
               météorologiques extrêmes.
             </p>
@@ -74,8 +74,8 @@ export default function TermsPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Annulation et remboursement</h2>
             <p className="text-gray-700">
-              Les commandes peuvent être annulées jusqu'à 30 minutes après leur passage. Les remboursements seront
-              effectués dans les 5 jours ouvrables après l'annulation.
+              Les commandes peuvent être annulées jusqu&apos;à 30 minutes après leur passage. Les remboursements seront
+              effectués dans les 5 jours ouvrables après l&apos;annulation.
             </p>
           </div>
 

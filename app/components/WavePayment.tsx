@@ -12,11 +12,7 @@ export default function WavePayment({ total, clientName = "Client", onPaymentCli
       if (onPaymentClick) {
         onPaymentClick();
       }
-      // Rediriger vers Wave
-      window.open(
-        "https://pay.wave.com/m/M_sn_htOGspNwdyAY/c/sn/",
-        "_blank"
-      );
+      window.open("https://pay.wave.com/m/M_sn_htOGspNwdyAY/c/sn/", "_blank", "noopener,noreferrer");
       console.log("📲 Redirection vers Wave effectuée");
     } catch (error) {
       console.error("❌ Erreur lors de la redirection Wave:", error);
@@ -45,7 +41,7 @@ export default function WavePayment({ total, clientName = "Client", onPaymentCli
           opacity: "0.9",
           margin: 0,
         }}>
-          Payez de manière sécurisée avec Wave
+          Fonctionnalité de paiement bientôt disponible. Le parcours reste prêt pour l&apos;intégration future.
         </p>
       </div>
 
@@ -106,7 +102,7 @@ export default function WavePayment({ total, clientName = "Client", onPaymentCli
         marginTop: "12px",
         textAlign: "center",
       }}>
-        ✓ Sécurisé et approuvé | ✓ Paiement instantané
+        ✓ Intégration préparée | ✓ Prêt pour une activation rapide
       </div>
     </div>
   );
