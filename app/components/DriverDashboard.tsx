@@ -5,7 +5,7 @@ import { useAuthStore } from "@/app/store/auth";
 import { subscribeToCommands, getAvailableCommands } from "@/app/utils/firestoreCommands";
 import dynamic from "next/dynamic";
 
-const DriverMap = dynamic(() => import("@/app/components/AdminPremiumMap"), { ssr: false });
+const DriverMap = dynamic(() => import("@/app/components/EnhancedDriverMap"), { ssr: false });
 
 export default function DriverDashboard() {
   const { userProfile } = useAuthStore();

@@ -506,6 +506,32 @@ export function subscribeToCommands(onUpdate: (commands: Command[]) => void) {
   return unsub;
 }
 
+// Subscribe to location updates for a specific command document
+export function subscribeToCommandLocation(commandId: string, onUpdate: (coords: { lat?: number; lng?: number } | null) => void) {
+  try {
+    const docRef = doc(db, COMMANDS_COLLECTION, commandId);
+    const unsub = onSnapshot(docRef, (snap) => {
+      if (!snap.exists()) {
+        onUpdate(null);
+        return;
+      }
+      const data = snap.data();
+      const lat = data.driverLatitude as number | undefined;
+      const lng = data.driverLongitude as number | undefined;
+      if (typeof lat === "number" && typeof lng === "number") {
+        onUpdate({ lat, lng });
+      } else {
+        onUpdate(null);
+      }
+    }, (err) => console.error("subscribeToCommandLocation error:", err));
+
+    return unsub;
+  } catch (error) {
+    console.error("subscribeToCommandLocation failed:", error);
+    return () => {};
+  }
+}
+
 // Récupérer une commande par ID
 export async function getCommandById(commandId: string): Promise<Command | null> {
   try {
