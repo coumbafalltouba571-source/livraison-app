@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/app/store/auth";
 import { useLanguageStore, type Language } from "@/app/store/language";
+import { useFirebaseMessaging } from "@/app/hooks/useFirebaseMessaging";
 
 const allowedLanguages: Language[] = ["fr", "en", "es", "wo"];
 
@@ -14,6 +15,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const userProfile = useAuthStore((state) => state.userProfile);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
+
+  useFirebaseMessaging();
 
   useEffect(() => {
     // Initialize auth on app load

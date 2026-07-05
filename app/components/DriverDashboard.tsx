@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/app/store/auth";
 import { subscribeToCommands, getAvailableCommands } from "@/app/utils/firestoreCommands";
 import dynamic from "next/dynamic";
+import OrderChatPanel from "@/app/components/OrderChatPanel";
 
 const DriverMap = dynamic(() => import("@/app/components/EnhancedDriverMap"), { ssr: false });
 
@@ -113,6 +114,10 @@ export default function DriverDashboard() {
                 ))}
               </ul>
             </div>
+          </div>
+
+          <div className="bg-white p-4 rounded shadow">
+            <OrderChatPanel orderId="demo-order-driver" recipientName="Client" />
           </div>
         </div>
       </div>

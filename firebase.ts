@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getMessaging, type Messaging } from "firebase/messaging";
 
 // Vérifier que les clés Firebase sont configurées
 const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
@@ -71,14 +72,15 @@ console.log("🔥 Firebase Configuration Status:", {
 let app;
 let auth!: Auth;
 let db!: Firestore;
+let messaging: Messaging | null = null;
 
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  
-  // Enable offline persistence for Firestore (client-side)
+
   if (typeof window !== 'undefined') {
+    messaging = getMessaging(app);
     console.log("✅ Firebase initialisé avec succès (Client-side)");
   }
 } catch (error) {
@@ -86,4 +88,4 @@ try {
   console.error("   Vérifiez que les clés dans .env.local sont valides!");
 }
 
-export { auth, db };
+export { auth, db, messaging };

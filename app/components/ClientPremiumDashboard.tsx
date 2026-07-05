@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/store/auth";
 import Link from "next/link";
+import OrderChatPanel from "@/app/components/OrderChatPanel";
 
 export default function ClientPremiumDashboard() {
   const { userProfile } = useAuthStore();
@@ -118,9 +119,12 @@ export default function ClientPremiumDashboard() {
             )}
 
             {tab === "notifications" && (
-              <div>
-                <h3 className="font-semibold mb-2">Notifications</h3>
-                <p className="text-sm text-gray-600">Notifications en temps réel (Firebase Realtime/Firestore).</p>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Notifications</h3>
+                  <p className="text-sm text-gray-600">Notifications en temps réel (Firebase Cloud Messaging + Firestore).</p>
+                </div>
+                <OrderChatPanel orderId="demo-order" recipientName="Livreur" />
               </div>
             )}
 
