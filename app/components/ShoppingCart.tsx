@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { CartState, DEFAULT_PRODUCTS, removeFromCart, updateQuantity } from "@/app/utils/shop";
+import {
+  CartState,
+  DEFAULT_PRODUCTS,
+  Product,
+  addToCart,
+  clearCart,
+  removeFromCart,
+  updateQuantity,
+} from "@/app/utils/shop";
 import { createCommand } from "@/app/utils/firestoreCommands";
 import PaymentSelector from "./PaymentSelector";
 import WavePayment from "./WavePayment";
@@ -54,6 +62,31 @@ export default function ShoppingCart({
     const newCart = updateQuantity(cart, productId, quantity);
     onUpdateCart(newCart);
   };
+
+  const handleClearCart = () => {
+    onUpdateCart(clearCart());
+  };
+
+  const handleAddSuggestion = (product: Product) => {
+    const newCart = addToCart(cart, product, 1);
+    onUpdateCart(newCart);
+  };
+
+  const cartProductIds = cart.items.map((item) => item.product.id);
+  const cartCategories = Array.from(
+    new Set(cart.items.flatMap((item) => (item.product.category ? [item.product.category] : [])))
+  );
+
+  const recommendedProducts = DEFAULT_PRODUCTS.filter(
+    (product) => !cartProductIds.includes(product.id) && (product.stock ?? 1) > 0
+  )
+    .sort((a, b) => {
+      const aCategoryMatch = cartCategories.includes(a.category ?? "");
+      const bCategoryMatch = cartCategories.includes(b.category ?? "");
+      if (aCategoryMatch !== bCategoryMatch) return aCategoryMatch ? -1 : 1;
+      return (b.rating || 0) - (a.rating || 0);
+    })
+    .slice(0, 3);
 
   const handleCheckout = async () => {
     if (!clientName.trim() || !clientPhone.trim() || !clientAddress.trim() || !paymentMethod) {
@@ -250,36 +283,96 @@ export default function ShoppingCart({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "16px",
+              flexWrap: "wrap",
+              gap: "16px",
+              marginBottom: "24px",
             }}
           >
-            <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-                color: "#1f2937",
-                margin: 0,
-              }}
-            >
-              🛒 Mon Panier
-            </h2>
-            <button
-              onClick={onClose}
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#9ca3af",
-                transition: "color 0.2s",
-              }}
-            >
-              ✕
-            </button>
+            <div>
+              <h2
+                style={{
+                  fontSize: "28px",
+                  fontWeight: "900",
+                  color: "#1f2937",
+                  margin: 0,
+                }}
+              >
+                Panier amélioré
+              </h2>
+              <p style={{ color: "#6b7280", margin: "8px 0 0", fontSize: "14px" }}>
+                {cart.items.length} article{cart.items.length !== 1 ? "s" : ""} • Total automatique
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <button
+                onClick={handleClearCart}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  border: "1px solid #e5e7eb",
+                  background: "#f8fafc",
+                  color: "#111827",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                }}
+              >
+                🧹 Vider le panier
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  border: "1px solid transparent",
+                  background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                }}
+              >
+                Fermer
+              </button>
+            </div>
           </div>
-          <p style={{ color: "#6b7280", margin: 0, fontSize: "14px" }}>
-            {cart.items.length} article{cart.items.length !== 1 ? "s" : ""} dans votre panier
-          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: "14px",
+            }}
+          >
+            <div
+              style={{
+                background: "#f8fafc",
+                borderRadius: "16px",
+                padding: "18px",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "8px", fontWeight: "700" }}>
+                Articles
+              </div>
+              <div style={{ fontSize: "26px", fontWeight: "900", color: "#1f2937" }}>
+                {cart.items.length}
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#f8fafc",
+                borderRadius: "16px",
+                padding: "18px",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "8px", fontWeight: "700" }}>
+                Total estimé
+              </div>
+              <div style={{ fontSize: "26px", fontWeight: "900", color: "#7c3aed" }}>
+                {cart.total.toLocaleString("fr-FR")} FCFA
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Articles */}
@@ -427,6 +520,66 @@ export default function ShoppingCart({
                 {cart.total.toLocaleString("fr-FR")} FCFA
               </span>
             </div>
+
+            {/* Produits recommandés */}
+            {recommendedProducts.length > 0 && (
+              <div
+                style={{
+                  marginBottom: "24px",
+                  padding: "20px",
+                  borderRadius: "18px",
+                  background: "#f8fafc",
+                  border: "1px solid #e5e7eb",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "800",
+                    color: "#1f2937",
+                    marginBottom: "14px",
+                  }}
+                >
+                  Suggestions pour compléter votre panier
+                </div>
+                <div style={{ display: "grid", gap: "14px" }}>
+                  {recommendedProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: "700", color: "#111827" }}>
+                          {product.name}
+                        </div>
+                        <div style={{ fontSize: "13px", color: "#6b7280" }}>
+                          {product.price.toLocaleString("fr-FR")} FCFA • {product.rating?.toFixed(1) || "0.0"} ⭐
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleAddSuggestion(product)}
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          border: "none",
+                          background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                          color: "#ffffff",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Formulaire */}
             <div style={{ marginBottom: "24px" }}>

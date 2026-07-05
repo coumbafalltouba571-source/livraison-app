@@ -156,6 +156,48 @@ export default function ProductCard({
           </span>
         </div>
 
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
+          <div>
+            <div style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600" }}>Stock</div>
+            <div style={{ fontSize: "14px", fontWeight: "700" }}>{product.stock ?? "N/A"}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600" }}>Tailles</div>
+            <div style={{ fontSize: "14px", color: "#4b5563" }}>{product.sizes?.join(", ") || "Standard"}</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginBottom: "16px" }}>
+          <div>
+            <div style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600" }}>Couleurs</div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
+              {(product.colors || []).map((color) => (
+                <span
+                  key={color}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    background: color,
+                    border: "1px solid #e5e7eb",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600" }}>Avis</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+              <span style={{ fontSize: "16px", color: "#f59e0b", fontWeight: "700" }}>
+                {product.rating?.toFixed(1) || "0.0"}
+              </span>
+              <span style={{ fontSize: "12px", color: "#6b7280" }}>
+                ({product.reviewCount ?? 0})
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Bouton Commander */}
         <button
           onClick={() => onAddToCart(product, 1)}

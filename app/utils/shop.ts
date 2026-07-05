@@ -9,6 +9,11 @@ export interface Product {
   category?: string;
   autoplay?: boolean; // Auto-rotation de galerie
   autoplayInterval?: number; // Intervalle en ms (défaut 5000)
+  stock?: number;
+  sizes?: string[];
+  colors?: string[];
+  rating?: number;
+  reviewCount?: number;
 }
 
 export interface CartItem {
@@ -34,6 +39,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Chaussures",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 12,
+    sizes: ["40", "41", "42", "43", "44"],
+    colors: ["#111827", "#f8fafc", "#ef4444"],
+    rating: 4.5,
+    reviewCount: 38,
   },
   {
     id: "5",
@@ -50,9 +60,14 @@ export const DEFAULT_PRODUCTS: Product[] = [
       "/Nike Air Max 6.png",
       "/Nike Air Max 7.png",
     ],
-    category: "CHAUSSURES",
+    category: "Chaussures",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 8,
+    sizes: ["40", "41", "42", "43", "44", "45"],
+    colors: ["#0f172a", "#ffffff", "#f59e0b"],
+    rating: 4.9,
+    reviewCount: 112,
   },
   {
     id: "6",
@@ -64,6 +79,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Chaussures",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 5,
+    sizes: ["39", "40", "41", "42", "43"],
+    colors: ["#0f172a", "#84cc16"],
+    rating: 4.1,
+    reviewCount: 23,
   },
   {
     id: "7",
@@ -75,6 +95,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     autoplayInterval: 5000,
     images: ["/Chaussures Nike.png"],
     category: "Chaussures",
+    stock: 0,
+    sizes: ["40", "41", "42", "43"],
+    colors: ["#111827", "#2563eb"],
+    rating: 4.2,
+    reviewCount: 18,
   },
 
   // ÉLECTRONIQUE
@@ -88,6 +113,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 14,
+    colors: ["#0f172a", "#f8fafc", "#2563eb"],
+    rating: 4.4,
+    reviewCount: 54,
   },
   {
     id: "8",
@@ -99,6 +128,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 7,
+    colors: ["#111827", "#eab308", "#f97316"],
+    rating: 4.8,
+    reviewCount: 72,
   },
   {
     id: "9",
@@ -110,6 +143,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 5000,
+    stock: 11,
+    colors: ["#0f172a", "#ffffff"],
+    rating: 4.3,
+    reviewCount: 45,
   },
   {
     id: "4",
@@ -126,6 +163,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 3000,
+    stock: 3,
+    colors: ["#111827", "#94a3b8"],
+    rating: 4.0,
+    reviewCount: 26,
   },
   {
     id: "10",
@@ -142,6 +183,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 3000,
+    stock: 10,
+    colors: ["#ffffff", "#000000"],
+    rating: 4.6,
+    reviewCount: 61,
   },
   {
     id: "11",
@@ -158,6 +203,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Électronique",
     autoplay: true,
     autoplayInterval: 3000,
+    stock: 5,
+    colors: ["#111827", "#94a3b8"],
+    rating: 4.7,
+    reviewCount: 93,
   },
 
   // VÊTEMENTS
@@ -171,6 +220,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Vêtements",
     autoplay: true,
     autoplayInterval: 4000,
+    stock: 18,
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["#111827", "#f8fafc", "#8b5cf6"],
+    rating: 4.3,
+    reviewCount: 21,
   },
   {
     id: "12",
@@ -182,6 +236,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Vêtements",
     autoplay: true,
     autoplayInterval: 4000,
+    stock: 9,
+    sizes: ["S", "M", "L"],
+    colors: ["#0f172a", "#2563eb", "#d97706"],
+    rating: 4.2,
+    reviewCount: 26,
   },
   {
     id: "13",
@@ -193,6 +252,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     autoplayInterval: 4000,
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
+    stock: 7,
+    sizes: ["30", "32", "34", "36"],
+    colors: ["#0f172a", "#475569"],
+    rating: 4.5,
+    reviewCount: 47,
   },
   {
     id: "14",
@@ -204,6 +268,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     autoplayInterval: 4000,
     images: ["/blog.png", "/blog (2).png"],
     category: "Vêtements",
+    stock: 4,
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["#111827", "#10b981"],
+    rating: 4.4,
+    reviewCount: 35,
   },
 ];
 
@@ -213,17 +282,20 @@ export function addToCart(
   product: Product,
   quantity: number = 1
 ): CartState {
+  const stockLimit = product.stock ?? Infinity;
   const existingItem = cart.items.find((item) => item.product.id === product.id);
 
   let newItems: CartItem[];
   if (existingItem) {
+    const updatedQuantity = Math.min(existingItem.quantity + quantity, stockLimit);
     newItems = cart.items.map((item) =>
       item.product.id === product.id
-        ? { ...item, quantity: item.quantity + quantity }
+        ? { ...item, quantity: updatedQuantity }
         : item
     );
   } else {
-    newItems = [...cart.items, { product, quantity }];
+    const initialQuantity = Math.min(Math.max(1, quantity), stockLimit);
+    newItems = stockLimit > 0 ? [...cart.items, { product, quantity: initialQuantity }] : cart.items;
   }
 
   const newTotal = newItems.reduce(
@@ -249,11 +321,12 @@ export function updateQuantity(
   productId: string,
   quantity: number
 ): CartState {
-  const newItems = cart.items.map((item) =>
-    item.product.id === productId
-      ? { ...item, quantity: Math.max(1, quantity) }
-      : item
-  );
+  const newItems = cart.items.map((item) => {
+    if (item.product.id !== productId) return item;
+    const stockLimit = item.product.stock ?? Infinity;
+    const clampedQuantity = Math.min(Math.max(1, quantity), stockLimit);
+    return { ...item, quantity: clampedQuantity };
+  });
 
   const newTotal = newItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,

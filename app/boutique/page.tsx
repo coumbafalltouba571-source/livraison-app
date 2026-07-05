@@ -17,6 +17,9 @@ export default function ShopPage() {
   const [showCart, setShowCart] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<string>("relevance");
+  const [selectedSize, setSelectedSize] = useState<string>("all");
+  const [selectedColor, setSelectedColor] = useState<string>("all");
 
   // Sauvegarder le panier
   useEffect(() => {
@@ -34,15 +37,27 @@ export default function ShopPage() {
     setCart(newCart);
   };
 
+  const allSizes = Array.from(new Set(products.flatMap((product) => product.sizes || []))).sort();
+  const allColors = Array.from(new Set(products.flatMap((product) => product.colors || []))).sort();
+
   // Filtrer les produits
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = products
+    .filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
+      const matchesSize = selectedSize === "all" || (product.sizes || []).includes(selectedSize);
+      const matchesColor = selectedColor === "all" || (product.colors || []).includes(selectedColor);
+      return matchesSearch && matchesCategory && matchesSize && matchesColor;
+    })
+    .sort((a, b) => {
+      if (sortOption === "priceAsc") return a.price - b.price;
+      if (sortOption === "priceDesc") return b.price - a.price;
+      if (sortOption === "rating") return (b.rating || 0) - (a.rating || 0);
+      if (sortOption === "stock") return (b.stock || 0) - (a.stock || 0);
+      return 0;
+    });
 
   const categories = Array.from(
     new Set(products.map((p) => p.category).filter(Boolean))
@@ -212,8 +227,7 @@ export default function ShopPage() {
             />
           </div>
 
-          {/* Catégories */}
-          {categories.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               <button
                 onClick={() => setSelectedCategory(null)}
@@ -228,7 +242,7 @@ export default function ShopPage() {
                   transition: "all 0.2s",
                 }}
               >
-                Tous les produits
+                Tous
               </button>
               {categories.map((category) => (
                 <button
@@ -249,7 +263,40 @@ export default function ShopPage() {
                 </button>
               ))}
             </div>
-          )}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                style={{ padding: "12px 14px", border: "1px solid #e5e7eb", borderRadius: "12px", width: "100%" }}
+              >
+                <option value="all">Toutes tailles</option>
+                {allSizes.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              <select
+                value={selectedColor}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                style={{ padding: "12px 14px", border: "1px solid #e5e7eb", borderRadius: "12px", width: "100%" }}
+              >
+                <option value="all">Toutes couleurs</option>
+                {allColors.map((color) => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                style={{ padding: "12px 14px", border: "1px solid #e5e7eb", borderRadius: "12px", width: "100%" }}
+              >
+                <option value="relevance">Pertinence</option>
+                <option value="priceAsc">Prix ascendant</option>
+                <option value="priceDesc">Prix descendant</option>
+                <option value="rating">Meilleure note</option>
+                <option value="stock">Stock disponible</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Produits */}
