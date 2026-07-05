@@ -219,7 +219,7 @@ export const useAuthStore = create<AuthStore>()(
           console.log("🔵 [RECAPTCHA] Initializing reCAPTCHA in container:", containerId);
           const verifier = new RecaptchaVerifier(auth, containerId, {
             size: 'normal',
-            callback: (token: string) => {
+            callback: () => {
               console.log("✅ [RECAPTCHA] reCAPTCHA verified successfully");
             },
             'expired-callback': () => {
@@ -262,7 +262,7 @@ export const useAuthStore = create<AuthStore>()(
             try {
               verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 size: 'normal',
-                callback: (token: string) => {
+                callback: () => {
                   console.log("✅ [RECAPTCHA] reCAPTCHA verified, token received");
                 },
                 'expired-callback': () => {

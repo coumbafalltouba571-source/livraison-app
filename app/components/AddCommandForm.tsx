@@ -61,7 +61,7 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
         paymentStatus = "À payer à la livraison";
       }
 
-      const commandId = await createCommand({
+      await createCommand({
         telephone: formData.telephone,
         client: formData.client || formData.telephone,
         depart: formData.depart,

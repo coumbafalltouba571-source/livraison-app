@@ -1,6 +1,6 @@
 "use client";
 
-import { Command, updateCommandStatus, deleteCommand } from "@/app/utils/firestoreCommands";
+import { Command, updateCommandStatus } from "@/app/utils/firestoreCommands";
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -38,7 +38,6 @@ const isValidProductImage = (image?: string): image is string =>
 export default function CommandCard({ command, onUpdate, showDetails = false }: CommandCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const statusOptions = [
     "en attente",
@@ -66,24 +65,6 @@ export default function CommandCard({ command, onUpdate, showDetails = false }: 
       console.error("Erreur lors de la mise à jour du statut:", error);
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      if (command.id) {
-        await deleteCommand(command.id);
-        onUpdate();
-      }
-    } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
-    } finally {
-      setIsDeleting(false);
     }
   };
 

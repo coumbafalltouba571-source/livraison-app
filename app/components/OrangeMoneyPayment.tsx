@@ -2,15 +2,9 @@
 
 interface OrangeMoneyPaymentProps {
   total: number;
-  clientName?: string;
-  clientPhone?: string;
 }
 
-export default function OrangeMoneyPayment({ 
-  total, 
-  clientName = "Client", 
-  clientPhone = "772000000" 
-}: OrangeMoneyPaymentProps) {
+export default function OrangeMoneyPayment({ total }: OrangeMoneyPaymentProps) {
   // Numéro Orange Money du marchand
   const ORANGE_MONEY_NUMBER = "772000000";
 

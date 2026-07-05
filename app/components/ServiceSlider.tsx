@@ -68,16 +68,6 @@ export default function ServiceSlider() {
     return () => clearInterval(interval);
   }, [isAutoPlay]);
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + services.length) % services.length);
-    setIsAutoPlay(false);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % services.length);
-    setIsAutoPlay(false);
-  };
-
   const visibleServices = [];
   for (let i = 0; i < 3; i++) {
     visibleServices.push(services[(currentIndex + i) % services.length]);

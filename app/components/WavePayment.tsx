@@ -2,16 +2,13 @@
 
 interface WavePaymentProps {
   total: number;
-  clientName?: string;
   onPaymentClick?: () => void;
 }
 
-export default function WavePayment({ total, clientName = "Client", onPaymentClick }: WavePaymentProps) {
+export default function WavePayment({ total, onPaymentClick }: WavePaymentProps) {
   const handleWavePayment = () => {
     try {
-      if (onPaymentClick) {
-        onPaymentClick();
-      }
+      if (onPaymentClick) onPaymentClick();
       window.open("https://pay.wave.com/m/M_sn_htOGspNwdyAY/c/sn/", "_blank", "noopener,noreferrer");
       console.log("📲 Redirection vers Wave effectuée");
     } catch (error) {

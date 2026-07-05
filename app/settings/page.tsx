@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/auth";
 import { useLanguageStore, type Language } from "@/app/store/language";
 import { useTranslation } from "@/app/hooks/useTranslation";
-import { User, Mail, Phone, Lock, Globe, LogOut, Upload, Loader2, Check } from "lucide-react";
+import { User, Lock, Globe, LogOut, Upload, Loader2, Check } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -23,7 +23,6 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -52,8 +51,8 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setPhotoPreview(event.target?.result as string);
+      reader.onload = () => {
+        // Photo upload handler kept for compatibility with future preview usage
       };
       reader.readAsDataURL(file);
     }

@@ -10,7 +10,6 @@ import {
   query,
   Timestamp,
   updateDoc,
-  where,
 } from "firebase/firestore";
 import type { Command } from "./firestoreCommands";
 
@@ -32,10 +31,6 @@ export interface AppNotification {
 
 const NOTIFICATIONS_COLLECTION = "notifications";
 
-function normalizeTimestamp(value: Date | Timestamp | undefined): Date | Timestamp {
-  if (!value) return Timestamp.now();
-  return value instanceof Timestamp ? value : value;
-}
 
 export async function createOrderNotification(order: Partial<Command> & { id?: string }): Promise<string> {
   try {

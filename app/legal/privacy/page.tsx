@@ -11,7 +11,7 @@ export default function PrivacyPage() {
         <div className="max-w-4xl mx-auto">
           <Link href="/help" className="flex items-center gap-2 text-blue-100 hover:text-white mb-4">
             <ArrowLeft className="w-5 h-5" />
-            Retour au centre d'aide
+            Retour au centre d&apos;aide
           </Link>
           <h1 className="text-3xl font-bold">Politique de Confidentialité</h1>
         </div>
@@ -30,12 +30,12 @@ export default function PrivacyPage() {
 
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Informations que nous collectons</h2>
-            <p className="text-gray-700 mb-3">Nous collectons les types d'informations suivants :</p>
+            <p className="text-gray-700 mb-3">Nous collectons les types d&apos;informations suivants :</p>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>Informations d'identification (nom, email, numéro de téléphone)</li>
+              <li>Informations d&apos;identification (nom, email, numéro de téléphone)</li>
               <li>Adresse de livraison et informations de paiement</li>
               <li>Informations de localisation GPS (avec votre permission)</li>
-              <li>Données d'utilisation et de navigation du site</li>
+              <li>Données d&apos;utilisation et de navigation du site</li>
               <li>Préférences et historique de commande</li>
             </ul>
           </div>

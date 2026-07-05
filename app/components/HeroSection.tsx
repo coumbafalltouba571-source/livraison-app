@@ -4,11 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 
 interface HeroSectionProps {
-  onCommandClick?: () => void;
   onImageClick?: () => void;
 }
 
-export default function HeroSection({ onCommandClick, onImageClick }: HeroSectionProps) {
+export default function HeroSection({ onImageClick }: HeroSectionProps) {
   const [isImageHovered, setIsImageHovered] = useState(false);
 
   return (

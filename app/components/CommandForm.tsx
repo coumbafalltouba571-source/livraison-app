@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createCommand } from "@/app/utils/firestoreCommands";
-import { QUARTIERS_DAKAR, calculerTarif, formatPrix } from "@/app/utils/tarifs";
+import { QUARTIERS_DAKAR, calculerTarif } from "@/app/utils/tarifs";
 
 interface CommandFormProps {
   isOpen: boolean;

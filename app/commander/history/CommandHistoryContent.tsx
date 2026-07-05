@@ -11,20 +11,6 @@ import Image from "next/image";
 // Types pour les états
 type LoadingState = "idle" | "loading" | "success" | "error" | "no-commands";
 
-// Fonction pour normaliser les numéros de téléphone
-const normalizePhoneNumber = (phone: string): string => {
-  // Supprimer les espaces, tirets, parenthèses, +
-  let normalized = phone.replace(/[\s\-\(\)\+]/g, "");
-  
-  // Si le numéro commence par 00, le remplacer par +
-  if (normalized.startsWith("00")) {
-    normalized = "+" + normalized.slice(2);
-  }
-  
-  console.log(`📱 Normalisation téléphone: "${phone}" → "${normalized}"`);
-  return normalized;
-};
-
 const isValidProductImage = (image?: string): image is string =>
   !!image && (image.startsWith("/") || image.startsWith("http://") || image.startsWith("https://"));
 
@@ -36,7 +22,6 @@ export default function CommandHistoryContent() {
   const [loadingState, setLoadingState] = useState<LoadingState>("idle");
   const [error, setError] = useState("");
   const [inputTelephone, setInputTelephone] = useState(telephone);
-  const [hasSearched, setHasSearched] = useState(!!telephone);
   const unsubscribersRef = useRef<(() => void)[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -127,7 +112,6 @@ export default function CommandHistoryContent() {
     setLoadingState("loading");
     setError("");
     setCommands([]);
-    setHasSearched(true);
 
     console.log(`🔍 Recherche des commandes pour: ${tel}`);
 
@@ -193,7 +177,6 @@ export default function CommandHistoryContent() {
       console.error("❌ ERREUR COMPLÈTE lors du chargement des commandes:", err);
       
       let errorMessage = "Erreur lors de la récupération des commandes";
-      let isIndexError = false;
 
       if (err instanceof Error) {
         console.error(`   Message: ${err.message}`);
@@ -201,7 +184,6 @@ export default function CommandHistoryContent() {
         
         // Détecter l'erreur d'index Firestore
         if (err.message.includes("The query requires an index") || err.message.includes("requires an index")) {
-          isIndexError = true;
           errorMessage = "⚙️ Les index Firestore sont en cours de création. Cette page sera opérationnelle dans 5 à 10 minutes. Veuillez réessayer plus tard.";
           console.warn("⚠️ Index Firestore manquant - L'administrateur Firestore doit créer l'index composite");
         } else if (err.message.includes("Timeout")) {
@@ -717,7 +699,7 @@ export default function CommandHistoryContent() {
                   Ouvrir Firebase Console → Firestore Database → Indexes
                 </p>
                 <p style={{ margin: "0 0 8px 0" }}>
-                  Créer l'index composite sur:
+                  Créer l&apos;index composite sur:
                 </p>
                 <p style={{ margin: "0 0 8px 0", fontFamily: "monospace", background: "rgba(255,255,255,0.2)", padding: "8px", borderRadius: "6px" }}>
                   Collection: commandes<br/>
@@ -779,7 +761,7 @@ export default function CommandHistoryContent() {
               fontSize: "clamp(14px, 2vw, 16px)",
               margin: "0 0 24px 0",
             }}>
-              Nous n'avons trouvé aucune commande pour le numéro{" "}
+              Nous n&apos;avons trouvé aucune commande pour le numéro{" "}
               <strong>{inputTelephone}</strong>
             </p>
             <Link

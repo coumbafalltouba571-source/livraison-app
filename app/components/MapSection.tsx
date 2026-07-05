@@ -83,9 +83,6 @@ export default function MapSection({
     return 0;
   }, [depart, destination]);
 
-  // Centre par défaut (Dakar)
-  const defaultCenter: [number, number] = [14.7167, -17.4674];
-
   // Assurer que les coordonnées sont correctement typées
   const departCoords: [number, number] | null = pointDepart
     ? (pointDepart as [number, number])

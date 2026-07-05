@@ -7,7 +7,6 @@ import HowItWorks from "./components/HowItWorks";
 import AdvantagesSection from "./components/AdvantagesSection";
 import Footer from "./components/Footer";
 import {
-  QUARTIERS_DAKAR,
   obtenirQuartiersFiltres,
   calculerTarif,
   formatPrix,
@@ -50,8 +49,7 @@ export default function Home() {
   const prix = depart && destination ? calculerTarif(depart, destination) : 0;
   const descriptionRoute = getDescriptionRoute(depart, destination);
 
-  // Quartiers disponibles
-  const quartiers = QUARTIERS_DAKAR;
+  // Quartiers disponibles (kept in utils; not referenced here)
 
   // Fonction pour scroller vers le calculateur
   const handleScrollToCalculator = () => {

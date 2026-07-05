@@ -11,9 +11,9 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto">
           <Link href="/help" className="flex items-center gap-2 text-blue-100 hover:text-white mb-4">
             <ArrowLeft className="w-5 h-5" />
-            Retour au centre d'aide
+            Retour au centre d&apos;aide
           </Link>
-          <h1 className="text-3xl font-bold">Conditions d'Utilisation</h1>
+          <h1 className="text-3xl font-bold">Conditions d&apos;Utilisation</h1>
         </div>
       </div>
 
@@ -37,12 +37,12 @@ export default function TermsPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Conditions d'utilisation</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Conditions d&apos;utilisation</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               <li>Vous devez avoir au moins 18 ans pour utiliser notre service</li>
               <li>Vous acceptez de fournir des informations exactes et complètes</li>
               <li>Vous acceptez de respecter toutes les lois applicables</li>
-              <li>Vous n'utiliserez pas le service pour des activités illégales</li>
+              <li>Vous n&apos;utiliserez pas le service pour des activités illégales</li>
             </ul>
           </div>
 

@@ -70,9 +70,7 @@ export default function ShoppingCart({
     console.log("📋 Données client:", { clientName, clientPhone, clientAddress, paymentMethod });
 
     // Timeout de sécurité augmenté à 30 secondes (Firestore peut être lent)
-    let isTimedOut = false;
     const timeoutId = setTimeout(() => {
-      isTimedOut = true;
       setIsProcessing(false);
       setProcessingMessage("");
       console.error("❌ TIMEOUT: Firestore n'a pas répondu après 30 secondes");
@@ -529,7 +527,6 @@ export default function ShoppingCart({
               {paymentMethod === "wave" && (
                 <WavePayment
                   total={cart.total}
-                  clientName={clientName}
                   onPaymentClick={() => {
                     console.log("Redirection Wave effectuée");
                   }}
@@ -540,8 +537,6 @@ export default function ShoppingCart({
               {paymentMethod === "orange" && (
                 <OrangeMoneyPayment
                   total={cart.total}
-                  clientName={clientName}
-                  clientPhone={clientPhone}
                 />
               )}
 
