@@ -10,6 +10,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
@@ -424,6 +425,30 @@ export async function getTodayCommands(): Promise<Command[]> {
       console.error("Message d'erreur:", error.message);
       console.error("Code:", (error as unknown as { code?: string }).code);
     }
+    throw error;
+  }
+}
+
+// Récupérer le nombre total d'utilisateurs
+export async function getUsersCount(): Promise<number> {
+  try {
+    const q = query(collection(db, "users"));
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du nombre d'utilisateurs:", error);
+    throw error;
+  }
+}
+
+// Récupérer les derniers utilisateurs créés
+export async function getRecentUsers(limitCount = 10): Promise<any[]> {
+  try {
+    const q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(limitCount));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error("Erreur lors de la récupération des utilisateurs récents:", error);
     throw error;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Command, getAllCommands } from "@/app/utils/firestoreCommands";
+import { Command, getAllCommands, getRecentUsers, getUsersCount } from "@/app/utils/firestoreCommands";
 import CommandCard from "@/app/components/CommandCard";
 import AdminCommandsTable from "@/app/components/AdminCommandsTable";
 import AddCommandForm from "@/app/components/AddCommandForm";
@@ -20,6 +20,10 @@ import {
   CheckCircle,
   BellRing,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const AdminPremiumChart = dynamic(() => import("@/app/components/AdminPremiumChart"), { ssr: false });
+const AdminPremiumMap = dynamic(() => import("@/app/components/AdminPremiumMap"), { ssr: false });
 
 type StatusFilter = "tous" | "en attente" | "confirmée" | "en cours de traitement" | "en livraison" | "livrée" | "annulée";
 
@@ -86,6 +90,16 @@ export default function AdminPremiumDashboard() {
         pendingOrders: pending,
         activeDrivers: 3,
       });
+      // Load recent users and users count
+      try {
+        const users = await getRecentUsers(5);
+        const usersCount = await getUsersCount();
+        // attach to stats (not strictly typed)
+        setStats((s) => ({ ...s, activeDrivers: s.activeDrivers, usersCount, recentUsers: users } as any));
+      } catch (e) {
+        // ignore user fetch errors
+        console.warn("Unable to fetch users for dashboard", e);
+      }
     } catch (error) {
       console.error("Erreur:", error);
     } finally {
@@ -231,6 +245,37 @@ export default function AdminPremiumDashboard() {
               title="Livreurs Actifs"
               value={stats.activeDrivers}
             />
+          </div>
+
+          {/* CHART */}
+          <div className="mb-8 bg-white rounded-xl p-6 shadow-md border border-gray-100">
+            <h3 className="text-lg font-semibold mb-4">Revenu par jour (dernières 7 journées)</h3>
+            <AdminPremiumChart />
+          </div>
+
+          {/* MAP & RECENT USERS */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2 bg-white rounded-xl p-4 shadow-md border border-gray-100">
+              <h4 className="font-semibold mb-3">Carte de livraison (aperçu)</h4>
+              <div className="h-64 rounded-md overflow-hidden">
+                <AdminPremiumMap commands={commands} />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+              <h4 className="font-semibold mb-3">Derniers clients</h4>
+              <ul className="space-y-2">
+                {((stats as any).recentUsers || []).map((u: any) => (
+                  <li key={u.id} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{u.displayName || u.name || u.email || 'Utilisateur'}</div>
+                      <div className="text-xs text-gray-500">{new Date(u.createdAt?.toDate?.() || u.createdAt || Date.now()).toLocaleString()}</div>
+                    </div>
+                    <div className="text-sm text-gray-600">{u.phone || "-"}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* ADD FORM */}
