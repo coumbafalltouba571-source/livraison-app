@@ -453,6 +453,59 @@ export async function getRecentUsers(limitCount = 10): Promise<any[]> {
   }
 }
 
+// Obtenir les commandes disponibles (statut en attente)
+export async function getAvailableCommands(limitCount = 20): Promise<Command[]> {
+  try {
+    const q = query(
+      collection(db, COMMANDS_COLLECTION),
+      where("statut", "==", "en attente"),
+      orderBy("createdAt", "desc"),
+      limit(limitCount)
+    );
+
+    const snapshot = await getDocs(q);
+    const commands: Command[] = snapshot.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        dateLivraison: data.dateLivraison instanceof Timestamp ? data.dateLivraison.toDate() : data.dateLivraison,
+        driverUpdatedAt: data.driverUpdatedAt instanceof Timestamp ? data.driverUpdatedAt.toDate() : data.driverUpdatedAt,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+      } as Command;
+    });
+    return commands;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des commandes disponibles:", error);
+    throw error;
+  }
+}
+
+// Subscribe to realtime updates of commandes collection
+export function subscribeToCommands(onUpdate: (commands: Command[]) => void) {
+  const q = query(collection(db, COMMANDS_COLLECTION), orderBy("createdAt", "desc"));
+  const unsub = onSnapshot(q, (snapshot) => {
+    const cmds: Command[] = [];
+    snapshot.forEach((d) => {
+      const data = d.data();
+      cmds.push({
+        id: d.id,
+        ...data,
+        dateLivraison: data.dateLivraison instanceof Timestamp ? data.dateLivraison.toDate() : data.dateLivraison,
+        driverUpdatedAt: data.driverUpdatedAt instanceof Timestamp ? data.driverUpdatedAt.toDate() : data.driverUpdatedAt,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+      } as Command);
+    });
+    onUpdate(cmds);
+  }, (err) => {
+    console.error("subscribeToCommands snapshot error:", err);
+  });
+
+  return unsub;
+}
+
 // Récupérer une commande par ID
 export async function getCommandById(commandId: string): Promise<Command | null> {
   try {
