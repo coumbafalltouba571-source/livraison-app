@@ -12,6 +12,7 @@ interface OrderChatPanelProps {
 export default function OrderChatPanel({ orderId, recipientName = "Livreur" }: OrderChatPanelProps) {
   const { userProfile } = useAuthStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState("");
   const conversationId = useMemo(() => getConversationId(orderId), [orderId]);
 
   useEffect(() => {
