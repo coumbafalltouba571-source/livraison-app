@@ -392,7 +392,13 @@ export async function updateCommandStatus(
       };
 
       if (shouldNotifyValidation) {
+        // Notify the system that the order has been accepted
         await notifyOrderEvent(enrichedCommand, "order_accepted");
+        // Send SMS / WhatsApp notifications to client/admin after validation.
+        // The SMS provider is implemented in `app/utils/smsService.ts` (Twilio / Infobip / Orange).
+        // If you want to hook a different SMS provider, update `sendSmsToClient` or
+        // replace this call with your server-side provider integration.
+        await sendOrderNotifications(enrichedCommand);
       }
 
       const normalizedStatus = newStatus.trim().toLowerCase();

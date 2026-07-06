@@ -33,14 +33,23 @@ export function getAdminWhatsAppUrl(command: Command): string {
     ? command.orderItems.map((item) => `${item.quantity}x ${item.productName}`).join(", ")
     : command.productName || "N/A";
   const address = command.address || command.destination || "N/A";
+  const prix = (command.prix || command.total || 0).toLocaleString("fr-FR");
+  const payment = command.modePayement || command.paymentMethod || "N/A";
+  const depart = command.depart || "N/A";
+  const destination = command.destination || command.address || "N/A";
   const message =
-    `Bonjour, je souhaite obtenir des informations concernant ma commande.\n\n` +
+    `Bonjour, bonjour 👋\n\n` +
+    `Je vous contacte au sujet de ma commande. Voici les détails :\n\n` +
     `ID : ${command.id || "N/A"}\n` +
-    `Nom : ${clientName}\n` +
+    `Client : ${clientName}\n` +
     `Téléphone : ${command.telephone || "N/A"}\n` +
-    `Produit : ${product}\n` +
-    `Adresse : ${address}\n` +
-    `Statut : ${command.statut || "N/A"}`;
+    `Départ : ${depart}\n` +
+    `Destination : ${destination}\n` +
+    `Produit(s) : ${product}\n` +
+    `Prix : ${prix} FCFA\n` +
+    `Paiement : ${payment}\n` +
+    `Statut : ${command.statut || "N/A"}\n\n` +
+    `Merci.`;
 
   return `https://wa.me/${ADMIN_WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Command, updateCommandStatus } from "@/app/utils/firestoreCommands";
+import { Command, updateCommandStatus, deleteCommand } from "@/app/utils/firestoreCommands";
 import { useState } from "react";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -452,31 +452,64 @@ export default function AdminCommandsTable({
                 padding: "12px 12px",
                 textAlign: "center",
               }}>
-                <button
-                  onClick={() =>
-                    setExpandedCommandId(
-                      expandedCommandId === command.id ? null : command.id || null
-                    )
-                  }
-                  style={{
-                    padding: "6px 12px",
-                    background: "#e5e7eb",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#d1d5db";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#e5e7eb";
-                  }}
-                >
-                  {expandedCommandId === command.id ? "▼" : "▶"} Détails
-                </button>
+                <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                  <button
+                    onClick={() =>
+                      setExpandedCommandId(
+                        expandedCommandId === command.id ? null : command.id || null
+                      )
+                    }
+                    style={{
+                      padding: "6px 12px",
+                      background: "#e5e7eb",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#d1d5db";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#e5e7eb";
+                    }}
+                  >
+                    {expandedCommandId === command.id ? "▼" : "▶"} Détails
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      if (!command.id) return;
+                      const ok = confirm("Confirmer la suppression de cette commande ? Cette action est irréversible.");
+                      if (!ok) return;
+                      try {
+                        await deleteCommand(command.id);
+                        alert("✅ Commande supprimée");
+                        onUpdate();
+                      } catch (err) {
+                        console.error("Erreur suppression commande:", err);
+                        alert("Erreur lors de la suppression de la commande");
+                      }
+                    }}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#ef4444",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                  >
+                    🗑️ Supprimer
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
