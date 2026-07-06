@@ -14,7 +14,7 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
-import { createOrderNotification } from "@/app/utils/notifications";
+import { createOrderNotification, notifyOrderEvent } from "@/app/utils/notifications";
 import { formatPhoneNumber } from "@/app/utils/phoneFormatter";
 
 function cleanFirestoreData<T extends Record<string, unknown>>(data: T): Partial<T> {
@@ -141,7 +141,7 @@ export async function createCommand(
     } as Command;
 
     await Promise.allSettled([
-      createOrderNotification(orderPayload),
+      notifyOrderEvent(orderPayload, "new_order"),
       sendOrderNotifications(orderPayload),
     ]);
     
@@ -319,6 +319,24 @@ export async function updateCommand(
           : updates.driverUpdatedAt,
       updatedAt: Timestamp.now(),
     });
+
+    if (updates.paymentStatus === "Confirmé") {
+      const existingCommand = await getCommandById(commandId);
+      if (existingCommand) {
+        await notifyOrderEvent({ ...existingCommand, id: commandId }, "payment_received");
+      }
+    }
+
+    if (updates.driverStatus && typeof updates.driverStatus === "string") {
+      const status = updates.driverStatus.toLowerCase();
+      if (status.includes("arriv")) {
+        const existingCommand = await getCommandById(commandId);
+        if (existingCommand) {
+          await notifyOrderEvent({ ...existingCommand, id: commandId }, "driver_arrived");
+        }
+      }
+    }
+
     console.log(`✅ Commande mise à jour avec succès: ${commandId}`);
   } catch (error) {
     console.error(`❌ Firestore Error - Collection: "${COMMANDS_COLLECTION}", ID: "${commandId}"`);
@@ -338,11 +356,55 @@ export async function updateCommandStatus(
 ): Promise<void> {
   try {
     console.log(`✏️ Tentative de mise à jour du statut - Collection: "${COMMANDS_COLLECTION}", ID: "${commandId}", Nouveau statut: "${newStatus}"`);
+
+    const existingCommand = await getCommandById(commandId);
+    const normalizedStatus = newStatus.trim().toLowerCase();
+    const validationStatuses = ["confirmée", "confirmé", "validée", "validé", "confirmed", "validated"];
+    const shouldNotifyValidation = !existingCommand?.statut
+      ? false
+      : !validationStatuses.includes(existingCommand.statut.toLowerCase()) && validationStatuses.includes(normalizedStatus);
+
     const commandRef = doc(db, COMMANDS_COLLECTION, commandId);
     await updateDoc(commandRef, {
       statut: newStatus,
+      paymentStatus: shouldNotifyValidation ? "Confirmé" : existingCommand?.paymentStatus,
+      paymentStatusDetails: shouldNotifyValidation ? "Commande validée" : existingCommand?.paymentStatusDetails,
       updatedAt: Timestamp.now(),
     });
+
+    if (existingCommand) {
+      const enrichedCommand: Command = {
+        ...existingCommand,
+        id: commandId,
+        statut: newStatus as Command["statut"],
+        paymentStatus: shouldNotifyValidation ? "Confirmé" : existingCommand.paymentStatus,
+        paymentStatusDetails: shouldNotifyValidation ? "Commande validée" : existingCommand.paymentStatusDetails,
+        phone: existingCommand.phone || existingCommand.telephone,
+        telephone: existingCommand.telephone || existingCommand.phone || "",
+        client: existingCommand.client || existingCommand.nomClient,
+        nomClient: existingCommand.nomClient || existingCommand.client,
+        customerName: existingCommand.customerName || existingCommand.client || existingCommand.nomClient,
+        depart: existingCommand.depart,
+        destination: existingCommand.destination || existingCommand.address || "",
+        address: existingCommand.address || existingCommand.destination || "",
+        prix: existingCommand.prix || existingCommand.total || 0,
+        total: existingCommand.total || existingCommand.prix || 0,
+      };
+
+      if (shouldNotifyValidation) {
+        await notifyOrderEvent(enrichedCommand, "order_accepted");
+      }
+
+      const normalizedStatus = newStatus.trim().toLowerCase();
+      if (normalizedStatus === "en livraison") {
+        await notifyOrderEvent(enrichedCommand, "driver_found");
+      }
+
+      if (normalizedStatus === "livrée") {
+        await notifyOrderEvent(enrichedCommand, "order_delivered");
+      }
+    }
+
     console.log(`✅ Statut mis à jour avec succès: ${commandId} → ${newStatus}`);
   } catch (error) {
     console.error(`❌ Firestore Error - Collection: "${COMMANDS_COLLECTION}", ID: "${commandId}"`);

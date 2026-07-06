@@ -4,6 +4,8 @@ import "./globals.css";
 import AuthProvider from "@/app/providers/AuthProvider";
 import Navbar from "@/app/components/Navbar";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://livraison-app-bxgz.vercel.app";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,16 +19,35 @@ const geistMono = Geist_Mono({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1.0,
+  themeColor: "#2563eb",
+  colorScheme: "light dark",
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://livraisonpro-senegal.com"),
-  title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
-  description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
-  keywords: "livraison sénégal, livraison dakar, livreur dakar, livraison keur massar, livraison yoff, livraison guédiawaye, livraison pikine, livraison rufisque, livraison express sénégal, service de livraison sénégal, livraison pro sénégal",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Livraison Pro Sénégal | Livraison rapide à Dakar et Keur Massar",
+    template: "%s | Livraison Pro Sénégal",
+  },
+  description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar et dans toute la région. Livraison fiable, rapide et sécurisée.",
+  keywords: [
+    "livraison sénégal",
+    "livraison dakar",
+    "livreur dakar",
+    "livraison keur massar",
+    "livraison yoff",
+    "livraison guédiawaye",
+    "livraison pikine",
+    "livraison rufisque",
+    "livraison express sénégal",
+    "service de livraison sénégal",
+    "livraison pro sénégal",
+  ],
   authors: [{ name: "Livraison Pro" }],
   creator: "Livraison Pro",
   publisher: "Livraison Pro",
+  applicationName: "Livraison Pro Sénégal",
+  manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
@@ -39,18 +60,18 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://livraisonpro-senegal.com",
+    canonical: SITE_URL,
   },
   openGraph: {
     type: "website",
     locale: "fr_SN",
-    url: "https://livraisonpro-senegal.com",
+    url: SITE_URL,
     siteName: "Livraison Pro Sénégal",
-    title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
-    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
+    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et Keur Massar",
+    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar et dans toute la région. Livraison fiable, rapide et sécurisée.",
     images: [
       {
-        url: "https://livraisonpro-senegal.com/logo2_app.png",
+        url: `${SITE_URL}/logo2_app.png`,
         width: 1200,
         height: 630,
         alt: "Livraison Pro Sénégal",
@@ -59,13 +80,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Livraison SN - Livraison rapide à Dakar et Keur Massar",
-    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar. Disponible 24h/24.",
-    images: ["https://livraisonpro-senegal.com/logo2_app.png"],
+    title: "Livraison Pro Sénégal | Livraison rapide à Dakar et Keur Massar",
+    description: "Service de livraison rapide, courses, repas, colis et achats boutique à Dakar et dans toute la région. Livraison fiable, rapide et sécurisée.",
+    images: [`${SITE_URL}/logo2_app.png`],
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
   category: "Livraison",
   classification: "Service de Livraison",
@@ -97,36 +119,63 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "name": "Livraison Pro Sénégal",
-              "image": "https://livraisonpro-senegal.com/logo2_app.png",
-              "description": "Service de livraison rapide au Sénégal",
-              "url": "https://livraisonpro-senegal.com",
-              "telephone": "+221 77 XXX XXXX",
-              "email": "contact@livraisonpro-senegal.com",
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Dakar",
-                "addressLocality": "Dakar",
-                "addressRegion": "Dakar",
-                "postalCode": "00000",
-                "addressCountry": "SN"
-              },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": 14.7167,
-                "longitude": -17.4674
-              },
-              "areaServed": {
-                "@type": "Place",
-                "name": "Sénégal"
-              },
-              "priceRange": "AFCFA",
-              "serviceType": "Delivery Service",
-              "sameAs": [
-                "https://www.facebook.com/livraisonpro",
-                "https://www.instagram.com/livraisonpro",
-                "https://wa.me/221XXX"
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "name": "Livraison Pro Sénégal",
+                  "url": SITE_URL,
+                  "logo": `${SITE_URL}/logo2_app.png`,
+                  "sameAs": [
+                    "https://www.facebook.com/livraisonpro",
+                    "https://www.instagram.com/livraisonpro",
+                    "https://wa.me/221773629075"
+                  ],
+                  "contactPoint": {
+                    "@type": "ContactPoint",
+                    "telephone": "+221773629075",
+                    "contactType": "customer service",
+                    "areaServed": "SN",
+                    "availableLanguage": ["French"]
+                  }
+                },
+                {
+                  "@type": "LocalBusiness",
+                  "name": "Livraison Pro Sénégal",
+                  "image": `${SITE_URL}/logo2_app.png`,
+                  "description": "Service de livraison rapide au Sénégal",
+                  "url": SITE_URL,
+                  "telephone": "+221773629075",
+                  "email": "contact@livraisonpro-senegal.com",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Dakar",
+                    "addressLocality": "Dakar",
+                    "addressRegion": "Dakar",
+                    "postalCode": "00000",
+                    "addressCountry": "SN"
+                  },
+                  "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": 14.7167,
+                    "longitude": -17.4674
+                  },
+                  "areaServed": {
+                    "@type": "Place",
+                    "name": "Sénégal"
+                  },
+                  "priceRange": "AFCFA",
+                  "serviceType": "Delivery Service"
+                },
+                {
+                  "@type": "WebSite",
+                  "name": "Livraison Pro Sénégal",
+                  "url": SITE_URL,
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": `${SITE_URL}/?q={search_term_string}`,
+                    "query-input": "required name=search_term_string"
+                  }
+                }
               ]
             }),
           }}

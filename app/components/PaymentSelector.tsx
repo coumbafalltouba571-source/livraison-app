@@ -25,6 +25,12 @@ export default function PaymentSelector({ value, onChange }: PaymentSelectorProp
       description: "Transfert Orange Money",
       color: "#ff8c00",
     },
+    {
+      id: "carte_bancaire",
+      name: "💳 Carte bancaire",
+      description: "Paiement sécurisé en ligne",
+      color: "#8b5cf6",
+    },
   ];
 
   return (

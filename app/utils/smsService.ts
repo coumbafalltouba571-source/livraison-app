@@ -9,6 +9,26 @@ function formatPhoneForSms(phone?: string): string | null {
   return `221${cleaned}`;
 }
 
+function formatPaymentMethod(method?: string): string {
+  const normalized = String(method || "").trim().toLowerCase();
+  switch (normalized) {
+    case "wave":
+      return "Wave";
+    case "orange":
+    case "orange money":
+    case "orange-money":
+      return "Orange Money";
+    case "carte":
+    case "carte bancaire":
+    case "carte_bancaire":
+      return "Carte bancaire";
+    case "livraison":
+      return "Paiement à la livraison";
+    default:
+      return method || "Non spécifié";
+  }
+}
+
 export async function sendSmsToClient(order: Partial<Command> & { id?: string }): Promise<boolean> {
   const phone = formatPhoneForSms(order.telephone || order.phone);
   const clientName = order.client || order.nomClient || "Cher client";
@@ -22,7 +42,7 @@ export async function sendSmsToClient(order: Partial<Command> & { id?: string })
   const productLine = order.orderItems?.map((item) => `${item.quantity}x ${item.productName}`).join(", ") || order.productName || "Non spécifié";
   const amountLine = `${(order.prix || order.total || 0).toLocaleString("fr-FR")} FCFA`;
   const addressLine = order.address || order.destination || "Non spécifiée";
-  const paymentLine = order.paymentMethod || order.modePayement || "Non spécifié";
+  const paymentLine = formatPaymentMethod(order.paymentMethod || order.modePayement || "Non spécifié");
 
   const smsMessage = [
     `Bonjour ${clientName},`,

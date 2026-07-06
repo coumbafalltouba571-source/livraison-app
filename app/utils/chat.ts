@@ -1,4 +1,4 @@
-import { db } from "@/firebase";
+import { db, storage } from "@/firebase";
 import {
   addDoc,
   collection,
@@ -12,6 +12,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export interface ChatMessage {
   id?: string;
@@ -27,8 +28,8 @@ export interface ChatMessage {
   read?: boolean;
 }
 
-export function getConversationId(orderId: string, userId: string) {
-  return `order-${orderId}-${userId}`;
+export function getConversationId(orderId: string) {
+  return `order-${orderId}`;
 }
 
 export async function sendChatMessage(message: Omit<ChatMessage, "id" | "createdAt">) {
@@ -38,8 +39,19 @@ export async function sendChatMessage(message: Omit<ChatMessage, "id" | "created
     read: false,
   };
 
-  const ref = await addDoc(collection(db, "chatMessages"), payload);
-  return ref.id;
+  const refDoc = await addDoc(collection(db, "chatMessages"), payload);
+  return refDoc.id;
+}
+
+export async function uploadChatImage(orderId: string, file: File) {
+  if (!storage) {
+    throw new Error("Firebase Storage is not initialized.");
+  }
+
+  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+  const storageRef = ref(storage, `chat-images/${orderId}/${fileName}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  return getDownloadURL(snapshot.ref);
 }
 
 export function subscribeToConversation(conversationId: string, callback: (messages: ChatMessage[]) => void) {

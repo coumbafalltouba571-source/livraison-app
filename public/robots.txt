@@ -1,25 +1,18 @@
 # Robots.txt pour Livraison Pro Sénégal
-# Autoriser l'indexation complète du site par Google
-
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api
+Disallow: /auth
 Disallow: /*.json$
 Disallow: /*?*sort=
 Disallow: /*?*filter=
 Disallow: /*?*page=
 
-# Google
 User-agent: Googlebot
 Allow: /
 
-# Bingbot
 User-agent: Bingbot
 Allow: /
 
-# Sitemap
-Sitemap: https://livraisonpro-senegal.com/sitemap.xml
-
-# Crawl delay
-Crawl-delay: 1
+Sitemap: https://livraison-app-bxgz.vercel.app/sitemap.xml

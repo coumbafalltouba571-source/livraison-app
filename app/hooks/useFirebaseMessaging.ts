@@ -38,6 +38,15 @@ export function useFirebaseMessaging() {
       }
 
       try {
+        if (!navigator.serviceWorker.controller) {
+          try {
+            await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+            console.log("✅ Service worker Firebase Messaging enregistré");
+          } catch (registerError) {
+            console.error("❌ Impossible d'enregistrer le service worker FCM:", registerError);
+          }
+        }
+
         const registration = await navigator.serviceWorker.ready;
         const tokenOptions: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration } = {
           serviceWorkerRegistration: registration,

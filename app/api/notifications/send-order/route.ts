@@ -22,6 +22,27 @@ function parseDateValue(value: unknown): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function formatPaymentMethod(method?: string): string {
+  const normalized = String(method || "").trim().toLowerCase();
+  switch (normalized) {
+    case "wave":
+      return "Wave";
+    case "orange":
+    case "orange money":
+    case "orange-money":
+      return "Orange Money";
+    case "carte":
+    case "carte bancaire":
+    case "carte_bancaire":
+    case "card":
+      return "Carte bancaire";
+    case "livraison":
+      return "Paiement à la livraison";
+    default:
+      return method || "Non spécifié";
+  }
+}
+
 function formatMessageForAdmin(order: Command): string {
   const customerName = order.client || order.nomClient || order.customerName || "Inconnu";
   const productList = order.orderItems && order.orderItems.length > 0
@@ -29,21 +50,21 @@ function formatMessageForAdmin(order: Command): string {
     : order.productName || "Non spécifié";
   const phone = order.telephone || order.phone || "Non fourni";
   const address = order.address || order.destination || "Non spécifiée";
-  const paymentMethod = order.paymentMethod || order.modePayement || "Non spécifié";
-  const departure = order.depart || "Non spécifié";
-  const destination = order.destination || address;
+  const paymentMethod = formatPaymentMethod(order.paymentMethod || order.modePayement || "Non spécifié");
+  const orderDate = parseDateValue(order.createdAt || order.dateLivraison)
+    ? parseDateValue(order.createdAt || order.dateLivraison)!.toLocaleString("fr-FR")
+    : "À confirmer";
 
   return (
-    `📦 NOUVELLE COMMANDE\n\n` +
-    `ID : ${order.id || "N/A"}\n` +
-    `Client : ${customerName}\n` +
+    `📦 NOUVELLE COMMANDE VALIDÉE\n\n` +
+    `Nom : ${customerName}\n` +
     `Téléphone : ${phone}\n` +
-    `Produits : ${productList}\n` +
-    `Montant : ${(order.prix || order.total || 0).toLocaleString("fr-FR")} FCFA\n` +
+    `Produit : ${productList}\n` +
     `Adresse : ${address}\n` +
-    `Départ : ${departure}\n` +
-    `Destination : ${destination}\n` +
-    `Paiement : ${paymentMethod}`
+    `Paiement : ${paymentMethod}\n` +
+    `Prix : ${(order.prix || order.total || 0).toLocaleString("fr-FR")} FCFA\n` +
+    `Date : ${orderDate}\n` +
+    `ID : ${order.id || "N/A"}`
   );
 }
 
