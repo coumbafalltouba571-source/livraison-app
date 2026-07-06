@@ -15,6 +15,7 @@ import PaymentSelector from "./PaymentSelector";
 import WavePayment from "./WavePayment";
 import OrangeMoneyPayment from "./OrangeMoneyPayment";
 import NotificationToast from "./NotificationToast";
+import { getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
 
 interface ShoppingCartProps {
   cart: CartState;
@@ -182,6 +183,27 @@ export default function ShoppingCart({
 
       console.log("🎯 Commande enregistrée avec ID:", commandResult);
       clearTimeout(timeoutId);
+
+      try {
+        const orderForWa = {
+          id: commandResult,
+          client: clientName,
+          telephone: clientPhone,
+          depart: "Boutique",
+          destination: clientAddress.trim(),
+          address: clientAddress.trim(),
+          productName: productNames,
+          orderItems,
+          prix: cart.total,
+          total: cart.total,
+          paymentMethod,
+          statut: "en attente",
+        } as any;
+        const waUrl = getAdminWhatsAppUrl(orderForWa);
+        if (typeof window !== "undefined") window.open(waUrl, "_blank");
+      } catch (err) {
+        console.warn("Could not open WhatsApp:", err);
+      }
 
       // Marquer succès IMMÉDIATEMENT (avant WhatsApp)
       console.log("✅ Affichage message succès");

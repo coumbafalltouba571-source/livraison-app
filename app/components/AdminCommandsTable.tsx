@@ -1,6 +1,7 @@
 "use client";
 
 import { Command, updateCommandStatus, deleteCommand } from "@/app/utils/firestoreCommands";
+import { getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
 import { useState } from "react";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -48,6 +49,19 @@ export default function AdminCommandsTable({
     try {
       await updateCommandStatus(commandId, newStatus);
       onUpdate();
+      // Open WhatsApp for admin when order is validated/confirmed
+      const validationStatuses = ["confirmée", "confirmé", "validée", "validé", "confirmed", "validated"];
+      if (validationStatuses.includes(newStatus.toLowerCase())) {
+        const cmd = commands.find((c) => c.id === commandId);
+        if (cmd) {
+          try {
+            const waUrl = getAdminWhatsAppUrl(cmd as any);
+            if (typeof window !== "undefined") window.open(waUrl, "_blank");
+          } catch (err) {
+            console.warn("Unable to open WhatsApp:", err);
+          }
+        }
+      }
     } catch (error) {
       console.error("Erreur:", error);
       alert("Erreur lors de la mise à jour du statut");

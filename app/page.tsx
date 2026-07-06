@@ -13,6 +13,7 @@ import {
   getDescriptionRoute,
   } from "./utils/tarifs";
 import { createCommand } from "./utils/firestoreCommands";
+import { getAdminWhatsAppUrl } from "./utils/commandUtils";
 import Link from "next/link";
 
 // Charger MapSection de manière dynamique (nécessite le navigateur)
@@ -126,6 +127,26 @@ export default function Home() {
       const commandeId = await createCommandWithTimeout(30000);
 
       console.log("✅ Commande sauvegardée avec succès dans Firestore:", commandeId);
+
+      try {
+        const orderForWa = {
+          id: commandeId,
+          client: nomClient,
+          telephone,
+          depart,
+          destination,
+          address: destination,
+          productName: description,
+          prix,
+          paymentMethod: modePayement,
+          statut: "en attente",
+        } as any;
+
+        const waUrl = getAdminWhatsAppUrl(orderForWa);
+        if (typeof window !== "undefined") window.open(waUrl, "_blank");
+      } catch (e) {
+        console.warn("Unable to open WhatsApp automatically:", e);
+      }
 
       // 2. Afficher le message de succès
       setSuccessMessage("✅ Commande enregistrée avec succès!");
