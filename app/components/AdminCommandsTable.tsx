@@ -49,18 +49,20 @@ export default function AdminCommandsTable({
     try {
       await updateCommandStatus(commandId, newStatus);
       onUpdate();
-      // Open WhatsApp for admin when order is validated/confirmed
-      const validationStatuses = ["confirmée", "confirmé", "validée", "validé", "confirmed", "validated"];
-      if (validationStatuses.includes(newStatus.toLowerCase())) {
+
+      try {
         const cmd = commands.find((c) => c.id === commandId);
-        if (cmd) {
+        if (cmd && newStatus.toLowerCase().includes("confirm")) {
+          // Open WhatsApp to admin with prefilled message after validation
+          const waUrl = getAdminWhatsAppUrl({ ...cmd, statut: newStatus } as Command);
           try {
-            const waUrl = getAdminWhatsAppUrl(cmd as any);
-            if (typeof window !== "undefined") window.open(waUrl, "_blank");
+            window.open(waUrl, "_blank");
           } catch (err) {
-            console.warn("Unable to open WhatsApp:", err);
+            console.warn("Impossible d'ouvrir WhatsApp automatiquement:", err);
           }
         }
+      } catch (err) {
+        console.warn("Erreur lors de l'ouverture WhatsApp:", err);
       }
     } catch (error) {
       console.error("Erreur:", error);

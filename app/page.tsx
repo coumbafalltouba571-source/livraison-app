@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import ServicesSection from "./components/ServicesSection";
 import HowItWorks from "./components/HowItWorks";
@@ -13,7 +13,6 @@ import {
   getDescriptionRoute,
   } from "./utils/tarifs";
 import { createCommand } from "./utils/firestoreCommands";
-import { getAdminWhatsAppUrl } from "./utils/commandUtils";
 import Link from "next/link";
 
 // Charger MapSection de manière dynamique (nécessite le navigateur)
@@ -49,6 +48,24 @@ export default function Home() {
   // Calcul automatique du prix selon les quartiers
   const prix = depart && destination ? calculerTarif(depart, destination) : 0;
   const descriptionRoute = getDescriptionRoute(depart, destination);
+
+  // Prefill form from URL query params but do NOT auto-submit
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const pDepart = params.get("depart") || "";
+      const pDestination = params.get("destination") || "";
+      const pTelephone = params.get("telephone") || params.get("tel") || "";
+      const pClient = params.get("client") || "";
+
+      if (pDepart) setDepart(decodeURIComponent(pDepart));
+      if (pDestination) setDestination(decodeURIComponent(pDestination));
+      if (pTelephone) setTelephone(decodeURIComponent(pTelephone));
+      if (pClient) setNomClient(decodeURIComponent(pClient));
+    } catch (err) {
+      // ignore
+    }
+  }, []);
 
   // Quartiers disponibles (kept in utils; not referenced here)
 
@@ -127,26 +144,6 @@ export default function Home() {
       const commandeId = await createCommandWithTimeout(30000);
 
       console.log("✅ Commande sauvegardée avec succès dans Firestore:", commandeId);
-
-      try {
-        const orderForWa = {
-          id: commandeId,
-          client: nomClient,
-          telephone,
-          depart,
-          destination,
-          address: destination,
-          productName: description,
-          prix,
-          paymentMethod: modePayement,
-          statut: "en attente",
-        } as any;
-
-        const waUrl = getAdminWhatsAppUrl(orderForWa);
-        if (typeof window !== "undefined") window.open(waUrl, "_blank");
-      } catch (e) {
-        console.warn("Unable to open WhatsApp automatically:", e);
-      }
 
       // 2. Afficher le message de succès
       setSuccessMessage("✅ Commande enregistrée avec succès!");

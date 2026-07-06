@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createCommand } from "@/app/utils/firestoreCommands";
-import { getAdminWhatsAppUrl } from "@/app/utils/commandUtils";
 import PaymentSelector from "./PaymentSelector";
 import Link from "next/link";
 import { QUARTIERS_DAKAR } from "@/app/utils/tarifs";
@@ -77,24 +76,6 @@ export default function AddCommandForm({ onCommandAdded }: AddCommandFormProps) 
       });
 
       setSuccessMessage("✅ Commande créée avec succès!");
-      try {
-        const orderForWa = {
-          id: undefined,
-          client: formData.client || formData.telephone,
-          telephone: formData.telephone,
-          depart: formData.depart,
-          destination: formData.destination,
-          address: formData.destination,
-          productName: formData.notes || "N/A",
-          prix: formData.prix,
-          paymentMethod: formData.paymentMethod,
-          statut: "en attente",
-        } as any;
-        const waUrl = getAdminWhatsAppUrl(orderForWa);
-        if (typeof window !== "undefined") window.open(waUrl, "_blank");
-      } catch (err) {
-        console.warn("Could not open WhatsApp:", err);
-      }
       setTimeout(() => setSuccessMessage(""), 3000);
 
       // Reset form

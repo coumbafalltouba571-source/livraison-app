@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
@@ -210,4 +211,18 @@ export async function deleteNotification(id: string): Promise<void> {
 export async function deleteAllNotifications(): Promise<void> {
   const notifications = await getNotifications();
   await Promise.all(notifications.map((notification) => deleteNotification(notification.id!)));
+}
+
+export async function deleteNotificationsByOrderId(orderId: string): Promise<void> {
+  try {
+    const q = query(
+      collection(db, NOTIFICATIONS_COLLECTION),
+      where("orderId", "==", orderId)
+    );
+    const snapshot = await getDocs(q);
+    await Promise.all(snapshot.docs.map((d) => deleteDoc(doc(db, NOTIFICATIONS_COLLECTION, d.id))));
+  } catch (error) {
+    console.error("Erreur lors de la suppression des notifications de commande:", error);
+    throw error;
+  }
 }

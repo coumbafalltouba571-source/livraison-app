@@ -14,7 +14,7 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
-import { createOrderNotification, notifyOrderEvent } from "@/app/utils/notifications";
+import { createOrderNotification, notifyOrderEvent, deleteNotificationsByOrderId } from "@/app/utils/notifications";
 import { formatPhoneNumber } from "@/app/utils/phoneFormatter";
 
 function cleanFirestoreData<T extends Record<string, unknown>>(data: T): Partial<T> {
@@ -429,6 +429,12 @@ export async function deleteCommand(commandId: string): Promise<void> {
     console.log(`🗑️ Tentative de suppression - Collection: "${COMMANDS_COLLECTION}", ID: "${commandId}"`);
     const commandRef = doc(db, COMMANDS_COLLECTION, commandId);
     await deleteDoc(commandRef);
+    // Also remove notifications related to this order
+    try {
+      await deleteNotificationsByOrderId(commandId);
+    } catch (err) {
+      console.warn("Impossible de supprimer les notifications liées à la commande:", err);
+    }
     console.log(`✅ Commande supprimée avec succès: ${commandId}`);
   } catch (error) {
     console.error(`❌ Firestore Error - Collection: "${COMMANDS_COLLECTION}", ID: "${commandId}"`);
